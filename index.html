@@ -5089,7 +5089,7 @@ function renderTopPicks(){
           ${p.stock.name}
           <span class="tp-code">${p.stock.code}</span>
         </div>
-        <div class="tp-theme">${p.theme.icon} ${p.theme.name}</div>
+        <div class="tp-theme">${p.theme.name}</div>
         <div class="tp-reason">${p.reason}</div>
         <div class="tp-meta">
           <span class="tp-meta-item">현재 <strong>${formatPrice(price, p.theme.country)}</strong></span>
@@ -6517,8 +6517,6 @@ function renderContent(){
 
     block.innerHTML=`
       <div class="cat-header">
-        <span class="cat-icon">${theme.icon}</span>
-        <span class="cat-color-dot" style="background:${theme.color}"></span>
         <span class="cat-name-ko">${theme.name}</span>
         ${renderStars(theme.reliability)}
         <span class="cat-timing">${theme.timing}</span>
