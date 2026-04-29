@@ -275,6 +275,42 @@
     .ti-badge, .ti-arrow{ font-size:9px; padding:1px 4px; }
     .ti-row{ gap:4px; margin-top:3px; }
   }
+
+  /* OHLCV 미도착 시 — 펄스 스켈레톤 (높이 유지로 레이아웃 점프 방지) */
+  .ti-row-skel{ pointer-events:none; }
+  .ti-skel{
+    display:inline-block;
+    height:14px;
+    border-radius:3px;
+    background:linear-gradient(90deg,
+      var(--surface) 0%,
+      var(--surface-2) 50%,
+      var(--surface) 100%);
+    background-size: 200% 100%;
+    animation: ti-pulse 1.4s ease-in-out infinite;
+    border:1px solid var(--border);
+    opacity:0.6;
+  }
+  .ti-skel-badge{ width:48px; }
+  .ti-skel-arrow{ width:36px; }
+  @keyframes ti-pulse{
+    0%, 100%{ background-position: 200% 0; opacity:0.4; }
+    50%{ background-position: -200% 0; opacity:0.7; }
+  }
+  @media (max-width:767px){
+    .ti-skel{ height:12px; }
+    .ti-skel-badge{ width:42px; }
+    .ti-skel-arrow{ width:32px; }
+  }
+
+  /* OHLCV 도착 시 — 부드러운 페이드인 */
+  .ti-fade-in{
+    animation: ti-fade-in 0.35s ease-out;
+  }
+  @keyframes ti-fade-in{
+    from{ opacity:0; transform:translateY(-2px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
   .tp-name{
     font-size:var(--text-base); font-weight:700; color:var(--text-1);
     display:flex; align-items:baseline; gap:8px;
@@ -3248,8 +3284,15 @@
                 <span class="tp-score" style="position:static">65점</span>
               </div>
             </div>
+            <div>
+              <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-family:var(--font-mono);">로딩 스켈레톤 (OHLCV 도착 전)</div>
+              <div class="ti-row ti-row-skel" style="margin-top:0">
+                <span class="ti-skel ti-skel-badge"></span>
+                <span class="ti-skel ti-skel-arrow"></span>
+              </div>
+            </div>
           </div>
-          <div class="ds-comp-note">RSI &lt;30 오렌지 (과매도) · 30~40 약오렌지 · 50~70 회색 · &gt;70 빨강 (과매수)</div>
+          <div class="ds-comp-note">RSI &lt;30 오렌지 (과매도) · 30~40 약오렌지 · 50~70 회색 · &gt;70 빨강 (과매수). 데이터 도착 전엔 펄스 스켈레톤, 도착 시 0.35s 페이드인.</div>
         </div>
 
         <!-- 라인 아이콘 규격 -->
@@ -6162,7 +6205,13 @@ function renderStockCardHtml(s, theme){
     } else if(indM.aboveSMA200 === false){
       badges.push(`<span class="ti-arrow ti-down">▽200</span>`);
     }
-    if(badges.length) techBadgesM = `<div class="ti-row">${badges.join('')}</div>`;
+    if(badges.length) techBadgesM = `<div class="ti-row ti-fade-in">${badges.join('')}</div>`;
+  } else {
+    // OHLCV 미도착 — 펄스 스켈레톤
+    techBadgesM = `<div class="ti-row ti-row-skel">
+      <span class="ti-skel ti-skel-badge"></span>
+      <span class="ti-skel ti-skel-arrow"></span>
+    </div>`;
   }
 
   return `<div class="stock-card entered" data-card="${s.code}" data-code="${s.code}" data-theme="${theme.id}">
@@ -6268,9 +6317,9 @@ function renderStockRowHtml(s, theme){
     // RSI 배지
     if(ind.rsi14 != null){
       let rsiCls = 'ti-neutral';
-      if(ind.rsi14 < 30) rsiCls = 'ti-strong';      // 과매도 (오렌지)
-      else if(ind.rsi14 < 40) rsiCls = 'ti-good';   // 약과매도 (회색)
-      else if(ind.rsi14 > 70) rsiCls = 'ti-warn';   // 과매수 (빨강)
+      if(ind.rsi14 < 30) rsiCls = 'ti-strong';
+      else if(ind.rsi14 < 40) rsiCls = 'ti-good';
+      else if(ind.rsi14 > 70) rsiCls = 'ti-warn';
       badges.push(`<span class="ti-badge ${rsiCls}" title="RSI ${ind.rsi14.toFixed(1)} — ${ind.rsi14<30?'과매도':ind.rsi14>70?'과매수':'중립'}">RSI ${ind.rsi14.toFixed(0)}</span>`);
     }
     // 200일선 화살표
@@ -6279,7 +6328,13 @@ function renderStockRowHtml(s, theme){
     } else if(ind.aboveSMA200 === false){
       badges.push(`<span class="ti-arrow ti-down" title="200일 이평선 아래 — 장기 약세">▽200</span>`);
     }
-    if(badges.length) techBadges = `<div class="ti-row">${badges.join('')}</div>`;
+    if(badges.length) techBadges = `<div class="ti-row ti-fade-in">${badges.join('')}</div>`;
+  } else {
+    // OHLCV 미도착 — 펄스 스켈레톤 (높이 유지, 점프 방지)
+    techBadges = `<div class="ti-row ti-row-skel">
+      <span class="ti-skel ti-skel-badge"></span>
+      <span class="ti-skel ti-skel-arrow"></span>
+    </div>`;
   }
 
   return `<tr class="stock-row entered" data-row="${s.code}" data-code="${s.code}" data-theme="${theme.id}">
