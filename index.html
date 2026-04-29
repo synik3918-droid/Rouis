@@ -136,7 +136,7 @@
   .seg-btn.active{background:var(--text);color:var(--bg);box-shadow:0 1px 3px rgba(0,0,0,.4);}
 
   /* ===== Summary Dashboard ===== */
-  .summary-section{padding:24px 32px 0;}
+  .summary-section{padding:var(--gap-5) var(--pad-page-x) 0;}
   .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
   .summary-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--subtle);border-radius:6px;padding:18px 20px;cursor:pointer;transition:all .15s;}
   .summary-card:hover{border-color:var(--muted);transform:translateY(-2px);}
@@ -151,7 +151,7 @@
   .summary-sub{font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-top:6px;}
   .summary-sub strong{color:var(--text);font-weight:600;}
 
-  .calendar-section{padding:28px 32px 0;}
+  .calendar-section{padding:var(--gap-5) var(--pad-page-x) 0;}
   .calendar-section.hidden{display:none;}
   .cal-label{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:2px;margin-bottom:16px;}
   .months-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin-bottom:8px;}
@@ -163,13 +163,13 @@
   .today-marker{display:flex;align-items:center;gap:8px;margin:14px 0 24px;font-family:var(--font-mono);font-size:12px;color:var(--text);font-weight:600;}
   .today-dot{width:8px;height:8px;border-radius:50%;background:var(--text);}
 
-  .filters{padding:22px 32px 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .filters{padding:var(--gap-5) var(--pad-page-x) 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
   .filter-label{color:var(--muted);font-size:13px;margin-right:6px;font-weight:600;}
   .filter-btn{border:1px solid var(--border2);background:transparent;color:var(--muted);padding:8px 16px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;}
   .filter-btn:hover{border-color:var(--text);color:var(--text);}
   .filter-btn.active{background:var(--text);border-color:var(--text);color:var(--bg);font-weight:700;}
 
-  .status-bar{padding:14px 32px;margin-top:20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .status-bar{padding:var(--gap-3) var(--pad-page-x);margin-top:20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
   .status-msg{font-family:var(--font-mono);font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px;}
   .live-dot{width:7px;height:7px;border-radius:50%;background:var(--subtle);flex-shrink:0;}
   .live-dot.fetching{background:var(--accent);animation:blink 0.8s infinite;}
@@ -183,7 +183,7 @@
   .retry-failed-btn{border-color:var(--red);color:var(--red);}
   .retry-failed-btn:hover{border-color:var(--red);color:var(--text);background:var(--color-up-soft);}
 
-  .main{padding:32px 32px 80px;overflow-x:auto;}
+  .main{padding:var(--gap-6) var(--pad-page-x) var(--gap-7);overflow-x:auto;}
   .empty-msg{text-align:center;padding:80px 0;color:var(--muted);font-size:15px;}
 
   .category-block{margin-bottom:48px;min-width:1100px;}
@@ -289,10 +289,10 @@
   .upside.pos{color:var(--green);}
   .upside.neg{color:var(--red);}
 
-  .footer{padding:24px 32px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;font-family:var(--font-mono);}
+  .footer{padding:var(--gap-5) var(--pad-page-x);border-top:1px solid var(--border);color:var(--muted);font-size:12px;font-family:var(--font-mono);}
 
   /* ===== 진단 패널 ===== */
-  .diag-bar{padding:10px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:var(--font-mono);font-size:11px;}
+  .diag-bar{padding:var(--gap-3) var(--pad-page-x);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:var(--font-mono);font-size:11px;}
   .diag-toggle{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:4px 12px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;}
   .diag-toggle:hover{border-color:var(--text);color:var(--text);}
   .diag-summary{color:var(--muted);font-size:11px;}
@@ -618,30 +618,32 @@
   }
 
   @media (max-width:767px){
-    .page-header{ padding:20px 16px 14px; gap:14px; }
+    .page-header{ padding:var(--gap-5) var(--pad-page-x) var(--gap-3); gap:var(--gap-3); }
     .page-header-title{ font-size:26px; }
-    .page-header-controls{ gap:12px; width:100%; }
+    .page-header-controls{ gap:var(--gap-3); width:100%; }
     .uni-axis{ flex:1; min-width:0; }
-    .uni-seg.full .uni-seg-btn{ font-size:11px; padding:8px 6px; }
+    .uni-seg.full .uni-seg-btn{ font-size:var(--text-xs); padding:8px 6px; }
   }
 
   /* 페이지 전환 */
   .page{ display:block; }
   .page[style*="display:none"]{ display:none !important; }
 
-  /* 히트맵 페이지 자체 패딩 */
+  /* 모든 페이지 컨테이너는 좌우 패딩 0 — 내부 섹션들이 var(--pad-page-x)로 패딩 처리 */
   .page-heatmap{
-    padding:0 32px 60px;
+    padding:0 0 var(--gap-7);
     max-width:1320px;
   }
-  .page-heatmap main{ padding:0 0 0 0; }
-  .page-calendar{ padding:0 0 60px; }
+  .page-heatmap main{
+    padding: 0 var(--pad-page-x);
+  }
+  .page-calendar{ padding:0 0 var(--gap-7); }
 
   /* ============================================================
      ✦ Guide Page
      ============================================================ */
-  .page-guide{ padding:0 32px 60px; max-width:980px; }
-  .guide-body{ display:flex; flex-direction:column; gap:36px; }
+  .page-guide{ padding:0 0 var(--gap-7); max-width:1100px; }
+  .guide-body{ display:flex; flex-direction:column; gap:var(--gap-6); padding: 0 var(--pad-page-x); }
   .guide-section{ }
   .guide-h2{
     font-family:var(--font-sans); font-size:18px; font-weight:700;
@@ -772,7 +774,7 @@
   }
 
   @media (max-width:767px){
-    .page-guide{ padding:0 16px 60px; }
+    .page-guide{ padding:0 0 var(--gap-7); }
     .guide-h2{ font-size:16px; }
     .guide-p{ font-size:13px; }
     .gf-row{ flex-direction:column; gap:2px; }
@@ -791,7 +793,8 @@
     .hamburger{ display:flex; }
     .sidebar.open ~ .sidebar-backdrop{ display:block; }
     .app-shell{ margin-left:0; padding-top:56px; }
-    .page-heatmap{ padding:20px 16px 60px; }
+    .page-heatmap{ padding:0 0 var(--gap-7); }
+    .page-heatmap main{ padding: 0 var(--pad-page-x); }
   }
 
   .page-heatmap {
@@ -971,26 +974,8 @@
     font-size: 11px;
   }
 
-  /* Tabs - underline style */
-  .tabs {
-    display: flex; gap: 2px;
-    background: var(--surface-1);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    padding: 4px;
-  }
-  .tab {
-    background: transparent; border: none; color: var(--text-2);
-    padding: 9px 20px; border-radius: 7px; cursor: pointer;
-    font-family: inherit; font-size: 14px; font-weight: 600;
-    letter-spacing: -0.01em;
-    transition: color 0.15s, background 0.15s;
-  }
-  .tab:hover { color: var(--text-1); }
-  .tab.active {
-    background: var(--surface-3);
-    color: var(--text-1);
-  }
+  /* Tabs - .uni-seg 컨테이너로 대체됨 */
+  /* .tab, .period-tab은 .uni-seg-btn 클래스와 함께 사용 — 별도 스타일 없음 (통일 토글이 처리) */
 
   /* ============ VIEWS ============ */
   .view { display: none; }
@@ -1515,8 +1500,7 @@
     .cand-score { font-size: 28px; }
     .cand-name { font-size: 18px; }
     .rrg-header { flex-direction: column; align-items: flex-start; }
-    .period-tabs { width: 100%; }
-    .period-tab { flex: 1; padding: 7px 10px; }
+    /* .period-tabs / .period-tab — .uni-seg.compact / .uni-seg-btn이 처리 */
   }
 
   /* ============ MARKET READ ============ */
@@ -1612,29 +1596,7 @@
   }
 
   /* Period filter tabs */
-  .period-tabs {
-    display: flex; gap: 2px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 3px;
-    flex-shrink: 0;
-  }
-  .period-tab {
-    background: transparent; border: none; color: var(--text-3);
-    padding: 6px 10px; border-radius: 5px; cursor: pointer;
-    font-family: var(--font-mono);
-    font-size: 12px; font-weight: 600;
-    letter-spacing: -0.01em;
-    transition: color 0.15s, background 0.15s;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
-  .period-tab:hover { color: var(--text-1); }
-  .period-tab.active {
-    background: var(--surface-3);
-    color: var(--text-1);
-  }
+  /* .period-tabs - .uni-seg.compact 컨테이너로 대체됨 */
   /* Market index bar (above RRG chart) */
   .market-index-bar {
     display: grid;
