@@ -2,14 +2,473 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Theme Strength · 테마 강도</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>선취매 테마 캘린더</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
+    --bg:#0a0b0e; --surface:#111318; --border:#1e2028; --border2:#2a2d38;
+    --text:#e8eaf0; --muted:#8a8f9e; --subtle:#5e6373;
+    --accent:#f0c040; --green:#3dd68c; --red:#f25767; --blue:#5b9bd5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:15px;min-height:100vh;}
+
+  .header{padding:36px 48px 24px;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:24px;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:3px;color:var(--text);line-height:1;}
+  .logo span{color:var(--muted);font-size:15px;letter-spacing:1px;display:block;font-family:'Noto Sans KR',sans-serif;font-weight:300;margin-bottom:6px;}
+  .disclaimer{color:var(--muted);font-size:13px;max-width:380px;text-align:right;line-height:1.7;}
+  .disclaimer strong{color:var(--text);}
+
+  /* ===== 현재 상태 Breadcrumb ===== */
+  .current-view{padding:28px 48px 0;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+  .cv-prefix{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;font-weight:600;text-transform:uppercase;}
+  .cv-item{font-size:22px;font-weight:700;color:var(--text);transition:color .2s;}
+  .cv-divider{font-size:18px;color:var(--border2);font-weight:300;}
+
+  /* ===== 3축 토글 (Segmented Control) — 옵션 D ===== */
+  .axis-bar{padding:18px 48px 0;display:flex;flex-wrap:wrap;gap:32px;align-items:flex-end;}
+  .axis-group{display:flex;flex-direction:column;gap:8px;}
+  .axis-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;font-weight:600;text-transform:uppercase;padding-left:6px;}
+  .seg-control{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;}
+  .seg-btn{padding:10px 22px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:600;border-radius:5px;transition:all .15s;}
+  .seg-btn:hover{color:var(--text);}
+  .seg-btn.active{background:var(--text);color:var(--bg);box-shadow:0 1px 3px rgba(0,0,0,.4);}
+
+  /* ===== Summary Dashboard ===== */
+  .summary-section{padding:24px 48px 0;}
+  .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .summary-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--subtle);border-radius:6px;padding:18px 20px;cursor:pointer;transition:all .15s;}
+  .summary-card:hover{border-color:var(--muted);transform:translateY(-2px);}
+  .summary-card.active{border-color:var(--text);}
+  .summary-card.low{border-left-color:var(--green);}
+  .summary-card.mid{border-left-color:var(--accent);}
+  .summary-card.high{border-left-color:var(--red);}
+  .summary-card.fav{border-left-color:var(--blue);}
+  .summary-label{font-size:13px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+  .summary-value{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;line-height:1;color:var(--text);}
+  .summary-value-unit{font-size:14px;color:var(--muted);font-weight:400;}
+  .summary-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-top:6px;}
+  .summary-sub strong{color:var(--text);font-weight:600;}
+
+  .calendar-section{padding:28px 48px 0;}
+  .calendar-section.hidden{display:none;}
+  .cal-label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:2px;margin-bottom:16px;}
+  .months-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin-bottom:8px;}
+  .month-col{display:flex;flex-direction:column;gap:4px;}
+  .month-header{text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);padding:6px 0;border-top:1px solid var(--border2);font-weight:600;}
+  .month-header.today{color:var(--text);border-top-color:var(--text);}
+  .theme-pill{border-radius:4px;padding:5px 6px;font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:opacity .15s;}
+  .theme-pill:hover{opacity:1!important;}
+  .today-marker{display:flex;align-items:center;gap:8px;margin:14px 0 24px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);font-weight:600;}
+  .today-dot{width:8px;height:8px;border-radius:50%;background:var(--text);}
+
+  .filters{padding:22px 48px 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .filter-label{color:var(--muted);font-size:13px;margin-right:6px;font-weight:600;}
+  .filter-btn{border:1px solid var(--border2);background:transparent;color:var(--muted);padding:8px 16px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;}
+  .filter-btn:hover{border-color:var(--text);color:var(--text);}
+  .filter-btn.active{background:var(--text);border-color:var(--text);color:var(--bg);font-weight:700;}
+
+  .status-bar{padding:14px 48px;margin-top:20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .status-msg{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px;}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--subtle);flex-shrink:0;}
+  .live-dot.fetching{background:var(--accent);animation:blink 0.8s infinite;}
+  .live-dot.error{background:var(--red);}
+  .live-dot.ok{background:var(--green);}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+  .status-actions{display:flex;gap:8px;}
+  .refresh-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:7px 16px;border-radius:3px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;transition:all .15s;}
+  .refresh-btn:hover{border-color:var(--text);color:var(--text);}
+  .refresh-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .retry-failed-btn{border-color:var(--red);color:var(--red);}
+  .retry-failed-btn:hover{border-color:var(--red);color:var(--text);background:rgba(242,87,103,.15);}
+
+  .main{padding:32px 48px 80px;overflow-x:auto;}
+  .empty-msg{text-align:center;padding:80px 0;color:var(--muted);font-size:15px;}
+
+  .category-block{margin-bottom:48px;min-width:1100px;}
+  .cat-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .cat-icon{font-size:24px;}
+  .cat-color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .cat-name-ko{font-family:'Noto Sans KR',sans-serif;font-size:24px;font-weight:700;color:var(--text);}
+  .cat-stars{font-size:13px;color:var(--accent);letter-spacing:1px;}
+  .cat-stars-empty{color:var(--border2);}
+  .cat-timing{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);background:var(--surface);padding:5px 10px;border-radius:3px;border:1px solid var(--border2);}
+  .cat-desc{color:var(--muted);font-size:13px;margin-left:auto;}
+
+  /* ===== TABLE ===== */
+  table{width:100%;table-layout:fixed;border-collapse:collapse;}
+  col.c-name{width:20%;}
+  col.c-tag{width:9%;}
+  col.c-reason{width:16%;}
+  col.c-price{width:11%;}
+  col.c-change{width:7%;}
+  col.c-peak{width:11%;}
+  col.c-pct{width:18%;}
+  col.c-upside{width:8%;}
+
+  thead tr{background:var(--surface);}
+  th{text-align:left;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1.5px;font-weight:600;border-bottom:1px solid var(--border);user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  th:not(:first-child):not(:nth-child(2)):not(:nth-child(3)){text-align:right;}
+  th:nth-child(2),th:nth-child(3){text-align:left;}
+  th.sortable{cursor:pointer;transition:color .15s;}
+  th.sortable:hover{color:var(--text);}
+  th.sorted{color:var(--text);}
+  .sort-icon{display:inline-block;margin-left:4px;opacity:.3;font-size:10px;}
+  th.sorted .sort-icon{opacity:1;}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+  tbody tr:hover{background:var(--surface);}
+  td{padding:14px 16px;vertical-align:middle;overflow:hidden;}
+  td:not(:first-child):not(:nth-child(2)):not(:nth-child(3)){text-align:right;}
+
+  .stock-name-row{display:flex;align-items:center;gap:10px;min-width:0;}
+  .fav-btn{background:transparent;border:none;cursor:pointer;font-size:20px;color:var(--border2);padding:0;line-height:1;transition:all .15s;flex-shrink:0;}
+  .fav-btn:hover{color:var(--accent);transform:scale(1.15);}
+  .fav-btn.on{color:var(--accent);}
+  .stock-name-info{min-width:0;overflow:hidden;}
+  .stock-name{font-weight:600;font-size:16px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .stock-code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-top:3px;}
+
+  /* 성격 태그 */
+  .role-tags{display:flex;flex-wrap:wrap;gap:4px;}
+  .role-tag{font-size:11px;padding:3px 7px;border-radius:3px;font-weight:600;white-space:nowrap;border:1px solid var(--border2);background:var(--surface);color:var(--muted);}
+  .role-tag.lead{color:#9bb8d4;border-color:rgba(155,184,212,.3);}     /* 대장주 */
+  .role-tag.momentum{color:#f5a460;border-color:rgba(245,164,96,.3);}  /* 모멘텀 */
+  .role-tag.smallcap{color:#d68fd6;border-color:rgba(214,143,214,.3);} /* 스몰캡 */
+  .role-tag.turn{color:#7fc8a3;border-color:rgba(127,200,163,.3);}     /* 턴어라운드 */
+  .role-tag.value{color:#c9b870;border-color:rgba(201,184,112,.3);}    /* 배당/밸류 */
+
+  .reason-tag{display:inline-block;background:var(--border);border-radius:3px;padding:4px 10px;font-size:12px;color:var(--text);font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .price-cell{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+  .price{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--text);}
+  .price.fetching{color:var(--subtle);font-size:14px;font-weight:500;animation:pulse 1.4s ease-in-out infinite;}
+  .price.error{color:var(--subtle);font-size:14px;font-weight:500;border-bottom:1px dotted var(--border2);}
+  .price.cached{color:var(--muted);}
+  @keyframes pulse{0%,100%{opacity:0.45}50%{opacity:0.85}}
+
+  /* ===== 스켈레톤 (가격 조회 전 placeholder) ===== */
+  .skeleton-row{height:60px;}
+  .skeleton-row td{padding:12px 16px;}
+  .skel{display:inline-block;height:14px;border-radius:3px;background:linear-gradient(90deg, var(--border2) 0%, var(--border) 50%, var(--border2) 100%);background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite;}
+  .skel.w-md{width:80px;}
+  .skel.w-sm{width:50px;}
+  .skel.w-bar{width:130px;height:9px;border-radius:5px;}
+  @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+  /* ===== 행 페이드인 (가격 받아온 즉시) ===== */
+  .stock-row{transition: opacity .35s ease, transform .35s ease;}
+  .stock-row.entering{opacity:0; transform:translateY(-4px);}
+  .stock-row.entered{opacity:1; transform:translateY(0);}
+
+  /* 카테고리 블록도 페이드인 */
+  .category-block{opacity:1; transition: opacity .3s ease;}
+  .category-block.empty-fade{opacity:0; pointer-events:none; height:0; margin:0; overflow:hidden;}
+  .price-meta{display:flex;align-items:center;gap:6px;font-size:11px;}
+  .cache-badge{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:10px;font-weight:600;background:var(--border);padding:2px 6px;border-radius:2px;border:1px solid var(--border2);}
+  .retry-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:2px 8px;border-radius:2px;font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;}
+  .retry-btn:hover{border-color:var(--text);color:var(--text);}
+
+  .change{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);}
+  .change.pos{color:var(--green);}
+  .change.neg{color:var(--red);}
+
+  .peak-price{font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--text);font-weight:700;}
+  .peak-timing{font-size:12px;color:var(--muted);margin-top:3px;}
+
+  .progress-row{display:flex;align-items:center;gap:10px;justify-content:flex-end;}
+  .progress-bar{width:130px;height:9px;background:var(--border2);border-radius:5px;overflow:hidden;position:relative;flex-shrink:0;}
+  .progress-fill{height:100%;transition:width .5s ease-out;border-radius:5px;}
+  .progress-fill.low{background:var(--green);}
+  .progress-fill.mid{background:var(--accent);}
+  .progress-fill.high{background:var(--red);}
+  .progress-pct{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;min-width:58px;text-align:right;color:var(--text);flex-shrink:0;}
+  .progress-pct.empty{color:var(--muted);}
+
+  .upside{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--muted);}
+  .upside.pos{color:var(--green);}
+  .upside.neg{color:var(--red);}
+
+  .footer{padding:24px 48px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace;}
+
+  /* ===== 진단 패널 ===== */
+  .diag-bar{padding:10px 48px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .diag-toggle{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:4px 12px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;}
+  .diag-toggle:hover{border-color:var(--text);color:var(--text);}
+  .diag-summary{color:var(--muted);font-size:11px;}
+  .diag-summary strong{color:var(--text);}
+  .diag-panel{display:none;padding:14px 48px;background:var(--surface);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .diag-panel.open{display:block;}
+  .diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  @media (max-width:1099px){ .diag-grid{grid-template-columns:1fr;} .diag-bar, .diag-panel{padding-left:16px;padding-right:16px;} }
+  .diag-section h5{font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-bottom:10px;font-weight:600;}
+  .diag-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dotted var(--border);}
+  .diag-row:last-child{border-bottom:none;}
+  .diag-icon{font-size:14px;width:18px;text-align:center;}
+  .diag-name{flex:1;color:var(--text);}
+  .diag-detail{color:var(--muted);font-size:10px;}
+  .diag-time{color:var(--muted);font-size:10px;font-weight:600;}
+  .diag-time.fast{color:var(--green);}
+  .diag-time.slow{color:var(--accent);}
+  .diag-time.dead{color:var(--red);}
+  .diag-run-btn{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:6px 14px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;margin-top:12px;}
+  .diag-run-btn:hover{background:var(--accent);color:var(--bg);}
+  .diag-run-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .diag-recommendation{margin-top:14px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:4px;font-size:11px;line-height:1.6;color:var(--text);}
+  .diag-recommendation strong{color:var(--accent);}
+
+  /* ===== 백테스트 배지 ===== */
+  .bt-badge{display:inline-flex;gap:8px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface);border:1px solid var(--border2);border-radius:4px;padding:5px 10px;cursor:pointer;transition:all .15s;user-select:none;}
+  .bt-badge:hover{border-color:var(--text);}
+  .bt-badge .bt-item{display:flex;gap:4px;align-items:baseline;}
+  .bt-badge .bt-k{color:var(--muted);font-size:10px;}
+  .bt-badge .bt-v{font-weight:700;color:var(--text);}
+  .bt-badge .bt-v.pos{color:var(--green);}
+  .bt-badge .bt-v.neg{color:var(--red);}
+  .bt-badge .bt-sep{color:var(--border2);}
+  .bt-badge .bt-toggle{color:var(--muted);font-size:10px;margin-left:4px;}
+  .bt-badge.empty{cursor:default;color:var(--muted);font-size:10px;padding:4px 8px;}
+  .bt-badge.empty:hover{border-color:var(--border2);}
+
+  /* ===== 백테스트 상세 패널 ===== */
+  .bt-panel{display:none;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:14px;}
+  .bt-panel.open{display:block;}
+  .bt-panel-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:24px;margin-bottom:20px;}
+  @media (max-width:1100px){ .bt-panel-grid{grid-template-columns:1fr;} }
+  .bt-section{}
+  .bt-section h4{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1.5px;font-weight:600;margin-bottom:10px;}
+  .bt-chart-wrap{position:relative;height:240px;background:var(--bg);border-radius:4px;padding:12px;}
+  .bt-yearly{display:grid;grid-template-columns:repeat(auto-fit,minmax(60px,1fr));gap:6px;}
+  .bt-yearly-cell{background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:6px 8px;text-align:center;}
+  .bt-yearly-yr{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+  .bt-yearly-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;margin-top:2px;}
+  .bt-yearly-val.pos{color:var(--green);}
+  .bt-yearly-val.neg{color:var(--red);}
+  .bt-tickers{margin-top:16px;border-top:1px solid var(--border);padding-top:16px;}
+  .bt-ticker-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:10px;}
+  .bt-ticker-row{display:flex;justify-content:space-between;align-items:center;background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .bt-ticker-name{color:var(--muted);}
+  .bt-ticker-vals{display:flex;gap:10px;}
+  .bt-ticker-vals .v{color:var(--text);font-weight:700;}
+  .bt-ticker-vals .v.pos{color:var(--green);}
+  .bt-ticker-vals .v.neg{color:var(--red);}
+  .bt-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:12px;}
+
+  @media (max-width:1100px){
+    .summary-grid{grid-template-columns:repeat(2,1fr);}
+  }
+
+  /* ========================================================
+     ✦ 반응형 — 태블릿 (≤1099px)
+     ======================================================== */
+  @media (max-width:1099px){
+    .header{padding:24px 28px 18px;}
+    .logo{font-size:36px;letter-spacing:2px;}
+    .country-tabs, .axis-bar, .summary-section, .calendar-section,
+    .filters, .status-bar, .main, .footer { padding-left:28px; padding-right:28px; }
+    .main{padding-bottom:60px;}
+    .category-block{min-width:0;}  /* 가로 스크롤 강제 해제 */
+    .category-block table{min-width:920px;}  /* 테이블만 가로 스크롤 */
+    /* 캘린더는 가로 스크롤 */
+    .months-grid{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  }
+
+  /* ========================================================
+     ✦ 반응형 — 모바일 (≤767px)
+     ======================================================== */
+  @media (max-width:767px){
+    body{font-size:14px;}
+    .header{flex-direction:column;align-items:flex-start;gap:12px;padding:20px 16px 16px;}
+    .logo{font-size:32px;}
+    .logo span{font-size:12px;}
+    .disclaimer{text-align:left;font-size:12px;max-width:100%;}
+
+    .country-tabs, .axis-bar, .summary-section, .calendar-section,
+    .filters, .status-bar, .main, .footer { padding-left:16px; padding-right:16px; }
+
+    /* 국가 탭 */
+    .country-tabs{padding-top:16px;}
+    .country-tab{padding:12px 16px;font-size:14px;flex:1;text-align:center;}
+
+    /* 3축 토글 — 세로 stack */
+    .axis-bar{flex-direction:column;align-items:stretch;gap:14px;padding-top:18px;}
+    .axis-group{flex-direction:column;align-items:flex-start;gap:6px;width:100%;}
+    .seg-control{width:100%;display:flex;}
+    .seg-btn{flex:1;text-align:center;padding:10px 8px;font-size:13px;min-height:44px;}
+
+    /* 요약 카드 — 2x2 */
+    .summary-section{padding-top:18px;}
+    .summary-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+    .summary-card{padding:12px 14px;}
+    .summary-value{font-size:22px;}
+    .summary-label{font-size:11px;}
+    .summary-sub{font-size:10px;}
+
+    /* 캘린더 — 가로 스크롤 */
+    .calendar-section{padding-top:20px;}
+    .months-grid{overflow-x:auto;-webkit-overflow-scrolling:touch;grid-template-columns:repeat(12,minmax(80px,1fr));padding-bottom:8px;}
+    .cal-label{font-size:10px;}
+    .month-header{font-size:11px;}
+    .theme-pill{font-size:10px;padding:4px 5px;}
+
+    /* 필터 */
+    .filters{padding-top:16px;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;padding-bottom:4px;}
+    .filter-btn{padding:8px 12px;font-size:12px;white-space:nowrap;flex-shrink:0;min-height:36px;}
+    .filter-label{flex-shrink:0;}
+
+    /* 상태바 */
+    .status-bar{flex-direction:column;align-items:stretch;gap:10px;padding:12px 16px;}
+    .status-msg{font-size:12px;}
+    .status-actions{justify-content:flex-end;flex-wrap:wrap;}
+    .refresh-btn{padding:8px 12px;font-size:12px;min-height:40px;}
+
+    /* 카테고리 헤더 */
+    .main{padding:20px 16px 60px;}
+    .category-block{margin-bottom:32px;}
+    .cat-header{gap:8px;flex-wrap:wrap;padding-bottom:10px;}
+    .cat-icon{font-size:20px;}
+    .cat-name-ko{font-size:18px;}
+    .cat-stars{font-size:11px;}
+    .cat-timing{font-size:10px;padding:3px 7px;}
+    .cat-desc{font-size:11px;width:100%;margin-left:0;}
+
+    /* 백테스트 배지 — 모바일 */
+    .bt-badge{font-size:10px;padding:5px 8px;flex-wrap:wrap;}
+    .bt-badge .bt-k{font-size:9px;}
+    .bt-badge .bt-sep{display:none;}
+    .bt-panel{padding:14px;}
+    .bt-panel-grid{gap:16px;margin-bottom:16px;}
+    .bt-chart-wrap{height:180px;padding:8px;}
+    .bt-yearly{grid-template-columns:repeat(auto-fit,minmax(50px,1fr));gap:4px;}
+    .bt-yearly-cell{padding:5px 6px;}
+    .bt-yearly-val{font-size:11px;}
+    .bt-meta{font-size:10px;}
+
+    /* ▼▼▼ 핵심: 테이블 → 카드 뷰 ▼▼▼ */
+    .category-block table{display:none;}
+    .category-block .mobile-cards{display:flex;flex-direction:column;gap:10px;}
+  }
+
+  /* 데스크톱·태블릿: 카드뷰 숨김 */
+  .mobile-cards{display:none;}
+
+  /* ========================================================
+     ✦ 모바일 카드뷰 스타일
+     ======================================================== */
+  .stock-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:opacity .35s ease, transform .35s ease;}
+  .stock-card.entering{opacity:0;transform:translateY(-4px);}
+  .stock-card.entered{opacity:1;transform:translateY(0);}
+  .stock-card-skel{padding:14px;}
+
+  .scd-top{display:flex;align-items:center;gap:10px;}
+  .scd-top .fav-btn{font-size:22px;min-width:28px;}
+  .scd-top .stock-name{font-size:15px;font-weight:600;}
+  .scd-top .stock-code{font-size:11px;color:var(--muted);margin-top:1px;}
+
+  .scd-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px;}
+  .scd-tags .role-tag{font-size:10px;padding:2px 6px;}
+
+  .scd-mid{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .scd-mid-left{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .scd-mid .price{font-size:22px;}
+  .scd-mid .price.fetching, .scd-mid .price.error{font-size:14px;}
+  .scd-mid .change{font-size:13px;}
+  .scd-mid-right{text-align:right;display:flex;flex-direction:column;gap:3px;}
+  .scd-mid-right .upside{font-size:18px;}
+
+  .scd-progress{display:flex;align-items:center;gap:10px;}
+  .scd-progress .progress-bar{flex:1;width:auto;}
+  .scd-progress .progress-pct{font-size:13px;min-width:50px;}
+  .scd-progress-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+  .scd-progress-meta strong{color:var(--text);font-weight:700;}
+
+  .scd-bot{font-size:12px;color:var(--muted);line-height:1.5;}
+  .scd-bot .reason-tag{display:inline-block;background:var(--border);padding:3px 8px;border-radius:3px;color:var(--text);}
+
+  .scd-cache{display:flex;justify-content:flex-end;}
+
+  /* ============================================================
+     ✦ APP SHELL (Sidebar + Page Routing)
+     ============================================================ */
+  .sidebar{
+    position:fixed; top:0; left:0; bottom:0; width:240px;
+    background:#0d0e12; border-right:1px solid var(--border);
+    display:flex; flex-direction:column; z-index:100;
+    padding:24px 0;
+  }
+  .sidebar-logo{
+    display:flex; align-items:center; gap:12px; padding:0 24px 24px;
+    border-bottom:1px solid var(--border); margin-bottom:18px;
+  }
+  .sb-logo-mark{
+    font-size:22px; color:#d4a574; line-height:1;
+  }
+  .sb-logo-text{
+    font-family:'Bebas Neue', sans-serif; font-size:15px; letter-spacing:2px;
+    line-height:1.1; color:var(--text);
+  }
+  .sidebar-nav{
+    flex:1; display:flex; flex-direction:column; gap:4px; padding:0 12px;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 14px; border-radius:6px;
+    color:var(--muted); text-decoration:none;
+    font-size:14px; font-weight:500;
+    transition:all .15s; cursor:pointer;
+  }
+  .nav-item:hover{ background:var(--surface); color:var(--text); }
+  .nav-item.active{
+    background:rgba(212,165,116,0.10);
+    color:#d4a574;
+  }
+  .nav-icon{ font-size:18px; width:22px; text-align:center; }
+  .nav-label{ flex:1; }
+  .sidebar-disclaimer{
+    margin-top:auto; padding:16px 20px 4px; font-size:11px;
+    color:var(--subtle); line-height:1.6;
+    border-top:1px solid var(--border);
+  }
+  .sidebar-disclaimer strong{ color:var(--red); }
+
+  /* 모바일 햄버거 + 백드롭 */
+  .hamburger{
+    display:none; position:fixed; top:14px; left:14px; z-index:101;
+    background:var(--surface); border:1px solid var(--border2);
+    width:40px; height:40px; border-radius:6px;
+    flex-direction:column; align-items:center; justify-content:center;
+    gap:4px; cursor:pointer; padding:0;
+  }
+  .hamburger span{
+    display:block; width:18px; height:2px; background:var(--text);
+    border-radius:1px;
+  }
+  .sidebar-backdrop{
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.5); z-index:99;
+  }
+
+  /* App Shell — 사이드바 만큼 들여쓰기 */
+  .app-shell{ margin-left:240px; min-height:100vh; }
+
+  /* 페이지 전환 */
+  .page{ display:block; }
+  .page[style*="display:none"]{ display:none !important; }
+
+  /* ===== 모바일 ===== */
+  @media (max-width:1099px){
+    .sidebar{
+      transform:translateX(-100%);
+      transition:transform .25s ease;
+    }
+    .sidebar.open{ transform:translateX(0); }
+    .hamburger{ display:flex; }
+    .sidebar.open ~ .sidebar-backdrop{ display:block; }
+    .app-shell{ margin-left:0; padding-top:56px; }
+  }
+
+  .page-heatmap {
     --bg: #0a0b0d;
     --surface-1: #121417;
     --surface-2: #181b1f;
@@ -29,24 +488,17 @@
     --down-text: #6fa3ee;
     --accent: #d4a574;
     --accent-soft: rgba(212,165,116,0.08);
-  }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  *::selection { background: rgba(212,165,116,0.25); }
-
-  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-  body {
     font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
     font-feature-settings: 'cv11', 'ss01';
-    background: var(--bg);
     color: var(--text-1);
-    padding: 28px 24px 60px;
-    max-width: 1320px;
-    margin: 0 auto;
-    min-height: 100vh;
     -webkit-tap-highlight-color: transparent;
     line-height: 1.45;
+  
   }
+
+
+
 
   .num {
     font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
@@ -701,7 +1153,7 @@
 
   /* ============ RESPONSIVE ============ */
   @media (max-width: 1024px) {
-    body { padding: 24px 20px 60px; }
+  
     .hero-grid { grid-template-columns: 1fr; gap: 24px; }
     .hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; padding-top: 18px; border-top: 1px solid var(--border); }
     .hero-ribbon-wrap { grid-column: 1 / -1; }
@@ -712,7 +1164,7 @@
     .candidate-grid { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 640px) {
-    body { padding: 18px 14px 40px; }
+  
     .masthead h1 { font-size: 22px; }
     .tabs { width: 100%; }
     .tab { flex: 1; padding: 10px 12px; font-size: 13px; }
@@ -1195,39 +1647,130 @@
     .rrg-stats { grid-template-columns: 1fr; }
     .candidate-grid { grid-template-columns: 1fr; }
   }
+
 </style>
 </head>
 <body>
+<!-- ===== Sidebar (Global Navigation) ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="sb-logo-mark">▲</span>
+    <span class="sb-logo-text">THEME<br>TRACKER</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#calendar" class="nav-item active" data-route="calendar">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">선취매 캘린더</span>
+    </a>
+    <a href="#heatmap" class="nav-item" data-route="heatmap">
+      <span class="nav-icon">🔥</span>
+      <span class="nav-label">테마 히트맵</span>
+    </a>
+  </nav>
+  <div class="sidebar-disclaimer">
+    <strong>⚠ 투자 참고용</strong><br>
+    실제 수익을 보장하지 않으며<br>모든 결정은 본인 판단으로
+  </div>
+</aside>
 
-<nav class="market-segment" id="market-seg">
-  <button class="market-tab active" data-market="kr">
-    <span class="m-code">KR</span>
-    <span class="m-name">한국</span>
-    <span class="m-status"><span class="status-dot"></span><span class="m-status-text">--</span></span>
-  </button>
-  <button class="market-tab" data-market="us">
-    <span class="m-code">US</span>
-    <span class="m-name">미국</span>
-    <span class="m-status"><span class="status-dot"></span><span class="m-status-text">--</span></span>
-  </button>
-</nav>
+<!-- 모바일 햄버거 -->
+<button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="메뉴 열기">
+  <span></span><span></span><span></span>
+</button>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
 
-<header class="masthead">
-  <div>
-    <h1>Theme Strength</h1>
-    <div class="sub" id="market-status">
-      <span>2026.04.28</span>
-      <span class="dot"></span>
-      <span>KRX</span>
+<!-- ===== Main Content Wrapper ===== -->
+<div class="app-shell">
+
+<!-- ========== PAGE: CALENDAR ========== -->
+<div class="page page-calendar" id="page-calendar">
+
+<!-- 현재 보고 있는 뷰 -->
+<div class="current-view">
+  <span class="cv-prefix">현재 보기</span>
+  <span class="cv-item" id="cvCountry">🇰🇷 한국</span>
+  <span class="cv-divider">›</span>
+  <span class="cv-item" id="cvGroup">📅 시즌별</span>
+  <span class="cv-divider">›</span>
+  <span class="cv-item" id="cvStyle">전체 종목</span>
+</div>
+
+<!-- 3축 토글 -->
+<div class="axis-bar">
+  <div class="axis-group">
+    <div class="axis-label">국가</div>
+    <div class="seg-control" id="segCountry">
+      <button class="seg-btn active" data-country="KR">🇰🇷 한국</button>
+      <button class="seg-btn" data-country="US">🇺🇸 미국</button>
     </div>
   </div>
-  <nav class="tabs">
-    <button class="tab active" data-view="leaderboard">Now</button>
-    <button class="tab" data-view="forecast">Next</button>
-  </nav>
-</header>
+  <div class="axis-group">
+    <div class="axis-label">분류</div>
+    <div class="seg-control" id="segGroup">
+      <button class="seg-btn active" data-group="season">📅 시즌별</button>
+      <button class="seg-btn" data-group="industry">📱 산업 섹터별</button>
+    </div>
+  </div>
+  <div class="axis-group">
+    <div class="axis-label">투자 성향</div>
+    <div class="seg-control" id="segStyle">
+      <button class="seg-btn active" data-style="all">전체</button>
+      <button class="seg-btn" data-style="blue">🏛️ 우량</button>
+      <button class="seg-btn" data-style="aggressive">🎰 공격</button>
+    </div>
+  </div>
+</div>
 
-<main>
+<div class="summary-section">
+  <div class="summary-grid" id="summaryGrid"></div>
+</div>
+
+<div class="calendar-section" id="calendarSection">
+  <div class="cal-label">SEASONAL CALENDAR — 진입(→) / 피크(▲)</div>
+  <div class="months-grid" id="monthsGrid"></div>
+  <div class="today-marker"><div class="today-dot"></div><span id="todayLabel"></span></div>
+</div>
+
+<div class="filters" id="filterBar"></div>
+
+<div class="diag-bar">
+  <button class="diag-toggle" onclick="toggleDiag()">🔍 진단</button>
+  <span class="diag-summary" id="diagSummary">진단 버튼을 누르면 프록시·API 상태를 확인합니다</span>
+</div>
+<div class="diag-panel" id="diagPanel">
+  <div class="diag-grid">
+    <div class="diag-section">
+      <h5>CORS 프록시 (6개)</h5>
+      <div id="diagProxies"></div>
+    </div>
+    <div class="diag-section">
+      <h5>주가 API (3개)</h5>
+      <div id="diagApis"></div>
+    </div>
+  </div>
+  <button class="diag-run-btn" id="diagRunBtn" onclick="runDiagnostics()">▶ 진단 다시 실행</button>
+  <div class="diag-recommendation" id="diagRec" style="display:none"></div>
+</div>
+
+<div class="status-bar">
+  <div class="status-msg">
+    <div class="live-dot fetching" id="statusDot"></div>
+    <span id="statusMsg">실시간 가격 조회 준비 중...</span>
+  </div>
+  <div class="status-actions">
+    <button class="refresh-btn" id="autoRefreshBtn" onclick="toggleAutoRefresh()" title="5분마다 자동 갱신">⏱ 자동갱신 ON</button>
+    <button class="refresh-btn retry-failed-btn" id="retryFailedBtn" onclick="retryFailed()" style="display:none">↻ 실패만 재시도</button>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadPrices(!event.shiftKey)" title="클릭: 캐시 외 갱신 / Shift+클릭: 강제 전체 갱신">↻ 새로고침</button>
+  </div>
+</div>
+
+<div class="main" id="mainContent"></div>
+<div class="footer">데이터: Yahoo Finance · 백테스트는 Phase 3 (현재 일부 샘플) — 로컬에서 backtest.py 실행 후 results.json을 BACKTEST_RESULTS 변수에 붙여넣으면 전체 활성화 · 별점/태그는 정성 평가, 백테스트는 정량 데이터.</div>
+
+</div><!-- /page-calendar -->
+
+<!-- ========== PAGE: HEATMAP ========== -->
+<div class="page page-heatmap" id="page-heatmap" style="display:none">
   <section class="view active" id="view-leaderboard">
     <p class="leaderboard-intro">절대 강도 순 정렬 · 우측 사분면 뱃지는 RRG 모멘텀 흐름 표시 (강도와 모멘텀은 별개 지표)</p>
     <div class="divider"><span>Lead</span></div>
@@ -1274,11 +1817,1914 @@
     <div class="divider"><span>Next Leaders · 후보</span></div>
     <div class="candidate-grid" id="candidate-grid"></div>
   </section>
-</main>
 
-<div class="tooltip" id="tooltip"></div>
+</div><!-- /page-heatmap -->
+
+</div><!-- /app-shell -->
 
 <script>
+/* =====================================================================
+   BACKTEST_RESULTS — Phase 3 백테스트 결과 임베드 영역
+   사용자가 로컬에서 backtest.py 실행 후 results.json 내용을 아래에 붙여넣기
+   현재는 일부 샘플 데이터로 UI 동작 확인용
+   ===================================================================== */
+const BACKTEST_RESULTS = {
+  meta: {
+    start_date: "2018-01-01",
+    end_date: "2025-12-31",
+    generated_at: "2025-04-28T12:00:00",
+    benchmarks: { KR: "KOSPI", US: "SPY" },
+    is_sample: true   // 실제 데이터 임베드 시 false 또는 삭제
+  },
+  strategies: {
+    // === 샘플 (실제 backtest.py 결과로 교체) ===
+    "summer": {
+      name: "폭염 / 에어컨", type: "season", market: "KR",
+      metrics: { cagr: 0.124, sharpe: 0.81, mdd: -0.235, win_rate: 0.80, total_return: 0.94 },
+      benchmark_metrics: { cagr: 0.062, sharpe: 0.45, mdd: -0.34, win_rate: 0.60, total_return: 0.42 },
+      yearly_returns: { "2019": 0.18, "2020": 0.32, "2021": 0.08, "2022": -0.12, "2023": 0.21, "2024": 0.15 },
+      equity_curve: { labels: makeMonths(60), strategy: makeCurve(60, 0.124), benchmark: makeCurve(60, 0.062) },
+      tickers: [
+        { ticker: "066570", cagr: 0.09, win_rate: 0.6, mdd: -0.28 },
+        { ticker: "080760", cagr: 0.14, win_rate: 0.8, mdd: -0.32 },
+        { ticker: "015760", cagr: 0.05, win_rate: 0.5, mdd: -0.41 },
+        { ticker: "005180", cagr: 0.18, win_rate: 0.8, mdd: -0.18 },
+      ]
+    },
+    "flu": {
+      name: "독감 / 백신", type: "season", market: "KR",
+      metrics: { cagr: 0.087, sharpe: 0.62, mdd: -0.28, win_rate: 0.75, total_return: 0.61 },
+      benchmark_metrics: { cagr: 0.062, sharpe: 0.45, mdd: -0.34, win_rate: 0.60, total_return: 0.42 },
+      yearly_returns: { "2019": 0.06, "2020": 0.45, "2021": -0.08, "2022": -0.15, "2023": 0.12, "2024": 0.18 },
+      equity_curve: { labels: makeMonths(60), strategy: makeCurve(60, 0.087), benchmark: makeCurve(60, 0.062) },
+      tickers: [
+        { ticker: "006280", cagr: 0.05, win_rate: 0.6, mdd: -0.32 },
+        { ticker: "302440", cagr: 0.21, win_rate: 0.7, mdd: -0.45 },
+        { ticker: "003850", cagr: 0.04, win_rate: 0.5, mdd: -0.25 },
+      ]
+    },
+    "election": {
+      name: "선거 / 정책", type: "season", market: "KR",
+      metrics: { cagr: 0.041, sharpe: 0.28, mdd: -0.31, win_rate: 0.50, total_return: 0.27 },
+      benchmark_metrics: { cagr: 0.062, sharpe: 0.45, mdd: -0.34, win_rate: 0.60, total_return: 0.42 },
+      yearly_returns: { "2019": -0.03, "2020": 0.15, "2021": 0.08, "2022": -0.18, "2023": 0.06, "2024": 0.12 },
+      equity_curve: { labels: makeMonths(60), strategy: makeCurve(60, 0.041), benchmark: makeCurve(60, 0.062) },
+      tickers: [
+        { ticker: "000720", cagr: 0.02, win_rate: 0.4, mdd: -0.38 },
+        { ticker: "012450", cagr: 0.18, win_rate: 0.7, mdd: -0.28 },
+        { ticker: "042670", cagr: -0.05, win_rate: 0.4, mdd: -0.45 },
+      ]
+    },
+    "kr-semi": {
+      name: "반도체 / HBM·소부장", type: "sector", market: "KR",
+      metrics: { cagr: 0.182, sharpe: 0.94, mdd: -0.36, win_rate: 0.70, total_return: 1.71 },
+      benchmark_metrics: { cagr: 0.062, sharpe: 0.45, mdd: -0.34, win_rate: 0.60, total_return: 0.42 },
+      yearly_returns: { "2019": 0.32, "2020": 0.55, "2021": -0.15, "2022": -0.28, "2023": 0.42, "2024": 0.28 },
+      equity_curve: { labels: makeMonths(60), strategy: makeCurve(60, 0.182), benchmark: makeCurve(60, 0.062) },
+      tickers: [
+        { ticker: "000660", cagr: 0.24, win_rate: 0.7, mdd: -0.42 },
+        { ticker: "005930", cagr: 0.08, win_rate: 0.6, mdd: -0.28 },
+        { ticker: "042700", cagr: 0.45, win_rate: 0.8, mdd: -0.55 },
+        { ticker: "058470", cagr: 0.18, win_rate: 0.7, mdd: -0.32 },
+        { ticker: "005290", cagr: 0.12, win_rate: 0.6, mdd: -0.48 },
+        { ticker: "357780", cagr: 0.14, win_rate: 0.6, mdd: -0.30 },
+      ]
+    },
+    "us-semi": {
+      name: "반도체 / AI 칩", type: "sector", market: "US",
+      metrics: { cagr: 0.252, sharpe: 1.18, mdd: -0.42, win_rate: 0.80, total_return: 2.85 },
+      benchmark_metrics: { cagr: 0.142, sharpe: 0.92, mdd: -0.24, win_rate: 0.80, total_return: 1.32 },
+      yearly_returns: { "2019": 0.55, "2020": 0.62, "2021": 0.38, "2022": -0.32, "2023": 0.78, "2024": 0.45 },
+      equity_curve: { labels: makeMonths(60), strategy: makeCurve(60, 0.252), benchmark: makeCurve(60, 0.142) },
+      tickers: [
+        { ticker: "NVDA", cagr: 0.62, win_rate: 0.9, mdd: -0.55 },
+        { ticker: "AMD", cagr: 0.38, win_rate: 0.7, mdd: -0.62 },
+        { ticker: "AVGO", cagr: 0.42, win_rate: 0.8, mdd: -0.32 },
+        { ticker: "TSM", cagr: 0.22, win_rate: 0.7, mdd: -0.38 },
+        { ticker: "MU", cagr: 0.18, win_rate: 0.6, mdd: -0.55 },
+        { ticker: "ASML", cagr: 0.28, win_rate: 0.8, mdd: -0.42 },
+      ]
+    },
+    "us-bf": {
+      name: "블랙프라이데이 / 홀리데이", type: "season", market: "US",
+      metrics: { cagr: 0.142, sharpe: 0.85, mdd: -0.22, win_rate: 0.70, total_return: 1.12 },
+      benchmark_metrics: { cagr: 0.142, sharpe: 0.92, mdd: -0.24, win_rate: 0.80, total_return: 1.32 },
+      yearly_returns: { "2019": 0.18, "2020": 0.42, "2021": 0.22, "2022": -0.18, "2023": 0.15, "2024": 0.08 },
+      equity_curve: { labels: makeMonths(60), strategy: makeCurve(60, 0.142), benchmark: makeCurve(60, 0.142) },
+      tickers: [
+        { ticker: "AMZN", cagr: 0.18, win_rate: 0.7, mdd: -0.45 },
+        { ticker: "WMT", cagr: 0.12, win_rate: 0.8, mdd: -0.18 },
+        { ticker: "COST", cagr: 0.22, win_rate: 0.9, mdd: -0.15 },
+        { ticker: "TGT", cagr: 0.08, win_rate: 0.6, mdd: -0.42 },
+        { ticker: "SHOP", cagr: 0.32, win_rate: 0.6, mdd: -0.78 },
+        { ticker: "ETSY", cagr: 0.05, win_rate: 0.5, mdd: -0.72 },
+      ]
+    },
+  }
+};
+
+/* 샘플 차트 데이터 생성기 (실제 데이터 임베드되면 사용 안 됨) */
+function makeMonths(n){
+  const arr=[]; const d=new Date(2019,0,1);
+  for(let i=0;i<n;i++){ arr.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`); d.setMonth(d.getMonth()+1); }
+  return arr;
+}
+function makeCurve(n, cagr){
+  // 단순 시뮬: 월수익 = (1+cagr)^(1/12)-1 + 노이즈
+  const monthly = Math.pow(1+cagr, 1/12)-1;
+  const arr=[1]; let v=1;
+  for(let i=1;i<n;i++){
+    const noise = (Math.sin(i*0.7)+Math.cos(i*1.3))*0.03;
+    v = v*(1+monthly+noise);
+    arr.push(Number(v.toFixed(4)));
+  }
+  return arr;
+}
+
+/* 백테스트 결과 조회 */
+function getBacktest(themeId){
+  return BACKTEST_RESULTS.strategies[themeId] || null;
+}
+
+/* 배지 렌더 */
+function renderBacktestBadge(themeId){
+  const bt = getBacktest(themeId);
+  if(!bt) return `<span class="bt-badge empty" title="백테스트 데이터 없음">백테스트 데이터 없음</span>`;
+  const cagr = bt.metrics.cagr;
+  const win = bt.metrics.win_rate;
+  const alpha = cagr - bt.benchmark_metrics.cagr;
+  const benchName = BACKTEST_RESULTS.meta.benchmarks[bt.market];
+  const cagrCls = cagr>=0?'pos':'neg';
+  const alphaCls = alpha>=0?'pos':'neg';
+  return `<span class="bt-badge" data-bt-toggle="${themeId}" title="클릭하면 상세 패널 펼침">
+    <span class="bt-item"><span class="bt-k">CAGR</span><span class="bt-v ${cagrCls}">${(cagr>=0?'+':'')}${(cagr*100).toFixed(1)}%</span></span>
+    <span class="bt-sep">|</span>
+    <span class="bt-item"><span class="bt-k">승률</span><span class="bt-v">${(win*100).toFixed(0)}%</span></span>
+    <span class="bt-sep">|</span>
+    <span class="bt-item"><span class="bt-k">vs ${benchName}</span><span class="bt-v ${alphaCls}">${(alpha>=0?'+':'')}${(alpha*100).toFixed(1)}%</span></span>
+    <span class="bt-toggle">▼</span>
+  </span>`;
+}
+
+/* 상세 패널 렌더 */
+function renderBacktestPanel(themeId){
+  const bt = getBacktest(themeId);
+  if(!bt) return '';
+  const benchName = BACKTEST_RESULTS.meta.benchmarks[bt.market];
+  const m = bt.metrics, bm = bt.benchmark_metrics;
+  const yearly = Object.entries(bt.yearly_returns||{}).sort();
+
+  const yearlyHtml = yearly.map(([yr,v])=>{
+    const cls = v>=0?'pos':'neg';
+    return `<div class="bt-yearly-cell">
+      <div class="bt-yearly-yr">${yr}</div>
+      <div class="bt-yearly-val ${cls}">${v>=0?'+':''}${(v*100).toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+
+  const tickerHtml = (bt.tickers||[]).map(t=>{
+    const cls = t.cagr>=0?'pos':'neg';
+    return `<div class="bt-ticker-row">
+      <span class="bt-ticker-name">${t.ticker}</span>
+      <div class="bt-ticker-vals">
+        <span>CAGR <span class="v ${cls}">${t.cagr>=0?'+':''}${(t.cagr*100).toFixed(1)}%</span></span>
+        <span>승률 <span class="v">${(t.win_rate*100).toFixed(0)}%</span></span>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="bt-panel" id="bt-panel-${themeId}">
+    <div class="bt-panel-grid">
+      <div class="bt-section">
+        <h4>📈 EQUITY CURVE — 전략 vs ${benchName}</h4>
+        <div class="bt-chart-wrap"><canvas id="bt-chart-${themeId}"></canvas></div>
+        <div class="bt-meta">
+          전략: CAGR ${(m.cagr*100).toFixed(1)}% · Sharpe ${m.sharpe.toFixed(2)} · MDD ${(m.mdd*100).toFixed(1)}%
+          &nbsp;|&nbsp;
+          ${benchName}: CAGR ${(bm.cagr*100).toFixed(1)}% · Sharpe ${bm.sharpe.toFixed(2)} · MDD ${(bm.mdd*100).toFixed(1)}%
+        </div>
+      </div>
+      <div class="bt-section">
+        <h4>📊 연도별 수익률</h4>
+        <div class="bt-yearly">${yearlyHtml}</div>
+      </div>
+    </div>
+    <div class="bt-tickers">
+      <h4>🎯 종목별 5년 성과</h4>
+      <div class="bt-ticker-list">${tickerHtml}</div>
+    </div>
+  </div>`;
+}
+
+/* 상세 패널 토글 + 차트 초기화 */
+const chartInstances = {};
+function toggleBacktestPanel(themeId){
+  const panel = document.getElementById('bt-panel-'+themeId);
+  if(!panel) return;
+  const wasOpen = panel.classList.contains('open');
+  panel.classList.toggle('open');
+  if(!wasOpen){
+    drawBacktestChart(themeId);
+  }
+}
+
+function drawBacktestChart(themeId){
+  const bt = getBacktest(themeId);
+  if(!bt) return;
+  const canvas = document.getElementById('bt-chart-'+themeId);
+  if(!canvas) return;
+  if(chartInstances[themeId]){ chartInstances[themeId].destroy(); }
+  const benchName = BACKTEST_RESULTS.meta.benchmarks[bt.market];
+  const ec = bt.equity_curve;
+  chartInstances[themeId] = new Chart(canvas, {
+    type:'line',
+    data:{
+      labels: ec.labels,
+      datasets:[
+        { label:'전략', data: ec.strategy, borderColor:'#3dd68c', backgroundColor:'rgba(61,214,140,0.08)',
+          borderWidth:2, fill:true, tension:0.2, pointRadius:0 },
+        { label: benchName, data: ec.benchmark, borderColor:'#8a8f9e', borderWidth:1.5,
+          borderDash:[4,4], fill:false, tension:0.2, pointRadius:0 },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ labels:{ color:'#e8eaf0', font:{family:'JetBrains Mono', size:11}, boxWidth:14 } },
+        tooltip:{ mode:'index', intersect:false, backgroundColor:'#111318', titleColor:'#e8eaf0', bodyColor:'#e8eaf0', borderColor:'#2a2d38', borderWidth:1 }
+      },
+      scales:{
+        x:{ ticks:{ color:'#8a8f9e', font:{family:'JetBrains Mono', size:10}, maxTicksLimit:8 }, grid:{ color:'#1e2028' } },
+        y:{ ticks:{ color:'#8a8f9e', font:{family:'JetBrains Mono', size:10}, callback:v=>v.toFixed(1)+'x' }, grid:{ color:'#1e2028' } }
+      },
+      interaction:{ mode:'nearest', axis:'x', intersect:false }
+    }
+  });
+}
+/*
+  ===== 종목 메타데이터 가이드 =====
+  styles: ['blue'|'aggressive'] — 동시 노출 가능 (대형주이면서 모멘텀 큰 경우 둘 다)
+  roles: ['lead'|'momentum'|'smallcap'|'turn'|'value'] — 한 종목당 1~2개 권장
+    lead = 대장주(시총·점유율 1위)
+    momentum = 시즌 탄력·베타 큼
+    smallcap = 스몰캡 폭발력
+    turn = 턴어라운드/실적변곡
+    value = 저PER·배당
+  reliability: 1~5 (테마의 시즌성 검증 강도)
+*/
+
+/* ===== KR SEASON THEMES ===== */
+const KR_SEASON_THEMES = [
+  { id:'dust', country:'KR', group:'season', cat:'봄', icon:'🌸', name:'황사 / 미세먼지', timing:'2~3월 진입 → 4~5월 피크', peakMonths:[4,5], entryMonths:[2,3], color:'#c47fb8', desc:'봄철 황사·미세먼지 수혜주', reliability:4,
+    stocks:[
+      {name:'코웨이', code:'021240.KS', reason:'공기청정기 시장 점유율 1위, 렌탈 안정수익', peak:75000, peakTime:'4~5월', styles:['blue'], roles:['lead','value']},
+      {name:'위닉스', code:'044380.KS', reason:'공기청정기 매출비중 60%+, 황사철 탄력 큼', peak:28000, peakTime:'4~5월', styles:['aggressive'], roles:['momentum']},
+      {name:'크린앤사이언스', code:'045520.KS', reason:'마스크·필터 소재 스몰캡', peak:18000, peakTime:'3~4월', styles:['aggressive'], roles:['smallcap','momentum']},
+    ]},
+  { id:'summer', country:'KR', group:'season', cat:'여름', icon:'☀️', name:'폭염 / 에어컨', timing:'5~6월 진입 → 7~8월 피크', peakMonths:[7,8], entryMonths:[5,6], color:'#f08030', desc:'폭염 경보 냉방·전력 수혜주', reliability:5,
+    stocks:[
+      {name:'LG전자', code:'066570.KS', reason:'에어컨 글로벌 1위, 가전 다각화', peak:120000, peakTime:'7~8월', styles:['blue'], roles:['lead']},
+      {name:'캐리어에어컨', code:'080760.KS', reason:'에어컨 단일 사업, 시즌 직접 수혜', peak:14000, peakTime:'7~8월', styles:['aggressive'], roles:['momentum','smallcap']},
+      {name:'한국전력', code:'015760.KS', reason:'전력 수요 급증 + 요금 인상 기대', peak:22000, peakTime:'7~8월', styles:['blue'], roles:['value','turn']},
+      {name:'빙그레', code:'005180.KS', reason:'아이스크림 점유율, 폭염 탄력', peak:68000, peakTime:'6~8월', styles:['blue'], roles:['value']},
+    ]},
+  { id:'flu', country:'KR', group:'season', cat:'가을', icon:'🍂', name:'독감 / 백신', timing:'9~10월 진입 → 11~12월 피크', peakMonths:[10,11,12], entryMonths:[9,10], color:'#d4814a', desc:'독감 시즌 백신·제약 수혜주', reliability:5,
+    stocks:[
+      {name:'GC녹십자', code:'006280.KS', reason:'독감 백신 국내 1위, 매년 시즌성', peak:180000, peakTime:'10~11월', styles:['blue'], roles:['lead']},
+      {name:'SK바이오사이언스', code:'302440.KS', reason:'백신 CMO + 자체 파이프라인', peak:85000, peakTime:'10~11월', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'보령', code:'003850.KS', reason:'카나브 등 종합 제약 턴어라운드', peak:14000, peakTime:'11~12월', styles:['aggressive'], roles:['turn']},
+    ]},
+  { id:'winter', country:'KR', group:'season', cat:'겨울', icon:'❄️', name:'한파 / 난방', timing:'10~11월 진입 → 12~1월 피크', peakMonths:[12,1,2], entryMonths:[10,11], color:'#5b9bd5', desc:'한파·난방 수요 증가 수혜주', reliability:4,
+    stocks:[
+      {name:'한국가스공사', code:'036460.KS', reason:'LNG 도입 독점, 한파 시 수요 폭증', peak:42000, peakTime:'12~1월', styles:['blue'], roles:['lead','value']},
+      {name:'E1', code:'017940.KS', reason:'LPG 공급, 동절기 직접 수혜', peak:65000, peakTime:'12~1월', styles:['aggressive'], roles:['momentum']},
+      {name:'영원무역', code:'111770.KS', reason:'노스페이스 OEM, 한파 패딩 특수', peak:40000, peakTime:'10~11월', styles:['blue'], roles:['value']},
+    ]},
+  { id:'election', country:'KR', group:'season', cat:'이벤트', icon:'🗳️', name:'선거 / 정책', timing:'선거 6~8주 전 진입', peakMonths:[3,4], entryMonths:[2,3], color:'#7c6fcd', desc:'선거 공약 인프라·방산·에너지', reliability:2,
+    stocks:[
+      {name:'현대건설', code:'000720.KS', reason:'SOC 인프라 공약 직접 수혜', peak:38000, peakTime:'선거 직전', styles:['blue'], roles:['lead','turn']},
+      {name:'한화에어로스페이스', code:'012450.KS', reason:'방산 예산 증가 수혜, 수출 모멘텀', peak:380000, peakTime:'예산 발표', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'HD현대인프라코어', code:'042670.KS', reason:'건설기계, SOC 착공 시즌', peak:18000, peakTime:'착공 시즌', styles:['aggressive'], roles:['momentum']},
+    ]},
+  { id:'school', country:'KR', group:'season', cat:'이벤트', icon:'📚', name:'입학 / 신학기', timing:'1~2월 진입 → 2~3월 피크', peakMonths:[2,3], entryMonths:[1,2], color:'#4aac8a', desc:'신학기 소비 특수', reliability:3,
+    stocks:[
+      {name:'모나미', code:'005360.KS', reason:'문구 점유율, 신학기 직접 수혜', peak:7500, peakTime:'2~3월', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'메가스터디교육', code:'215200.KS', reason:'온라인 교육 1위, 수능 후 수강 증가', peak:68000, peakTime:'수능 이후', styles:['blue'], roles:['lead']},
+      {name:'웅진씽크빅', code:'095720.KS', reason:'교육 서비스, 학기 시작 수요', peak:4500, peakTime:'3~4월', styles:['aggressive'], roles:['smallcap','turn']},
+    ]},
+  { id:'apple', country:'KR', group:'season', cat:'산업이벤트', icon:'📱', name:'애플 신제품 (9월)', timing:'7~8월 진입 → 9~10월 피크', peakMonths:[9,10], entryMonths:[7,8], color:'#6ec6e6', desc:'아이폰 발표 전후 부품 공급망', reliability:4,
+    stocks:[
+      {name:'LG이노텍', code:'011070.KS', reason:'카메라모듈 애플향 매출 70%+', peak:220000, peakTime:'9~10월', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'삼성전기', code:'009150.KS', reason:'MLCC·카메라, 애플+삼성 양다리', peak:170000, peakTime:'9~10월', styles:['blue'], roles:['lead']},
+      {name:'비에이치', code:'090460.KS', reason:'연성기판 애플향 비중 높음', peak:22000, peakTime:'8~9월', styles:['aggressive'], roles:['momentum']},
+    ]},
+  { id:'ces', country:'KR', group:'season', cat:'산업이벤트', icon:'🤖', name:'CES / AI 테마 (1월)', timing:'11~12월 진입 → 1~2월 피크', peakMonths:[1,2], entryMonths:[11,12], color:'#f0c040', desc:'CES 전후 AI·로봇·반도체', reliability:3,
+    stocks:[
+      {name:'SK하이닉스', code:'000660.KS', reason:'HBM 세계 1위, AI 사이클 핵심', peak:240000, peakTime:'1~2월', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'삼성전자', code:'005930.KS', reason:'AI 반도체·HBM 캐치업', peak:78000, peakTime:'1~2월', styles:['blue'], roles:['lead','value']},
+      {name:'한미반도체', code:'042700.KS', reason:'HBM 본더 장비 독점, 모멘텀 큼', peak:180000, peakTime:'1~2월', styles:['aggressive'], roles:['momentum']},
+      {name:'레인보우로보틱스', code:'277810.KS', reason:'삼성 인수 휴머노이드 기대감', peak:200000, peakTime:'1~2월', styles:['aggressive'], roles:['smallcap','momentum']},
+    ]},
+];
+
+/* ===== KR INDUSTRY THEMES ===== */
+const KR_INDUSTRY_THEMES = [
+  { id:'kr-semi', country:'KR', group:'industry', cat:'반도체', icon:'💾', name:'반도체 / HBM·소부장', timing:'AI 사이클·메모리 업황', color:'#6ec6e6', desc:'HBM·메모리·장비·소재 공급망', reliability:4,
+    stocks:[
+      {name:'SK하이닉스', code:'000660.KS', reason:'HBM 세계 1위, NVDA 단독 공급', peak:300000, peakTime:'AI 사이클', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'삼성전자', code:'005930.KS', reason:'D램·낸드 1위, HBM 캐치업 진행', peak:90000, peakTime:'메모리 회복', styles:['blue'], roles:['lead','value']},
+      {name:'한미반도체', code:'042700.KS', reason:'HBM TC본더 장비 사실상 독점', peak:180000, peakTime:'HBM capex', styles:['aggressive'], roles:['momentum']},
+      {name:'리노공업', code:'058470.KQ', reason:'반도체 테스트 핀 글로벌 리더, 영업이익률 30%+', peak:300000, peakTime:'안정 성장', styles:['blue'], roles:['lead','value']},
+      {name:'동진쎄미켐', code:'005290.KQ', reason:'포토레지스트 국산화 핵심', peak:60000, peakTime:'장비 가동률 회복', styles:['aggressive'], roles:['momentum','smallcap']},
+      {name:'솔브레인', code:'357780.KQ', reason:'반도체 식각액·CMP 슬러리', peak:330000, peakTime:'안정 성장', styles:['blue'], roles:['value']},
+    ]},
+
+  { id:'kr-tech', country:'KR', group:'industry', cat:'빅테크/플랫폼', icon:'💻', name:'빅테크 / 인터넷·게임', timing:'분기 실적·신작 출시', color:'#5b9bd5', desc:'플랫폼·검색·게임', reliability:3,
+    stocks:[
+      {name:'네이버', code:'035420.KS', reason:'검색 1위, 라인·웹툰 글로벌', peak:280000, peakTime:'AI 검색 통합', styles:['blue'], roles:['lead']},
+      {name:'카카오', code:'035720.KS', reason:'국민 메신저 + 핀테크·콘텐츠', peak:60000, peakTime:'턴어라운드', styles:['aggressive'], roles:['turn']},
+      {name:'크래프톤', code:'259960.KS', reason:'배틀그라운드, 다크앤다커 출시', peak:450000, peakTime:'신작 출시', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'엔씨소프트', code:'036570.KS', reason:'MMORPG 강자, TL·아이온2 기대', peak:280000, peakTime:'신작 출시', styles:['aggressive'], roles:['turn']},
+      {name:'펄어비스', code:'263750.KQ', reason:'검은사막·붉은사막 출시 임박', peak:60000, peakTime:'붉은사막 출시', styles:['aggressive'], roles:['momentum','smallcap']},
+    ]},
+
+  { id:'kr-bio', country:'KR', group:'industry', cat:'바이오/제약', icon:'⚕️', name:'바이오 / 제약', timing:'임상결과·FDA 승인', color:'#3dd68c', desc:'바이오시밀러·CMO·신약', reliability:3,
+    stocks:[
+      {name:'삼성바이오로직스', code:'207940.KS', reason:'CMO 글로벌 1위 생산능력', peak:1100000, peakTime:'안정 성장', styles:['blue'], roles:['lead','value']},
+      {name:'셀트리온', code:'068270.KS', reason:'바이오시밀러 글로벌 매출 확대', peak:240000, peakTime:'램시마SC 미국', styles:['blue'], roles:['lead']},
+      {name:'유한양행', code:'000100.KS', reason:'렉라자 J&J 라이선스, 글로벌 진출', peak:200000, peakTime:'렉라자 매출', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'한미약품', code:'128940.KS', reason:'GLP-1·비만치료제 파이프라인', peak:380000, peakTime:'임상 진전', styles:['aggressive'], roles:['momentum']},
+      {name:'HLB', code:'028300.KQ', reason:'리보세라닙 임상 변동성 큼', peak:120000, peakTime:'FDA 결정', styles:['aggressive'], roles:['smallcap','momentum']},
+    ]},
+
+  { id:'kr-battery', country:'KR', group:'industry', cat:'2차전지/EV', icon:'🔋', name:'2차전지 / 양극재', timing:'EV 보조금·OEM 가이던스', color:'#a280d4', desc:'배터리 셀·양극재·소재', reliability:3,
+    stocks:[
+      {name:'LG에너지솔루션', code:'373220.KS', reason:'배터리 셀 글로벌 2위', peak:450000, peakTime:'EV 사이클 회복', styles:['blue'], roles:['lead']},
+      {name:'삼성SDI', code:'006400.KS', reason:'프리미엄 배터리, ESS 다각화', peak:500000, peakTime:'EV 회복', styles:['blue'], roles:['value']},
+      {name:'에코프로비엠', code:'247540.KQ', reason:'양극재 국내 1위', peak:280000, peakTime:'EV 회복', styles:['aggressive'], roles:['momentum']},
+      {name:'포스코퓨처엠', code:'003670.KS', reason:'양극재+음극재 일관 생산', peak:280000, peakTime:'EV 회복', styles:['aggressive'], roles:['momentum']},
+      {name:'엘앤에프', code:'066970.KQ', reason:'테슬라향 NCM 양극재', peak:200000, peakTime:'테슬라 가이던스', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'SK이노베이션', code:'096770.KS', reason:'SK온 합병, 정유+배터리', peak:150000, peakTime:'턴어라운드', styles:['aggressive'], roles:['turn','value']},
+    ]},
+
+  { id:'kr-defense', country:'KR', group:'industry', cat:'방산/우주항공', icon:'🛡️', name:'방산 / K-방산 수출', timing:'수출 계약·국방 예산', color:'#d4814a', desc:'K9·천궁·전차·항공', reliability:4,
+    stocks:[
+      {name:'한화에어로스페이스', code:'012450.KS', reason:'K9 자주포 + 누리호 + 엔진', peak:480000, peakTime:'폴란드 2차', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'LIG넥스원', code:'079550.KS', reason:'천궁·해성 미사일, 중동 수주', peak:280000, peakTime:'사우디 수출', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'현대로템', code:'064350.KS', reason:'K2 흑표 전차 폴란드 대규모 수출', peak:120000, peakTime:'폴란드 2차', styles:['aggressive'], roles:['momentum']},
+      {name:'한국항공우주', code:'047810.KS', reason:'FA-50·KF-21·누리호', peak:80000, peakTime:'수출 계약', styles:['blue'], roles:['lead']},
+      {name:'풍산', code:'103140.KS', reason:'탄약 수요 급증, 우크라전 수혜', peak:90000, peakTime:'탄약 수요', styles:['aggressive'], roles:['momentum']},
+    ]},
+
+  { id:'kr-ship', country:'KR', group:'industry', cat:'조선', icon:'🚢', name:'조선 / LNG·해양', timing:'LNG선 수주·선가 사이클', color:'#5b9bd5', desc:'LNG선·잠수함·해양플랜트', reliability:3,
+    stocks:[
+      {name:'HD현대중공업', code:'329180.KS', reason:'조선 1위, LNG선 슈퍼사이클', peak:480000, peakTime:'LNG선 수주', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'삼성중공업', code:'010140.KS', reason:'LNG선·해양플랜트', peak:18000, peakTime:'해양 수주', styles:['aggressive'], roles:['momentum','turn']},
+      {name:'한화오션', code:'042660.KS', reason:'잠수함·특수선, 한화 인수 후 재편', peak:60000, peakTime:'특수선 수주', styles:['aggressive'], roles:['turn','momentum']},
+      {name:'HD현대미포', code:'010620.KS', reason:'중형 LNG·메탄올선 강자', peak:150000, peakTime:'LNG 사이클', styles:['blue'], roles:['value']},
+    ]},
+
+  { id:'kr-fin', country:'KR', group:'industry', cat:'금융', icon:'🏦', name:'금융 / 은행·증권', timing:'금리·밸류업·배당', color:'#7c6fcd', desc:'4대 금융지주·증권·인터넷은행', reliability:3,
+    stocks:[
+      {name:'KB금융', code:'105560.KS', reason:'금융지주 1위, 밸류업 선도', peak:120000, peakTime:'밸류업', styles:['blue'], roles:['lead','value']},
+      {name:'신한지주', code:'055550.KS', reason:'금융지주 2위, 자사주 소각', peak:80000, peakTime:'밸류업', styles:['blue'], roles:['value']},
+      {name:'하나금융지주', code:'086790.KS', reason:'고배당, 외환·기업금융 강점', peak:90000, peakTime:'밸류업', styles:['blue'], roles:['value']},
+      {name:'메리츠금융지주', code:'138040.KS', reason:'비은행, 자사주 매입 적극', peak:130000, peakTime:'주주환원', styles:['blue','aggressive'], roles:['momentum','value']},
+      {name:'카카오뱅크', code:'323410.KS', reason:'인터넷은행 1위, MAU 성장', peak:35000, peakTime:'성장주 회복', styles:['aggressive'], roles:['momentum']},
+      {name:'미래에셋증권', code:'006800.KS', reason:'증권 대장, 해외주식 1위', peak:13000, peakTime:'증시 활황', styles:['blue'], roles:['value']},
+    ]},
+
+  { id:'kr-auto', country:'KR', group:'industry', cat:'자동차', icon:'🚗', name:'자동차 / 부품', timing:'판매 가이던스·신차', color:'#f08030', desc:'완성차·부품·자율주행', reliability:3,
+    stocks:[
+      {name:'현대차', code:'005380.KS', reason:'글로벌 5위 그룹, 하이브리드 강세', peak:300000, peakTime:'신차·실적', styles:['blue'], roles:['lead','value']},
+      {name:'기아', code:'000270.KS', reason:'현대그룹 양대, 영업이익률 높음', peak:130000, peakTime:'신차·실적', styles:['blue'], roles:['lead','value']},
+      {name:'현대모비스', code:'012330.KS', reason:'그룹 부품 대장, A/S 매출 안정', peak:300000, peakTime:'안정 성장', styles:['blue'], roles:['value']},
+      {name:'HL만도', code:'204320.KS', reason:'자율주행·ADAS 부품', peak:50000, peakTime:'ADAS 보급', styles:['aggressive'], roles:['momentum']},
+      {name:'한온시스템', code:'018880.KS', reason:'공조·열관리, 한앤컴퍼니 매각', peak:8000, peakTime:'M&A 모멘텀', styles:['aggressive'], roles:['turn']},
+    ]},
+
+  { id:'kr-robot', country:'KR', group:'industry', cat:'로봇/자동화', icon:'🤖', name:'로봇 / 협동·휴머노이드', timing:'CES·신제품·사업확장', color:'#9b8fd4', desc:'협동로봇·휴머노이드·산업자동화', reliability:3,
+    stocks:[
+      {name:'두산로보틱스', code:'454910.KS', reason:'협동로봇 국내 1위, 글로벌 4위', peak:150000, peakTime:'수주 확대', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'레인보우로보틱스', code:'277810.KQ', reason:'삼성전자 인수, 휴머노이드 기대감', peak:200000, peakTime:'삼성 시너지', styles:['aggressive'], roles:['momentum']},
+      {name:'에브리봇', code:'270660.KQ', reason:'가정용 로봇청소기 스몰캡', peak:30000, peakTime:'B2C 확대', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'로보티즈', code:'108490.KQ', reason:'로봇 액추에이터·모듈, 글로벌 공급', peak:25000, peakTime:'휴머노이드 부품', styles:['aggressive'], roles:['smallcap']},
+      {name:'유진로봇', code:'056080.KQ', reason:'자율주행 물류로봇', peak:6000, peakTime:'물류 자동화', styles:['aggressive'], roles:['smallcap','turn']},
+    ]},
+
+  { id:'kr-space', country:'KR', group:'industry', cat:'우주/위성', icon:'🛰️', name:'우주 / 위성·발사체', timing:'발사 일정·정부 예산', color:'#5b9bd5', desc:'위성·발사체·우주산업', reliability:3,
+    stocks:[
+      {name:'한화시스템', code:'272210.KS', reason:'위성·레이더·UAM, 한화 우주 거점', peak:30000, peakTime:'위성 수주', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'쎄트렉아이', code:'099320.KQ', reason:'국내 위성 시스템 1위 (한화 자회사)', peak:80000, peakTime:'위성 수주', styles:['aggressive'], roles:['momentum']},
+      {name:'인텔리안테크', code:'189300.KQ', reason:'위성 안테나, 스타링크향 공급', peak:80000, peakTime:'스타링크 확장', styles:['aggressive'], roles:['momentum']},
+      {name:'켄코아에어로스페이스', code:'274090.KQ', reason:'발사체·항공 부품 스몰캡', peak:30000, peakTime:'누리호 양산', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'AP위성', code:'211270.KQ', reason:'위성통신 단말, 위성 부품', peak:25000, peakTime:'위성 사업화', styles:['aggressive'], roles:['smallcap']},
+    ]},
+
+  { id:'kr-kculture', country:'KR', group:'industry', cat:'K-콘텐츠/엔터', icon:'🎵', name:'K-콘텐츠 / 엔터·드라마', timing:'아이돌 컴백·콘서트·드라마 편성', color:'#e08fb8', desc:'K-팝·드라마·미디어 글로벌 확장', reliability:3,
+    stocks:[
+      {name:'하이브', code:'352820.KS', reason:'BTS 소속, 위버스 플랫폼·다국적 멀티 IP', peak:280000, peakTime:'BTS 완전체·신인 데뷔', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'JYP Ent.', code:'035900.KQ', reason:'트와이스·스트레이키즈·니쥬, 일본 강세', peak:120000, peakTime:'월드투어', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'에스엠', code:'041510.KQ', reason:'카카오 인수, 멀티 레이블 체제', peak:120000, peakTime:'NCT·에스파 컴백', styles:['aggressive'], roles:['turn']},
+      {name:'와이지엔터테인먼트', code:'122870.KQ', reason:'블랙핑크 단일 의존도 높음', peak:65000, peakTime:'블핑 컴백/투어', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'CJ ENM', code:'035760.KQ', reason:'드라마·예능 제작 + 티빙', peak:90000, peakTime:'티빙 손익분기', styles:['aggressive'], roles:['turn']},
+      {name:'스튜디오드래곤', code:'253450.KQ', reason:'드라마 제작 1위, 넷플릭스 직납', peak:65000, peakTime:'글로벌 OTT 편성', styles:['blue'], roles:['lead']},
+    ]},
+
+  { id:'kr-beauty', country:'KR', group:'industry', cat:'화장품/뷰티', icon:'💄', name:'화장품 / K-뷰티', timing:'중국 면세·미국 인디브랜드 침투', color:'#d68fa8', desc:'K-뷰티 글로벌 침투 (대형사 회복+ODM·인디 폭발)', reliability:3,
+    stocks:[
+      {name:'LG생활건강', code:'051900.KS', reason:'후·숨 럭셔리, 중국 회복 지렛대', peak:480000, peakTime:'중국 면세 회복', styles:['blue'], roles:['lead','turn']},
+      {name:'아모레퍼시픽', code:'090430.KS', reason:'설화수 등 K-뷰티 대표, 미국 진출 가속', peak:200000, peakTime:'미국 매출 확대', styles:['blue'], roles:['lead','turn']},
+      {name:'코스맥스', code:'192820.KS', reason:'화장품 ODM 글로벌 1위, 인디브랜드 수혜', peak:280000, peakTime:'인디 OEM 호황', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'한국콜마', code:'161890.KS', reason:'화장품 ODM 2위 + 제약 다각화', peak:90000, peakTime:'ODM 수주', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'실리콘투', code:'257720.KQ', reason:'K-뷰티 글로벌 유통(스타일코리안), 미국 폭발', peak:80000, peakTime:'미국 침투', styles:['aggressive'], roles:['smallcap','momentum']},
+    ]},
+];
+
+/* ===== US SEASON THEMES ===== */
+const US_SEASON_THEMES = [
+  { id:'us-ces', country:'US', group:'season', cat:'1월', icon:'🤖', name:'CES / AI 테마 (1월)', timing:'12월 진입 → 1~2월 피크', peakMonths:[1,2], entryMonths:[11,12], color:'#f0c040', desc:'CES 전후 AI·로봇·반도체', reliability:3,
+    stocks:[
+      {name:'NVIDIA', code:'NVDA', reason:'CES 키노트 단골, AI GPU 독점', peak:220, peakTime:'1~2월', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'AMD', code:'AMD', reason:'CES 신제품 발표 + AI 가속기', peak:220, peakTime:'1~2월', styles:['aggressive'], roles:['momentum']},
+      {name:'ARM Holdings', code:'ARM', reason:'AI PC·모바일 IP, AI 에지', peak:200, peakTime:'AI PC 보급', styles:['aggressive'], roles:['momentum']},
+      {name:'IonQ', code:'IONQ', reason:'양자컴퓨팅 스몰캡, CES 모멘텀', peak:60, peakTime:'양자 모멘텀', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'Rigetti', code:'RGTI', reason:'양자컴 스몰캡, 변동성 큼', peak:25, peakTime:'양자 모멘텀', styles:['aggressive'], roles:['smallcap','momentum']},
+    ]},
+
+  { id:'us-tax', country:'US', group:'season', cat:'3~4월', icon:'💵', name:'세금 환급 / 소비 (3~4월)', timing:'2~3월 진입 → 4월 피크', peakMonths:[3,4], entryMonths:[2,3], color:'#4aac8a', desc:'세금 환급금 소비 → 리테일·여행', reliability:2,
+    stocks:[
+      {name:'Walmart', code:'WMT', reason:'대형 리테일, 환급금 소비 직접 수혜', peak:120, peakTime:'3~4월', styles:['blue'], roles:['lead','value']},
+      {name:'Costco', code:'COST', reason:'멤버십 리테일', peak:1100, peakTime:'3~4월', styles:['blue'], roles:['lead']},
+      {name:'Disney', code:'DIS', reason:'테마파크 봄 시즌 소비', peak:130, peakTime:'봄방학', styles:['aggressive'], roles:['turn']},
+      {name:'American Airlines', code:'AAL', reason:'봄 여행 수요', peak:18, peakTime:'봄 여행', styles:['aggressive'], roles:['momentum','turn']},
+      {name:'Delta Air Lines', code:'DAL', reason:'프리미엄 항공 여행 회복', peak:65, peakTime:'봄 여행', styles:['aggressive'], roles:['momentum']},
+    ]},
+
+  { id:'us-school', country:'US', group:'season', cat:'7~9월', icon:'📚', name:'Back-to-School (7~9월)', timing:'6~7월 진입 → 8~9월 피크', peakMonths:[8,9], entryMonths:[6,7], color:'#7c6fcd', desc:'개학 시즌 노트북·문구·의류', reliability:3,
+    stocks:[
+      {name:'Apple', code:'AAPL', reason:'학생할인 + 9월 신제품 트리거', peak:280, peakTime:'8~9월', styles:['blue'], roles:['lead']},
+      {name:'Amazon', code:'AMZN', reason:'개학 쇼핑·프라임데이 7월', peak:280, peakTime:'7~8월', styles:['blue'], roles:['lead']},
+      {name:'Best Buy', code:'BBY', reason:'전자제품 리테일, 개학 특수', peak:110, peakTime:'8~9월', styles:['aggressive'], roles:['turn']},
+      {name:'Target', code:'TGT', reason:'개학 의류·문구 강세', peak:170, peakTime:'8~9월', styles:['blue'], roles:['value','turn']},
+    ]},
+
+  { id:'us-apple-launch', country:'US', group:'season', cat:'9월', icon:'📱', name:'애플 신제품 (9월)', timing:'7~8월 진입 → 9~10월 피크', peakMonths:[9,10], entryMonths:[7,8], color:'#6ec6e6', desc:'아이폰 발표 전후 공급망', reliability:4,
+    stocks:[
+      {name:'Apple', code:'AAPL', reason:'본진, 9월 발표 모멘텀', peak:280, peakTime:'9월 발표', styles:['blue'], roles:['lead','value']},
+      {name:'Broadcom', code:'AVGO', reason:'애플 통신칩 공급', peak:280, peakTime:'9~10월', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'Qualcomm', code:'QCOM', reason:'아이폰 모뎀, 5G 사이클', peak:200, peakTime:'9~10월', styles:['blue'], roles:['value']},
+      {name:'Skyworks', code:'SWKS', reason:'아이폰 RF칩, 매출 의존도 높음', peak:100, peakTime:'9~10월', styles:['aggressive'], roles:['momentum','turn']},
+      {name:'Lumentum', code:'LITE', reason:'페이스ID 광학, 애플향', peak:100, peakTime:'9~10월', styles:['aggressive'], roles:['smallcap','momentum']},
+    ]},
+
+  { id:'us-flu', country:'US', group:'season', cat:'10~12월', icon:'🤒', name:'독감 시즌 (10~12월)', timing:'9~10월 진입 → 11~12월 피크', peakMonths:[10,11,12], entryMonths:[9,10], color:'#d4814a', desc:'미국 독감 시즌 백신·약국', reliability:4,
+    stocks:[
+      {name:'Pfizer', code:'PFE', reason:'독감 백신·항바이러스 Paxlovid', peak:35, peakTime:'10~11월', styles:['blue','aggressive'], roles:['turn','value']},
+      {name:'Merck', code:'MRK', reason:'백신·키트루다 종합', peak:130, peakTime:'10~11월', styles:['blue'], roles:['lead','value']},
+      {name:'Moderna', code:'MRNA', reason:'mRNA 독감 백신 임상', peak:80, peakTime:'시즌+임상', styles:['aggressive'], roles:['momentum']},
+      {name:'Novavax', code:'NVAX', reason:'백신 스몰캡, 변동성 큼', peak:25, peakTime:'시즌 진입', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'Walgreens Boots', code:'WBA', reason:'약국 체인, 독감 처방·OTC', peak:18, peakTime:'10~12월', styles:['aggressive'], roles:['turn','value']},
+    ]},
+
+  { id:'us-bf', country:'US', group:'season', cat:'11~12월', icon:'🛍️', name:'블랙프라이데이 / 홀리데이', timing:'10~11월 진입 → 11~12월 피크', peakMonths:[11,12], entryMonths:[10,11], color:'#c47fb8', desc:'홀리데이 쇼핑 시즌 이커머스·리테일', reliability:4,
+    stocks:[
+      {name:'Amazon', code:'AMZN', reason:'이커머스 1위, BF·사이버먼데이', peak:280, peakTime:'11~12월', styles:['blue'], roles:['lead']},
+      {name:'Walmart', code:'WMT', reason:'BF 오프라인+온라인', peak:120, peakTime:'11~12월', styles:['blue'], roles:['lead','value']},
+      {name:'Costco', code:'COST', reason:'홀리데이 대량 구매', peak:1100, peakTime:'11~12월', styles:['blue'], roles:['lead']},
+      {name:'Target', code:'TGT', reason:'홀리데이 데코·기프트', peak:170, peakTime:'11~12월', styles:['blue'], roles:['value']},
+      {name:'Shopify', code:'SHOP', reason:'중소 셀러 BF GMV 폭증', peak:130, peakTime:'BF 주간', styles:['aggressive'], roles:['momentum']},
+      {name:'Etsy', code:'ETSY', reason:'핸드메이드, 홀리데이 직접 수혜', peak:80, peakTime:'11~12월', styles:['aggressive'], roles:['momentum','turn']},
+    ]},
+
+  { id:'us-winter', country:'US', group:'season', cat:'12~2월', icon:'❄️', name:'한파 / 천연가스 (12~2월)', timing:'11월 진입 → 12~2월 피크', peakMonths:[12,1,2], entryMonths:[10,11], color:'#5b9bd5', desc:'한파 시 천연가스·전력 수요 폭증', reliability:3,
+    stocks:[
+      {name:'ExxonMobil', code:'XOM', reason:'천연가스 통합 메이저', peak:140, peakTime:'한파', styles:['blue'], roles:['lead','value']},
+      {name:'Chevron', code:'CVX', reason:'가스+원유, 안정 배당', peak:180, peakTime:'한파', styles:['blue'], roles:['value']},
+      {name:'Coterra Energy', code:'CTRA', reason:'천연가스 E&P, 한파 직접 수혜', peak:35, peakTime:'한파', styles:['aggressive'], roles:['momentum']},
+      {name:'EQT', code:'EQT', reason:'미국 최대 천연가스 생산', peak:55, peakTime:'한파', styles:['aggressive'], roles:['momentum']},
+      {name:'Duke Energy', code:'DUK', reason:'전력 유틸리티, 난방 수요', peak:130, peakTime:'한파', styles:['blue'], roles:['value']},
+      {name:'Southern Company', code:'SO', reason:'전력 유틸리티, 안정 배당', peak:100, peakTime:'한파', styles:['blue'], roles:['value']},
+    ]},
+];
+
+/* ===== US INDUSTRY THEMES ===== */
+const US_INDUSTRY_THEMES = [
+  { id:'us-semi', country:'US', group:'industry', cat:'반도체', icon:'💾', name:'반도체 / AI 칩', timing:'AI capex 사이클·실적 발표', color:'#6ec6e6', desc:'AI GPU·HBM·파운드리', reliability:4,
+    stocks:[
+      {name:'NVIDIA', code:'NVDA', reason:'AI GPU 시장 80%+ 압도적 독점', peak:220, peakTime:'AI 사이클', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'AMD', code:'AMD', reason:'MI 시리즈 AI 가속기, 2위 도전', peak:220, peakTime:'AI 경쟁', styles:['aggressive'], roles:['momentum']},
+      {name:'Broadcom', code:'AVGO', reason:'커스텀 AI ASIC 수주, 빅테크 직판', peak:280, peakTime:'AI capex', styles:['blue','aggressive'], roles:['momentum','value']},
+      {name:'TSMC', code:'TSM', reason:'파운드리 60%+ 점유, AI 칩 대부분 생산', peak:240, peakTime:'AI 수요', styles:['blue'], roles:['lead']},
+      {name:'Micron', code:'MU', reason:'HBM 메모리 사이클 변곡', peak:140, peakTime:'메모리 사이클', styles:['aggressive'], roles:['momentum','turn']},
+      {name:'ASML', code:'ASML', reason:'EUV 노광장비 전세계 독점', peak:900, peakTime:'장비 발주', styles:['blue'], roles:['lead']},
+    ]},
+  { id:'us-tech', country:'US', group:'industry', cat:'빅테크', icon:'💻', name:'빅테크 / Big Tech', timing:'분기 실적·신제품', color:'#5b9bd5', desc:'대형 기술주 메가캡', reliability:4,
+    stocks:[
+      {name:'Apple', code:'AAPL', reason:'아이폰·서비스 매출, 자사주매입', peak:280, peakTime:'9월 신제품', styles:['blue'], roles:['lead','value']},
+      {name:'Microsoft', code:'MSFT', reason:'Azure·OpenAI 통합, B2B AI 1위', peak:520, peakTime:'AI 매출', styles:['blue'], roles:['lead']},
+      {name:'Alphabet', code:'GOOGL', reason:'Gemini·검색·YouTube·Cloud', peak:230, peakTime:'AI 통합', styles:['blue'], roles:['lead','value']},
+      {name:'Meta', code:'META', reason:'광고 매출 + AI 인프라 투자', peak:780, peakTime:'AI 광고', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'Amazon', code:'AMZN', reason:'AWS 클라우드 1위 + 리테일', peak:280, peakTime:'AWS 가속', styles:['blue'], roles:['lead']},
+    ]},
+  { id:'us-health', country:'US', group:'industry', cat:'헬스케어', icon:'⚕️', name:'헬스케어 / 제약', timing:'FDA 승인·실적', color:'#3dd68c', desc:'GLP-1·바이오·헬스케어', reliability:3,
+    stocks:[
+      {name:'Eli Lilly', code:'LLY', reason:'GLP-1 비만치료제 글로벌 선두', peak:1100, peakTime:'GLP-1 사이클', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'Novo Nordisk', code:'NVO', reason:'위고비·오젬픽 양강', peak:140, peakTime:'GLP-1 확대', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'Johnson & Johnson', code:'JNJ', reason:'다각화·배당 60년 증가', peak:180, peakTime:'안정', styles:['blue'], roles:['value']},
+      {name:'UnitedHealth', code:'UNH', reason:'헬스보험+OptumRx, 실적 회복', peak:650, peakTime:'턴어라운드', styles:['blue'], roles:['turn','value']},
+      {name:'Pfizer', code:'PFE', reason:'코로나 후 파이프라인 재정비', peak:35, peakTime:'턴어라운드', styles:['aggressive'], roles:['turn','value']},
+    ]},
+  { id:'us-energy', country:'US', group:'industry', cat:'에너지', icon:'⛽', name:'에너지 / 원유', timing:'유가·OPEC 결정', color:'#f08030', desc:'정유·E&P·천연가스', reliability:3,
+    stocks:[
+      {name:'ExxonMobil', code:'XOM', reason:'통합 메이저, 안정 배당', peak:140, peakTime:'유가 강세', styles:['blue'], roles:['lead','value']},
+      {name:'Chevron', code:'CVX', reason:'배당주 + E&P, 무디스 AAA', peak:180, peakTime:'유가 강세', styles:['blue'], roles:['value']},
+      {name:'ConocoPhillips', code:'COP', reason:'순수 E&P, 유가 베타 큼', peak:150, peakTime:'유가 강세', styles:['aggressive'], roles:['momentum']},
+      {name:'Occidental', code:'OXY', reason:'버핏 보유 + 영구주, 유가 레버리지', peak:75, peakTime:'유가 강세', styles:['aggressive'], roles:['momentum']},
+    ]},
+  { id:'us-fin', country:'US', group:'industry', cat:'금융', icon:'🏦', name:'금융 / 결제', timing:'금리 사이클·실적', color:'#7c6fcd', desc:'은행·결제·보험', reliability:3,
+    stocks:[
+      {name:'JPMorgan', code:'JPM', reason:'미국 은행 1위, 다이먼 리더십', peak:300, peakTime:'순이자마진', styles:['blue'], roles:['lead','value']},
+      {name:'Bank of America', code:'BAC', reason:'리테일 은행, 금리 정상화 수혜', peak:55, peakTime:'금리 정상화', styles:['blue'], roles:['turn','value']},
+      {name:'Visa', code:'V', reason:'결제 네트워크 듀폴리, 안정 성장', peak:380, peakTime:'결제 성장', styles:['blue'], roles:['lead']},
+      {name:'Mastercard', code:'MA', reason:'결제 네트워크 듀폴리', peak:620, peakTime:'결제 성장', styles:['blue'], roles:['lead']},
+      {name:'Berkshire Hathaway', code:'BRK-B', reason:'버핏 포트폴리오, 현금 비중 높음', peak:550, peakTime:'장기 보유', styles:['blue'], roles:['value']},
+    ]},
+  { id:'us-defense', country:'US', group:'industry', cat:'방산', icon:'🛡️', name:'방산 / 산업재', timing:'국방예산·지정학', color:'#d4814a', desc:'방산·우주·중공업', reliability:4,
+    stocks:[
+      {name:'Lockheed Martin', code:'LMT', reason:'F-35 대규모 수주, 미사일 시스템', peak:650, peakTime:'국방 예산', styles:['blue'], roles:['lead','value']},
+      {name:'RTX', code:'RTX', reason:'미사일·항공우주, 우크라전 수혜', peak:170, peakTime:'국방 예산', styles:['blue'], roles:['lead']},
+      {name:'Boeing', code:'BA', reason:'737MAX 정상화 기대, 적자 탈출', peak:280, peakTime:'턴어라운드', styles:['aggressive'], roles:['turn']},
+      {name:'Caterpillar', code:'CAT', reason:'중장비, 인프라 사이클', peak:480, peakTime:'인프라 사이클', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'Deere', code:'DE', reason:'농기계·자동화, 농산물 사이클', peak:520, peakTime:'농산물 사이클', styles:['blue'], roles:['value']},
+    ]},
+  { id:'us-consumer', country:'US', group:'industry', cat:'소비재', icon:'🛒', name:'소비재 / 리테일', timing:'블랙프라이데이·실적', color:'#c47fb8', desc:'리테일·필수소비재', reliability:3,
+    stocks:[
+      {name:'Costco', code:'COST', reason:'멤버십 리테일, 30년 안정 성장', peak:1100, peakTime:'안정 성장', styles:['blue'], roles:['lead']},
+      {name:'Walmart', code:'WMT', reason:'대형 리테일, 경기방어주', peak:120, peakTime:'안정 성장', styles:['blue'], roles:['value']},
+      {name:'Nike', code:'NKE', reason:'스포츠웨어 1위, 중국 회복 기대', peak:100, peakTime:'턴어라운드', styles:['aggressive'], roles:['turn']},
+      {name:'Starbucks', code:'SBUX', reason:'글로벌 커피, 신 CEO 턴어라운드', peak:120, peakTime:'턴어라운드', styles:['aggressive'], roles:['turn']},
+    ]},
+  { id:'us-ev', country:'US', group:'industry', cat:'전기차', icon:'⚡', name:'전기차 / 자동차', timing:'납품 가이던스·정책', color:'#f0c040', desc:'전기차·자율주행·로봇', reliability:2,
+    stocks:[
+      {name:'Tesla', code:'TSLA', reason:'EV+자율주행+휴머노이드, 멀티베팅', peak:400, peakTime:'FSD/Optimus', styles:['aggressive'], roles:['lead','momentum']},
+      {name:'Ford', code:'F', reason:'F-150 + EV 전환 진통', peak:18, peakTime:'EV 수익화', styles:['aggressive'], roles:['turn','value']},
+      {name:'General Motors', code:'GM', reason:'EV·크루즈 자율주행', peak:70, peakTime:'EV 수익화', styles:['aggressive'], roles:['turn','value']},
+      {name:'Rivian', code:'RIVN', reason:'EV 픽업·아마존 밴, 손익분기 도전', peak:25, peakTime:'손익분기', styles:['aggressive'], roles:['smallcap','momentum']},
+    ]},
+
+  { id:'us-quantum', country:'US', group:'industry', cat:'양자컴퓨팅', icon:'🌌', name:'양자컴퓨팅 / Quantum', timing:'양자 우월성 발표·정부 자금', color:'#9b8fd4', desc:'양자컴퓨터 — 메가트렌드, 변동성 매우 큼', reliability:2,
+    stocks:[
+      {name:'IonQ', code:'IONQ', reason:'양자컴 순수기업 중 시총 1위, 트랩이온 방식', peak:60, peakTime:'양자 모멘텀', styles:['aggressive'], roles:['lead','momentum']},
+      {name:'Rigetti', code:'RGTI', reason:'초전도 양자칩, 변동성 매우 큼', peak:25, peakTime:'양자 모멘텀', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'D-Wave Quantum', code:'QBTS', reason:'양자 어닐링, 상업화 가장 빠름', peak:20, peakTime:'고객 수주', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'Quantum Computing', code:'QUBT', reason:'양자 광학 스몰캡, 변동성 극심', peak:25, peakTime:'양자 모멘텀', styles:['aggressive'], roles:['smallcap']},
+      {name:'IBM', code:'IBM', reason:'양자 로드맵 가장 정교, 안정 우량', peak:280, peakTime:'양자 + AI', styles:['blue'], roles:['lead','value']},
+      {name:'Honeywell', code:'HON', reason:'Quantinuum 자회사, 다각화된 우량', peak:240, peakTime:'안정 성장', styles:['blue'], roles:['value']},
+    ]},
+
+  { id:'us-space', country:'US', group:'industry', cat:'우주', icon:'🚀', name:'우주 / Space Economy', timing:'발사 일정·국방 예산·위성 사이클', color:'#5b9bd5', desc:'발사체·위성 통신·우주 인프라', reliability:3,
+    stocks:[
+      {name:'Rocket Lab', code:'RKLB', reason:'중형 발사체 + 위성 제조 수직통합', peak:30, peakTime:'Neutron 발사', styles:['aggressive'], roles:['lead','momentum']},
+      {name:'Lockheed Martin', code:'LMT', reason:'우주 시스템·위성 (방산 겸업)', peak:650, peakTime:'국방예산', styles:['blue'], roles:['lead','value']},
+      {name:'Northrop Grumman', code:'NOC', reason:'우주·미사일·B-21 폭격기', peak:580, peakTime:'국방예산', styles:['blue'], roles:['lead','value']},
+      {name:'AST SpaceMobile', code:'ASTS', reason:'위성-스마트폰 직접통신, AT&T 협력', peak:50, peakTime:'서비스 출시', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'Planet Labs', code:'PL', reason:'위성 영상 데이터·구독 모델', peak:8, peakTime:'정부 계약', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'Intuitive Machines', code:'LUNR', reason:'NASA 달 착륙 미션, 변동성 극심', peak:20, peakTime:'달 미션 성공', styles:['aggressive'], roles:['smallcap']},
+    ]},
+
+  { id:'us-cyber', country:'US', group:'industry', cat:'사이버보안', icon:'🛡️', name:'사이버보안 / Cybersecurity', timing:'분기 ARR·해킹 사건', color:'#3dd68c', desc:'EDR·클라우드보안·SaaS 안정 성장', reliability:4,
+    stocks:[
+      {name:'CrowdStrike', code:'CRWD', reason:'EDR 시장 점유율 1위, 매출 30%+ 성장', peak:480, peakTime:'AI 보안', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'Palo Alto Networks', code:'PANW', reason:'종합 사이버보안 플랫폼 1위', peak:420, peakTime:'플랫폼 통합', styles:['blue'], roles:['lead']},
+      {name:'Zscaler', code:'ZS', reason:'클라우드 SSE 1위, 제로트러스트', peak:280, peakTime:'클라우드 전환', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'Fortinet', code:'FTNT', reason:'네트워크 방화벽 강자, 가성비 SaaS', peak:110, peakTime:'안정 성장', styles:['blue'], roles:['value']},
+      {name:'SentinelOne', code:'S', reason:'AI 기반 EDR, 크라우드 도전자', peak:35, peakTime:'AI 보안', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'Okta', code:'OKTA', reason:'IAM 인증 1위, 턴어라운드', peak:130, peakTime:'턴어라운드', styles:['aggressive'], roles:['turn']},
+    ]},
+
+  { id:'us-saas', country:'US', group:'industry', cat:'클라우드 SaaS', icon:'☁️', name:'클라우드 SaaS / Enterprise', timing:'분기 NRR·AI 통합', color:'#6ec6e6', desc:'엔터프라이즈 SaaS — 검증된 SaaS 성장', reliability:4,
+    stocks:[
+      {name:'Salesforce', code:'CRM', reason:'CRM 1위, Agentforce AI 에이전트', peak:380, peakTime:'AI 매출화', styles:['blue'], roles:['lead']},
+      {name:'ServiceNow', code:'NOW', reason:'엔터프라이즈 워크플로우 1위', peak:1200, peakTime:'AI 자동화', styles:['blue'], roles:['lead']},
+      {name:'Snowflake', code:'SNOW', reason:'데이터 클라우드, AI 데이터 인프라', peak:280, peakTime:'AI 데이터', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'Datadog', code:'DDOG', reason:'클라우드 모니터링·관측성 1위', peak:200, peakTime:'클라우드 capex', styles:['blue','aggressive'], roles:['momentum']},
+      {name:'MongoDB', code:'MDB', reason:'NoSQL DB, AI Atlas Vector', peak:380, peakTime:'AI DB', styles:['aggressive'], roles:['momentum']},
+      {name:'Cloudflare', code:'NET', reason:'엣지 클라우드 + AI 워커', peak:160, peakTime:'엣지 AI', styles:['blue','aggressive'], roles:['momentum']},
+    ]},
+];
+
+/* 통합 풀 */
+const ALL_THEMES = [...KR_SEASON_THEMES, ...KR_INDUSTRY_THEMES, ...US_SEASON_THEMES, ...US_INDUSTRY_THEMES];
+
+const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+const today=new Date(), currentMonth=today.getMonth()+1;
+const priceCache={};
+let currentCountry='KR';
+let currentGroup='season';
+let currentStyle='all';
+let currentFilter='all';
+const sortState = {};
+let favorites = new Set();
+
+const PROXIES = [
+  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  url => `https://thingproxy.freeboard.io/fetch/${url}`,
+  url => `https://corsproxy.org/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+];
+const proxyHealth = new Array(PROXIES.length).fill(0);
+
+/* ===== 캐시 정책 (Phase 4: stale-while-revalidate) ===== */
+const FRESH_MS = 5 * 60 * 1000;          // 5분 이내 = fresh
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 주기 갱신 5분
+const MAX_RETRIES = 3;
+const BACKOFF_MS = [1000, 2000, 4000];   // 지수 백오프
+
+const CACHE_KEY = 'priceCache_v4';
+const CACHE_KEY_V3 = 'priceCache_v3';    // 마이그레이션용
+
+/* 캐시 구조: priceCache[code] = {
+     value: {price, change} | null,
+     updatedAt: ms_timestamp,
+     status: 'fresh' | 'stale' | 'loading' | 'never',
+     error: string | null
+   } */
+
+function loadCache(){
+  try {
+    const saved = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+    Object.entries(saved).forEach(([k,v])=>{
+      if(v?.value?.price){
+        const age = Date.now() - (v.updatedAt || 0);
+        priceCache[k] = { ...v, status: age < FRESH_MS ? 'fresh' : 'stale' };
+      }
+    });
+  } catch(e){}
+  // v3 → v4 마이그레이션 (1회)
+  try {
+    const v3 = JSON.parse(localStorage.getItem(CACHE_KEY_V3) || '{}');
+    let migrated = 0;
+    Object.entries(v3).forEach(([k,v])=>{
+      if(!priceCache[k] && v?.price){
+        priceCache[k] = {
+          value: {price: v.price, change: v.change ?? 0},
+          updatedAt: v.ts || 0,
+          status: 'stale',
+          error: null
+        };
+        migrated++;
+      }
+    });
+    if(migrated > 0){
+      localStorage.removeItem(CACHE_KEY_V3);
+      console.log(`[cache] v3→v4 마이그레이션: ${migrated}건`);
+    }
+  } catch(e){}
+}
+
+function saveCache(){
+  try {
+    const out = {};
+    Object.entries(priceCache).forEach(([k,v])=>{
+      if(v?.value?.price){
+        out[k] = {
+          value: v.value,
+          updatedAt: v.updatedAt,
+          status: v.status === 'loading' ? 'stale' : v.status,
+          error: v.error
+        };
+      }
+    });
+    localStorage.setItem(CACHE_KEY, JSON.stringify(out));
+  } catch(e){}
+}
+
+/* 응답 유효성 검증 — null/0/NaN/스키마불일치 모두 실패로 */
+function isValidData(data){
+  if(!data) return false;
+  if(data.price == null || isNaN(data.price) || data.price === 0) return false;
+  return true;
+}
+
+/* 캐시에서 즉시 반환 (UI는 이걸로만 조회) — 시간 기반 status 재평가 포함 */
+function getPrice(code){
+  const entry = priceCache[code];
+  if(!entry) return { value:null, updatedAt:0, status:'never', error:null };
+  if(entry.status === 'fresh' && entry.updatedAt && (Date.now() - entry.updatedAt) > FRESH_MS){
+    return { ...entry, status:'stale' };
+  }
+  return entry;
+}
+
+/* 네트워크 갱신 — fetchYahoo가 6개 프록시 즉시 폴백, 실패 시 1회 재시도 (1초 대기) */
+async function refreshPrice(code, startProxyIdx=0){
+  const prev = priceCache[code];
+  // 진입: loading 표시 (이전 value 유지)
+  priceCache[code] = {
+    value: prev?.value || null,
+    updatedAt: prev?.updatedAt || 0,
+    status: 'loading',
+    error: null
+  };
+
+  let lastError = null;
+  // 1차: 즉시 시도 (fetchYahoo 자체가 6프록시 폴백)
+  try {
+    const data = await fetchYahoo(code, startProxyIdx);
+    if(isValidData(data)){
+      priceCache[code] = {
+        value: { price: data.price, change: data.change },
+        updatedAt: Date.now(), status: 'fresh', error: null
+      };
+      return priceCache[code];
+    }
+    lastError = 'invalid_data';
+  } catch(e){ lastError = e?.message || 'fetch_error'; }
+
+  // 2차: 1초 대기 후 다른 프록시 시작 인덱스로 재시도
+  await new Promise(r => setTimeout(r, 1000));
+  try {
+    const data = await fetchYahoo(code, (startProxyIdx + 3) % PROXIES.length);
+    if(isValidData(data)){
+      priceCache[code] = {
+        value: { price: data.price, change: data.change },
+        updatedAt: Date.now(), status: 'fresh', error: null
+      };
+      return priceCache[code];
+    }
+    lastError = 'invalid_data_retry';
+  } catch(e){ lastError = e?.message || 'retry_error'; }
+
+  // 모두 실패 → 캐시 보존, status만 변경
+  priceCache[code] = {
+    value: prev?.value || null,
+    updatedAt: prev?.updatedAt || 0,
+    status: prev?.value ? 'stale' : 'never',
+    error: lastError
+  };
+  return priceCache[code];
+}
+
+const CACHE_KEY_LEGACY_REMOVED = true; // sentinel
+
+const FAV_KEY = 'favorites_v1';
+function loadFavorites(){
+  try { favorites = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || '[]')); } catch(e){}
+}
+function saveFavorites(){
+  try { localStorage.setItem(FAV_KEY, JSON.stringify([...favorites])); } catch(e){}
+}
+function toggleFav(code){
+  if(favorites.has(code)) favorites.delete(code);
+  else favorites.add(code);
+  saveFavorites();
+  buildSummary();
+  if(currentFilter==='fav') renderContent();
+  else {
+    document.querySelectorAll(`[data-fav="${code}"]`).forEach(btn=>{
+      btn.classList.toggle('on', favorites.has(code));
+    });
+  }
+}
+function timeSince(ts){
+  if(!ts) return '';
+  const sec = Math.floor((Date.now()-ts)/1000);
+  if(sec<60) return '방금';
+  if(sec<3600) return Math.floor(sec/60)+'분 전';
+  if(sec<86400) return Math.floor(sec/3600)+'시간 전';
+  return Math.floor(sec/86400)+'일 전';
+}
+
+/* ===== 현재 활성화된 테마 풀 ===== */
+function getActivePool(){
+  return ALL_THEMES.filter(t => t.country===currentCountry && t.group===currentGroup);
+}
+
+/* ===== 성향 필터 적용 ===== */
+function applyStyleFilter(themes){
+  if(currentStyle==='all') return themes;
+  return themes.map(t => ({
+    ...t,
+    stocks: t.stocks.filter(s => s.styles && s.styles.includes(currentStyle))
+  })).filter(t => t.stocks.length > 0);
+}
+
+function buildCalendar(){
+  const grid=document.getElementById('monthsGrid'); grid.innerHTML='';
+  const themes = currentCountry==='KR' ? KR_SEASON_THEMES : US_SEASON_THEMES;
+  for(let m=1;m<=12;m++){
+    const col=document.createElement('div'); col.className='month-col';
+    const hdr=document.createElement('div');
+    hdr.className='month-header'+(m===currentMonth?' today':'');
+    hdr.textContent=MONTHS[m-1]; col.appendChild(hdr);
+    themes.forEach(t=>{
+      const isPeak=t.peakMonths&&t.peakMonths.includes(m);
+      const isEntry=t.entryMonths&&t.entryMonths.includes(m);
+      if(isPeak||isEntry){
+        const p=document.createElement('div'); p.className='theme-pill';
+        p.style.cssText=`background:${t.color}22;color:${t.color};border:1px solid ${t.color}44;opacity:${isPeak?'1':'0.5'}`;
+        p.textContent=(isPeak?'▲ ':'→ ')+t.name.split('/')[0].trim();
+        p.title=t.name+(isPeak?' 피크':' 진입');
+        p.onclick=()=>filterByTheme(t.id);
+        col.appendChild(p);
+      }
+    });
+    grid.appendChild(col);
+  }
+  document.getElementById('todayLabel').textContent=`TODAY — ${today.getFullYear()}년 ${currentMonth}월 ${today.getDate()}일`;
+}
+
+function buildFilterBar(){
+  const bar=document.getElementById('filterBar');
+  const pool = getActivePool();
+  const cats = [['all','전체'],['fav','⭐ 즐겨찾기']];
+  // 동적으로 카테고리 추출
+  const seen = new Set();
+  pool.forEach(t=>{
+    if(!seen.has(t.cat)){
+      seen.add(t.cat);
+      cats.push([t.cat, `${t.icon} ${t.cat}`]);
+    }
+  });
+  bar.innerHTML=`<span class="filter-label">FILTER :</span>` + cats.map(([k,v])=>
+    `<button class="filter-btn${k===currentFilter?' active':''}" data-filter="${k}">${v}</button>`).join('');
+  bar.querySelectorAll('.filter-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      currentFilter=btn.dataset.filter;
+      bar.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      buildSummary();
+      renderContent();
+    });
+  });
+}
+
+function buildSummary(){
+  const themes = applyStyleFilter(getActivePool());
+  const allStocks = themes.flatMap(t=>t.stocks.map(s=>({...s, country:t.country})));
+  let lowCount=0, midCount=0, highCount=0, freshCount=0;
+  let lowUpsides=[], highOverflows=[];
+  allStocks.forEach(s=>{
+    const entry = priceCache[s.code];
+    // fresh만 통계 포함 (stale은 신뢰도 낮으므로 제외)
+    if(!entry || entry.status !== 'fresh' || !entry.value?.price) return;
+    freshCount++;
+    const pct = (entry.value.price/s.peak)*100;
+    const upside = ((s.peak-entry.value.price)/entry.value.price)*100;
+    if(pct < 70){ lowCount++; lowUpsides.push(upside); }
+    else if(pct < 95){ midCount++; }
+    else { highCount++; highOverflows.push(pct-100); }
+  });
+  const favCount = allStocks.filter(s=>favorites.has(s.code)).length;
+  const lowAvg = lowUpsides.length ? lowUpsides.reduce((a,b)=>a+b,0)/lowUpsides.length : 0;
+  const highAvg = highOverflows.length ? highOverflows.reduce((a,b)=>a+b,0)/highOverflows.length : 0;
+
+  const grid = document.getElementById('summaryGrid');
+  const cards = [
+    { key:'low', cls:'low', label:'🟢 진입 추천', count:lowCount, sub: lowCount? `평균 여력 <strong>+${lowAvg.toFixed(1)}%</strong>`:'분석 가능 종목 없음' },
+    { key:'mid', cls:'mid', label:'🟡 피크 임박', count:midCount, sub: '달성률 70~95%' },
+    { key:'high', cls:'high', label:'🔴 과열 경고', count:highCount, sub: highCount? `평균 <strong>+${highAvg.toFixed(1)}%</strong> 초과`:'없음' },
+    { key:'fav', cls:'fav', label:'⭐ 즐겨찾기', count:favCount, sub:`전체 ${allStocks.length}종목 중 (분석가능 ${freshCount})` },
+  ];
+  grid.innerHTML = cards.map(c=>{
+    const isActive = currentFilter===c.key;
+    return `<div class="summary-card ${c.cls}${isActive?' active':''}" data-summary="${c.key}">
+      <div class="summary-label">${c.label}</div>
+      <div class="summary-value">${c.count}<span class="summary-value-unit"> 종목</span></div>
+      <div class="summary-sub">${c.sub}</div>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.summary-card').forEach(card=>{
+    card.addEventListener('click',()=>{
+      const key = card.dataset.summary;
+      currentFilter = currentFilter===key ? 'all' : key;
+      buildFilterBar();
+      buildSummary();
+      renderContent();
+    });
+  });
+}
+
+function getVisibleThemes(){
+  let pool = applyStyleFilter(getActivePool());
+  if(currentFilter==='all') return pool;
+  if(currentFilter==='fav'){
+    return pool.map(t=>({...t, stocks:t.stocks.filter(s=>favorites.has(s.code))}))
+               .filter(t=>t.stocks.length>0);
+  }
+  if(['low','mid','high'].includes(currentFilter)){
+    return pool.map(t=>({...t, stocks:t.stocks.filter(s=>{
+      const e = priceCache[s.code];
+      if(!e?.value?.price) return false;
+      const pct = (e.value.price/s.peak)*100;
+      if(currentFilter==='low') return pct < 70;
+      if(currentFilter==='mid') return pct >= 70 && pct < 95;
+      return pct >= 95;
+    })})).filter(t=>t.stocks.length>0);
+  }
+  return pool.filter(t=>t.cat===currentFilter);
+}
+
+function sortStocks(stocks, themeId){
+  const st = sortState[themeId];
+  if(!st) return stocks;
+  const arr = [...stocks];
+  arr.sort((a,b)=>{
+    const ea = priceCache[a.code], eb = priceCache[b.code];
+    const ca = ea?.value, cb = eb?.value;
+    let va, vb;
+    switch(st.col){
+      case 'name': va=a.name; vb=b.name; break;
+      case 'price': va=ca?.price ?? -Infinity; vb=cb?.price ?? -Infinity; break;
+      case 'change': va=ca?.change ?? -Infinity; vb=cb?.change ?? -Infinity; break;
+      case 'peak': va=a.peak; vb=b.peak; break;
+      case 'pct':
+        va = ca?.price ? (ca.price/a.peak)*100 : -Infinity;
+        vb = cb?.price ? (cb.price/b.peak)*100 : -Infinity; break;
+      case 'upside':
+        va = ca?.price ? ((a.peak-ca.price)/ca.price)*100 : -Infinity;
+        vb = cb?.price ? ((b.peak-cb.price)/cb.price)*100 : -Infinity; break;
+      default: return 0;
+    }
+    if(typeof va==='string') return st.dir==='asc' ? va.localeCompare(vb,'ko') : vb.localeCompare(va,'ko');
+    return st.dir==='asc' ? va-vb : vb-va;
+  });
+  return arr;
+}
+function toggleSort(themeId, col){
+  const cur = sortState[themeId];
+  if(cur?.col===col){
+    if(cur.dir==='desc') sortState[themeId] = {col, dir:'asc'};
+    else delete sortState[themeId];
+  } else {
+    sortState[themeId] = {col, dir:'desc'};
+  }
+  renderContent();
+}
+
+function setStatus(msg, state=''){
+  document.getElementById('statusMsg').textContent=msg;
+  document.getElementById('statusDot').className='live-dot '+state;
+}
+function formatPrice(price, country){
+  if(price==null) return '—';
+  if(country==='KR') return '₩'+Math.round(price).toLocaleString('ko-KR');
+  return '$'+price.toFixed(2);
+}
+function progressClass(pct){
+  if(pct < 70) return 'low';
+  if(pct < 95) return 'mid';
+  return 'high';
+}
+function safeId(code){ return code.replace(/[\.\-]/g,'_'); }
+
+/* 별점 렌더링 */
+function renderStars(reliability){
+  const r = reliability || 3;
+  const full = '★'.repeat(r);
+  const empty = '★'.repeat(5-r);
+  return `<span class="cat-stars">${full}<span class="cat-stars-empty">${empty}</span></span>`;
+}
+
+/* 성격 태그 라벨 매핑 */
+const ROLE_LABELS = {
+  lead:     {label:'대장주',   cls:'lead'},
+  momentum: {label:'모멘텀',   cls:'momentum'},
+  smallcap: {label:'스몰캡',   cls:'smallcap'},
+  turn:     {label:'턴어라운드', cls:'turn'},
+  value:    {label:'배당/밸류', cls:'value'},
+};
+function renderRoleTags(roles){
+  if(!roles || roles.length===0) return '';
+  return `<div class="role-tags">${roles.map(r=>{
+    const m = ROLE_LABELS[r];
+    if(!m) return '';
+    return `<span class="role-tag ${m.cls}">${m.label}</span>`;
+  }).join('')}</div>`;
+}
+
+function withTimeout(promise, ms){
+  return Promise.race([promise, new Promise((_, rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]);
+}
+/* ===== 진단 (Diagnostics) ===== */
+const PROXY_NAMES = [
+  'corsproxy.io',
+  'allorigins.win/raw',
+  'codetabs.com',
+  'thingproxy.freeboard',
+  'corsproxy.org',
+  'allorigins.win/get',
+];
+
+const DIAG_APIS = [
+  { id:'yahoo_v8', name:'Yahoo v8 chart (단일)', test: 'https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=2d',
+    parse: d => d?.chart?.result?.[0]?.meta?.regularMarketPrice },
+  { id:'yahoo_v7', name:'Yahoo v7 quote (일괄)', test: 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=AAPL,MSFT,NVDA',
+    parse: d => d?.quoteResponse?.result?.[0]?.regularMarketPrice },
+  { id:'naver',    name:'네이버 polling (KR)',  test: 'https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:005930',
+    parse: d => d?.result?.areas?.[0]?.datas?.[0]?.nv },
+];
+
+function toggleDiag(){
+  const panel = document.getElementById('diagPanel');
+  const isOpen = panel.classList.toggle('open');
+  if(isOpen && !diagRanOnce){
+    runDiagnostics();
+  }
+}
+
+let diagRanOnce = false;
+let diagState = { proxies: [], apis: [] };
+
+async function testProxyOnly(idx){
+  // 가벼운 GET — Yahoo v8 단일 종목으로 프록시 살아있는지만 체크
+  const url = 'https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=1d';
+  const t0 = performance.now();
+  try {
+    const res = await withTimeout(fetch(PROXIES[idx](url), {cache:'no-store'}), 5000);
+    const ms = Math.round(performance.now() - t0);
+    if(!res.ok) return { ok:false, ms, detail:'HTTP '+res.status };
+    let d;
+    try { d = await res.json(); } catch(e){ return { ok:false, ms, detail:'JSON parse 실패' }; }
+    if(d?.contents){ try{ d = JSON.parse(d.contents); }catch{ return { ok:false, ms, detail:'wrapper parse 실패' }; } }
+    const price = d?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    if(price == null) return { ok:false, ms, detail:'응답 무효 (price 없음)' };
+    return { ok:true, ms, detail:`AAPL=$${price.toFixed(2)}` };
+  } catch(e){
+    const ms = Math.round(performance.now() - t0);
+    return { ok:false, ms, detail: e?.message?.includes('timeout') ? '5초 timeout' : (e?.message||'fetch error') };
+  }
+}
+
+async function testApiViaAnyProxy(api){
+  // 어느 한 프록시라도 통하면 OK로 표시
+  const t0 = performance.now();
+  for(const idx of PROXIES.map((_,i)=>i)){
+    try {
+      const res = await withTimeout(fetch(PROXIES[idx](api.test), {cache:'no-store'}), 5000);
+      if(!res.ok) continue;
+      let d = await res.json();
+      if(d?.contents){ try{ d = JSON.parse(d.contents); }catch{ continue; } }
+      const v = api.parse(d);
+      if(v != null){
+        const ms = Math.round(performance.now() - t0);
+        return { ok:true, ms, detail:`via ${PROXY_NAMES[idx]}: ${v}` };
+      }
+    } catch(e){}
+  }
+  const ms = Math.round(performance.now() - t0);
+  return { ok:false, ms, detail:'모든 프록시에서 실패' };
+}
+
+function diagTimeClass(ms){
+  if(ms < 1000) return 'fast';
+  if(ms < 3000) return 'slow';
+  return 'dead';
+}
+
+function renderDiagRow(icon, name, detail, ms, isOk){
+  const cls = isOk ? diagTimeClass(ms) : 'dead';
+  return `<div class="diag-row">
+    <span class="diag-icon">${icon}</span>
+    <span class="diag-name">${name}</span>
+    <span class="diag-detail">${detail}</span>
+    <span class="diag-time ${cls}">${ms}ms</span>
+  </div>`;
+}
+
+async function runDiagnostics(){
+  diagRanOnce = true;
+  const btn = document.getElementById('diagRunBtn');
+  const proxiesDiv = document.getElementById('diagProxies');
+  const apisDiv = document.getElementById('diagApis');
+  const recDiv = document.getElementById('diagRec');
+  btn.disabled = true;
+  recDiv.style.display = 'none';
+
+  // 초기 표시: 모두 testing
+  proxiesDiv.innerHTML = PROXY_NAMES.map(n =>
+    `<div class="diag-row"><span class="diag-icon">⏳</span><span class="diag-name">${n}</span><span class="diag-detail">테스트 중...</span><span class="diag-time">-</span></div>`
+  ).join('');
+  apisDiv.innerHTML = DIAG_APIS.map(a =>
+    `<div class="diag-row"><span class="diag-icon">⏳</span><span class="diag-name">${a.name}</span><span class="diag-detail">테스트 중...</span><span class="diag-time">-</span></div>`
+  ).join('');
+
+  // 프록시 테스트 (병렬)
+  const proxyResults = await Promise.all(PROXY_NAMES.map((_, i) => testProxyOnly(i)));
+  diagState.proxies = proxyResults;
+  proxiesDiv.innerHTML = proxyResults.map((r, i) =>
+    renderDiagRow(r.ok ? '✅' : '❌', PROXY_NAMES[i], r.detail, r.ms, r.ok)
+  ).join('');
+
+  // API 테스트 (병렬)
+  const apiResults = await Promise.all(DIAG_APIS.map(a => testApiViaAnyProxy(a)));
+  diagState.apis = apiResults;
+  apisDiv.innerHTML = apiResults.map((r, i) =>
+    renderDiagRow(r.ok ? '✅' : '❌', DIAG_APIS[i].name, r.detail, r.ms, r.ok)
+  ).join('');
+
+  // 요약·추천
+  const aliveProxies = proxyResults.filter(r => r.ok).length;
+  const aliveApis = apiResults.filter(r => r.ok).length;
+  const fastestProxy = proxyResults.reduce((acc, r, i) =>
+    r.ok && r.ms < (acc?.ms ?? 99999) ? {idx:i, ms:r.ms} : acc, null);
+  document.getElementById('diagSummary').innerHTML =
+    `프록시 <strong>${aliveProxies}/6</strong> 살아있음 · API <strong>${aliveApis}/3</strong> 응답 ${fastestProxy ? `· 가장 빠른 프록시: <strong>${PROXY_NAMES[fastestProxy.idx]}</strong> (${fastestProxy.ms}ms)`:''}`;
+
+  // 추천 메시지
+  let rec = '';
+  if(aliveProxies === 0){
+    rec = `<strong>심각:</strong> 모든 CORS 프록시가 차단됨. 회사망/공공 WiFi에서 외부 API 차단 가능성. 다른 네트워크(모바일 데이터 등)로 시도해보세요.`;
+  } else if(aliveApis === 0){
+    rec = `<strong>심각:</strong> 프록시는 살아있지만 모든 주가 API가 응답 없음. Yahoo Finance/네이버가 일시적으로 차단 중일 수 있습니다.`;
+  } else if(aliveProxies <= 2){
+    rec = `<strong>경고:</strong> 살아있는 프록시가 ${aliveProxies}개뿐. 일시적으로 응답이 느릴 수 있습니다.`;
+  } else {
+    const apiOk = apiResults.map((r,i) => r.ok ? DIAG_APIS[i].name : null).filter(Boolean);
+    rec = `<strong>정상:</strong> ${apiOk.join(' · ')} 사용 가능. 이론상 1~2초 안에 가격이 떠야 합니다.`;
+    if(!apiResults[1].ok) rec += `<br>⚠️ Yahoo v7 일괄이 막혔으니 미국 종목은 v8 단일 호출로 폴백됩니다 (느림).`;
+    if(!apiResults[2].ok) rec += `<br>⚠️ 네이버가 막혔으니 한국 종목도 Yahoo로 폴백됩니다 (가능하지만 느림).`;
+  }
+  recDiv.innerHTML = rec;
+  recDiv.style.display = '';
+  btn.disabled = false;
+}
+async function fetchBatchUS(tickers){
+  if(!tickers.length) return {};
+  const symbols = tickers.join(',');
+  const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}`;
+  const active = getActiveProxies();
+  if(active.length === 0){
+    proxyHealth.forEach((_,i)=>{ proxyHealth[i] = 0; });
+    return fetchBatchUS(tickers);
+  }
+  const data = await new Promise((resolve)=>{
+    let pending = active.length;
+    let resolved = false;
+    active.forEach(idx => {
+      withTimeout(fetch(PROXIES[idx](url), {cache:'no-store'}), 5000)
+        .then(async res => {
+          if(!res.ok) throw new Error('http_'+res.status);
+          let d = await res.json();
+          if(d?.contents){ d = JSON.parse(d.contents); }
+          if(!d?.quoteResponse?.result) throw new Error('no_result');
+          if(resolved) return;
+          proxyHealth[idx] = Math.min(3, proxyHealth[idx]+1);
+          resolved = true;
+          resolve(d.quoteResponse.result);
+        })
+        .catch(_e => {
+          proxyHealth[idx] = Math.max(-3, proxyHealth[idx]-1);
+          pending--;
+          if(pending === 0 && !resolved){ resolved = true; resolve(null); }
+        });
+    });
+  });
+
+  const out = {};
+  if(!data) return out;
+  for(const item of data){
+    const sym = item.symbol;
+    const price = item.regularMarketPrice;
+    const prev = item.regularMarketPreviousClose ?? price;
+    if(price == null || isNaN(price) || price === 0) continue;
+    const change = prev ? ((price-prev)/prev)*100 : 0;
+    out[sym] = { price, change, ts: Date.now() };
+  }
+  return out;
+}
+
+/* ===== 일괄 호출 — 한국 (네이버 금융) ===== */
+async function fetchBatchKR(tickers){
+  if(!tickers.length) return {};
+  // 네이버: SERVICE_ITEM:005930|SERVICE_ITEM:000660 형식
+  const codes = tickers.map(t => t.split('.')[0]); // 005930.KS → 005930
+  const query = codes.map(c => `SERVICE_ITEM:${c}`).join(',');
+  const url = `https://polling.finance.naver.com/api/realtime?query=${encodeURIComponent(query)}`;
+  const active = getActiveProxies();
+  if(active.length === 0){
+    proxyHealth.forEach((_,i)=>{ proxyHealth[i] = 0; });
+    return fetchBatchKR(tickers);
+  }
+  const data = await new Promise((resolve)=>{
+    let pending = active.length;
+    let resolved = false;
+    active.forEach(idx => {
+      withTimeout(fetch(PROXIES[idx](url), {cache:'no-store'}), 5000)
+        .then(async res => {
+          if(!res.ok) throw new Error('http_'+res.status);
+          let d = await res.json();
+          if(d?.contents){ d = JSON.parse(d.contents); }
+          // 네이버 응답: { resultCode, result: { areas: [{ datas: [...] }] } }
+          const datas = d?.result?.areas?.[0]?.datas;
+          if(!Array.isArray(datas)) throw new Error('no_datas');
+          if(resolved) return;
+          proxyHealth[idx] = Math.min(3, proxyHealth[idx]+1);
+          resolved = true;
+          resolve(datas);
+        })
+        .catch(_e => {
+          proxyHealth[idx] = Math.max(-3, proxyHealth[idx]-1);
+          pending--;
+          if(pending === 0 && !resolved){ resolved = true; resolve(null); }
+        });
+    });
+  });
+
+  const out = {};
+  if(!data) return out;
+  // 네이버 datas: { cd: '005930', nv: 78400, cv: 100, cr: 0.13, sv: 78300, ... }
+  // cd=종목코드, nv=현재가, cv=전일대비, cr=등락률, sv=전일종가
+  for(const item of data){
+    const code = item.cd;
+    const price = item.nv;
+    if(!code || price == null || isNaN(price) || price === 0) continue;
+    let change = item.cr;
+    if(change == null && item.sv){
+      change = ((price - item.sv) / item.sv) * 100;
+    }
+    // 원본 티커(.KS/.KQ 포함) 매핑
+    const fullTicker = tickers.find(t => t.split('.')[0] === code);
+    if(!fullTicker) continue;
+    out[fullTicker] = { price, change: change || 0, ts: Date.now() };
+  }
+  return out;
+}
+
+/* 단일 프록시 호출 — 결과 또는 에러 반환 (폴백용) */
+async function fetchViaProxy(proxyIdx, ticker, timeoutMs=3000){
+  const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=2d`;
+  const res = await withTimeout(fetch(PROXIES[proxyIdx](yahooUrl), {cache:'no-store'}), timeoutMs);
+  if(!res.ok) throw new Error('http_'+res.status);
+  let data = await res.json();
+  if(data?.contents){ data = JSON.parse(data.contents); }
+  const meta = data?.chart?.result?.[0]?.meta;
+  if(!meta || meta.regularMarketPrice == null) throw new Error('no_meta');
+  const price = meta.regularMarketPrice;
+  const prev = meta.chartPreviousClose ?? meta.previousClose ?? price;
+  const change = prev ? ((price-prev)/prev)*100 : 0;
+  return { price, change, ts: Date.now(), proxyIdx };
+}
+
+/* 살아있는 프록시 목록 (영구 차단 적용) */
+function getActiveProxies(){
+  return PROXIES.map((_,i)=>i).filter(i => proxyHealth[i] > -3);
+}
+
+/* 병렬 race — 모든 활성 프록시 동시 호출, 첫 성공 채택 */
+async function fetchYahoo(ticker, _ignoredStartIdx=0){
+  const active = getActiveProxies();
+  if(active.length === 0){
+    // 모두 차단됐으면 한 바퀴 부활 시도
+    proxyHealth.forEach((_,i)=>{ proxyHealth[i] = 0; });
+    return fetchYahoo(ticker);
+  }
+  return new Promise((resolve)=>{
+    let pending = active.length;
+    let resolved = false;
+    active.forEach(idx => {
+      fetchViaProxy(idx, ticker).then(data => {
+        if(resolved) return;
+        proxyHealth[idx] = Math.min(3, proxyHealth[idx]+1);
+        resolved = true;
+        resolve(data);
+      }).catch(_err => {
+        proxyHealth[idx] = Math.max(-3, proxyHealth[idx]-1);
+        pending--;
+        if(pending === 0 && !resolved){
+          resolved = true;
+          resolve(null);
+        }
+      });
+    });
+  });
+}
+
+/* 가격 도착 시 행/카드를 스켈레톤에서 실제 데이터로 교체 + 페이드인 */
+function renderPrice(code, country, peak){
+  const entry = getPrice(code);
+  const v = entry.value;
+
+  // 데스크톱 테이블 행
+  const skelRow = document.querySelector(`tr[data-skeleton="${code}"]`);
+  const dataRow = document.querySelector(`tr[data-row="${code}"]`);
+  const targetRow = skelRow || dataRow;
+
+  // 모바일 카드
+  const skelCard = document.querySelector(`[data-card-skel="${code}"]`);
+  const dataCard = document.querySelector(`[data-card="${code}"]`);
+  const targetCard = skelCard || dataCard;
+
+  if(!targetRow && !targetCard) return;
+
+  // 테마/종목 정보 찾기 (둘 중 하나에서)
+  const container = targetRow ? targetRow.parentNode : targetCard.parentNode;
+  const themeId = container.getAttribute('data-tbody') || container.getAttribute('data-cards');
+  const theme = ALL_THEMES.find(t => t.id === themeId);
+  if(!theme) return;
+  const stock = theme.stocks.find(s => s.code === code);
+  if(!stock) return;
+
+  // value 있음 → 실제 행/카드로 교체
+  if(v?.price){
+    // ── 데스크톱 행
+    if(targetRow){
+      const newRowHtml = renderStockRowHtml(stock, theme);
+      if(newRowHtml){
+        const tmp = document.createElement('tbody');
+        tmp.innerHTML = newRowHtml;
+        const newRow = tmp.firstElementChild;
+        if(skelRow){
+          newRow.classList.remove('entered');
+          newRow.classList.add('entering');
+          targetRow.replaceWith(newRow);
+          requestAnimationFrame(()=>{
+            newRow.classList.remove('entering');
+            newRow.classList.add('entered');
+          });
+        } else {
+          targetRow.replaceWith(newRow);
+        }
+      }
+    }
+    // ── 모바일 카드
+    if(targetCard){
+      const newCardHtml = renderStockCardHtml(stock, theme);
+      if(newCardHtml){
+        const tmp = document.createElement('div');
+        tmp.innerHTML = newCardHtml;
+        const newCard = tmp.firstElementChild;
+        if(skelCard){
+          newCard.classList.remove('entered');
+          newCard.classList.add('entering');
+          targetCard.replaceWith(newCard);
+          requestAnimationFrame(()=>{
+            newCard.classList.remove('entering');
+            newCard.classList.add('entered');
+          });
+        } else {
+          targetCard.replaceWith(newCard);
+        }
+      }
+    }
+    return;
+  }
+
+  // value 없음 (never/stale 실패) → 행/카드 제거
+  if(entry.status === 'never' || entry.status === 'stale'){
+    if(targetRow){
+      targetRow.style.transition = 'opacity .25s';
+      targetRow.style.opacity = '0';
+      setTimeout(()=>{
+        const parent = targetRow.parentNode;
+        targetRow.remove();
+        if(parent && parent.children.length === 0){
+          const block = parent.closest('.category-block');
+          // 카드도 비었으면 카테고리 숨김
+          const cardsContainer = block?.querySelector('[data-cards]');
+          if(!cardsContainer || cardsContainer.children.length === 0){
+            block?.classList.add('empty-fade');
+          }
+        }
+      }, 260);
+    }
+    if(targetCard){
+      targetCard.style.transition = 'opacity .25s';
+      targetCard.style.opacity = '0';
+      setTimeout(()=>{
+        const parent = targetCard.parentNode;
+        targetCard.remove();
+        if(parent && parent.children.length === 0){
+          const block = parent.closest('.category-block');
+          const tbodyContainer = block?.querySelector('[data-tbody]');
+          if(!tbodyContainer || tbodyContainer.children.length === 0){
+            block?.classList.add('empty-fade');
+          }
+        }
+      }, 260);
+    }
+  }
+}
+
+// 하위 호환 alias (기존 호출처가 남아있을 수 있어서)
+const updateRow = renderPrice;
+
+async function loadPrices(skipFresh=false){
+  const btn=document.getElementById('refreshBtn');
+  btn.disabled=true;
+
+  const allStocks = getActivePool().flatMap(t=>t.stocks.map(s=>({...s, country:t.country})));
+  let tickers=[...new Set(allStocks.map(s=>s.code))];
+
+  if(tickers.length===0){
+    setStatus('해당 분류에 종목 데이터 없음','');
+    btn.disabled=false; return;
+  }
+
+  // fresh 스킵
+  let skippedCount = 0;
+  if(skipFresh){
+    const before = tickers.length;
+    tickers = tickers.filter(code => {
+      const e = priceCache[code];
+      if(!e || e.status !== 'fresh' || !e.value?.price) return true;
+      if(e.updatedAt && (Date.now() - e.updatedAt) > FRESH_MS) return true;
+      return false;
+    });
+    skippedCount = before - tickers.length;
+    if(tickers.length === 0){
+      setStatus(`✓ 모두 최신 (${skippedCount}건 스킵)`, 'ok');
+      btn.disabled=false; return;
+    }
+  }
+
+  // 캐시 있는 종목은 일단 그대로 표시 (점진 갱신 출발점)
+  tickers.forEach(code=>{
+    const stock = allStocks.find(s=>s.code===code);
+    renderPrice(code, stock?.country, stock?.peak);
+  });
+
+  // KR / US 분리
+  const krTickers = tickers.filter(t => /\.(KS|KQ)$/.test(t));
+  const usTickers = tickers.filter(t => !/\.(KS|KQ)$/.test(t));
+
+  setStatus(`주가 일괄 조회 중 (KR ${krTickers.length} · US ${usTickers.length})${skippedCount?` · ${skippedCount}건 스킵`:''}...`,'fetching');
+
+  const startTime = Date.now();
+
+  // 두 시장 병렬
+  const [krResult, usResult] = await Promise.all([
+    krTickers.length ? fetchBatchKR(krTickers) : Promise.resolve({}),
+    usTickers.length ? fetchBatchUS(usTickers) : Promise.resolve({}),
+  ]);
+
+  // 결과 캐시 반영
+  let ok=0, fail=0;
+  for(const code of tickers){
+    const result = (code in krResult) ? krResult[code] : (code in usResult ? usResult[code] : null);
+    const prev = priceCache[code];
+    if(result && isValidData(result)){
+      priceCache[code] = {
+        value: { price: result.price, change: result.change },
+        updatedAt: Date.now(), status: 'fresh', error: null
+      };
+      ok++;
+    } else {
+      // 일괄 호출에서 빠진 종목 → 캐시 보존, status만 변경
+      priceCache[code] = {
+        value: prev?.value || null,
+        updatedAt: prev?.updatedAt || 0,
+        status: prev?.value ? 'stale' : 'never',
+        error: 'batch_miss'
+      };
+      fail++;
+    }
+    const stock = allStocks.find(s=>s.code===code);
+    renderPrice(code, stock?.country, stock?.peak);
+  }
+
+  saveCache();
+  buildSummary();
+
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+  // 일괄에서 빠진 종목 → 개별 폴백 (백그라운드, 화면은 이미 채워짐)
+  if(fail > 0){
+    fallbackIndividual(tickers.filter(c => {
+      const e = priceCache[c];
+      return !e || e.status !== 'fresh';
+    }), allStocks);
+  }
+
+  document.getElementById('retryFailedBtn').style.display = fail>0 ? '' : 'none';
+  const skipMsg = skippedCount ? ` (캐시 ${skippedCount}건)` : '';
+  if(fail===0) setStatus(`✓ 일괄 조회 완료 ${elapsed}초 — ${ok}건${skipMsg}`,'ok');
+  else if(ok===0) setStatus(`⚠ 일괄 조회 실패 — 캐시 표시 + 개별 재시도 진행${skipMsg}`,'error');
+  else setStatus(`✓ 일괄 ${ok}건 ${elapsed}초${skipMsg} · 누락 ${fail}건 개별 재시도 중`,'ok');
+  btn.disabled=false;
+}
+
+/* 일괄에서 빠진 종목만 개별 호출로 폴백 (백그라운드) */
+async function fallbackIndividual(tickers, allStocks){
+  if(!tickers.length) return;
+  let ok = 0;
+  const CONCURRENCY = 8;
+  for(let i=0; i<tickers.length; i+=CONCURRENCY){
+    const batch = tickers.slice(i, i+CONCURRENCY);
+    await Promise.all(batch.map(async code => {
+      const result = await refreshPrice(code, i % PROXIES.length);
+      const stock = allStocks.find(s=>s.code===code);
+      renderPrice(code, stock?.country, stock?.peak);
+      if(result.status === 'fresh') ok++;
+    }));
+  }
+  saveCache();
+  buildSummary();
+  if(ok > 0){
+    const dot = document.getElementById('statusDot');
+    if(dot) dot.className = 'live-dot ok';
+    document.getElementById('statusMsg').textContent =
+      `✓ 일괄+개별 완료 — 추가 ${ok}건 갱신 · ${new Date().toLocaleTimeString('ko-KR')}`;
+  }
+  // 여전히 실패한 게 있으면 retry 버튼 유지
+  const stillFail = tickers.filter(c => priceCache[c]?.status !== 'fresh').length;
+  document.getElementById('retryFailedBtn').style.display = stillFail>0 ? '' : 'none';
+}
+
+async function retrySingle(code, country, peak){
+  await refreshPrice(code);
+  renderPrice(code, country, peak);
+  saveCache();
+  buildSummary();
+}
+
+async function retryFailed(){
+  const allStocks = getActivePool().flatMap(t=>t.stocks.map(s=>({...s, country:t.country})));
+  const failed = allStocks.filter(s=>{
+    const e = priceCache[s.code];
+    return !e || e.status === 'never' || e.status === 'stale';
+  });
+  if(failed.length===0){ setStatus('재시도할 항목 없음','ok'); return; }
+  setStatus(`${failed.length}건 재시도 중...`,'fetching');
+  let ok=0;
+  for(let i=0;i<failed.length;i+=2){
+    const batch = failed.slice(i,i+2);
+    await Promise.all(batch.map(async (s,j)=>{
+      const result = await refreshPrice(s.code, (i+j+3) % PROXIES.length);
+      if(result.status === 'fresh') ok++;
+      renderPrice(s.code, s.country, s.peak);
+    }));
+  }
+  saveCache();
+  buildSummary();
+  const stillFailed = failed.length - ok;
+  document.getElementById('retryFailedBtn').style.display = stillFailed>0 ? '' : 'none';
+  if(stillFailed===0) setStatus(`✓ 재시도 완료 — ${ok}건 갱신`,'ok');
+  else setStatus(`재시도 결과: ${ok}/${failed.length} 갱신 · ${stillFailed}건 캐시 유지`,'error');
+}
+
+function sortIcon(themeId, col){
+  const st = sortState[themeId];
+  if(st?.col!==col) return '<span class="sort-icon">↕</span>';
+  return `<span class="sort-icon">${st.dir==='desc'?'▼':'▲'}</span>`;
+}
+function thClass(themeId, col){
+  const st = sortState[themeId];
+  return 'sortable'+(st?.col===col?' sorted':'');
+}
+
+/* 모바일 카드 (가격 있을 때) */
+function renderStockCardHtml(s, theme){
+  const id=safeId(s.code);
+  const entry = getPrice(s.code);
+  const v = entry.value;
+  const st = entry.status;
+  const isFav = favorites.has(s.code);
+
+  if(!(v?.price && (st==='fresh'||st==='stale'||st==='loading'))) return null;
+
+  const pCls = 'price' + (st==='fresh' ? '' : ' cached');
+  const cCls = 'change ' + (v.change>=0?'pos':'neg');
+  const pct = (v.price/s.peak)*100;
+  const upside = ((s.peak-v.price)/v.price)*100;
+  const uCls = 'upside ' + (upside>=0?'pos':'neg');
+  const barCls = progressClass(pct);
+  const cacheBadge = (st==='stale' && entry.updatedAt)
+    ? `<div class="scd-cache"><span class="cache-badge">캐시 · ${timeSince(entry.updatedAt)}</span></div>` : '';
+
+  return `<div class="stock-card entered" data-card="${s.code}" data-theme="${theme.id}">
+    <div class="scd-top">
+      <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')">★</button>
+      <div class="stock-name-info" style="flex:1;min-width:0;">
+        <div class="stock-name">${s.name}</div>
+        <div class="stock-code">${s.code}</div>
+        <div class="scd-tags">${renderRoleTags(s.roles)}</div>
+      </div>
+    </div>
+    <div class="scd-mid">
+      <div class="scd-mid-left">
+        <span class="${pCls}">${formatPrice(v.price, theme.country)}</span>
+        <span class="${cCls}">${v.change>=0?'+':''}${(v.change??0).toFixed(2)}%</span>
+      </div>
+      <div class="scd-mid-right">
+        <span class="${uCls}">${upside>=0?'+':''}${upside.toFixed(1)}%</span>
+        <span class="scd-progress-meta">여력</span>
+      </div>
+    </div>
+    <div class="scd-progress">
+      <div class="progress-bar"><div class="progress-fill ${barCls}" style="width:${Math.min(pct,100)}%"></div></div>
+      <span class="progress-pct">${pct.toFixed(1)}%</span>
+    </div>
+    <div class="scd-progress-meta">목표가 <strong>${formatPrice(s.peak, theme.country)}</strong> · ${s.peakTime}</div>
+    <div class="scd-bot"><span class="reason-tag">${s.reason}</span></div>
+    ${cacheBadge}
+  </div>`;
+}
+
+/* 모바일 카드 스켈레톤 */
+function renderStockCardSkel(s){
+  const isFav = favorites.has(s.code);
+  return `<div class="stock-card stock-card-skel" data-card-skel="${s.code}">
+    <div class="scd-top">
+      <span class="fav-btn ${isFav?'on':''}" style="opacity:.4">★</span>
+      <div class="stock-name-info" style="flex:1;min-width:0;">
+        <div class="stock-name">${s.name}</div>
+        <div class="stock-code">${s.code}</div>
+      </div>
+    </div>
+    <div class="scd-mid">
+      <div class="scd-mid-left" style="gap:6px;">
+        <span class="skel" style="width:120px;height:20px;"></span>
+        <span class="skel w-sm"></span>
+      </div>
+      <div class="scd-mid-right">
+        <span class="skel w-md" style="height:18px;"></span>
+      </div>
+    </div>
+    <div class="scd-progress">
+      <span class="skel" style="flex:1;height:9px;border-radius:5px;"></span>
+      <span class="skel w-sm"></span>
+    </div>
+  </div>`;
+}
+function renderStockRowHtml(s, theme){
+  const id=safeId(s.code);
+  const entry = getPrice(s.code);
+  const v = entry.value;
+  const st = entry.status;
+  const isFav = favorites.has(s.code);
+
+  let pTxt, pCls, cTxt, cCls, metaHtml='';
+  if(v?.price && (st==='fresh' || st==='stale' || st==='loading')){
+    pTxt = formatPrice(v.price, theme.country);
+    pCls = 'price' + (st==='fresh' ? '' : ' cached');
+    cTxt = (v.change>=0?'+':'') + (v.change??0).toFixed(2)+'%';
+    cCls = 'change ' + (v.change>=0?'pos':'neg');
+    if(st==='stale'){
+      const age = entry.updatedAt ? timeSince(entry.updatedAt) : '오래됨';
+      metaHtml = `<span class="cache-badge" title="${entry.error||'갱신 필요'}">캐시 · ${age}</span>`;
+    }
+  } else {
+    // value 없음 (loading/never) — 이 함수는 value 있을 때만 호출돼야 정상
+    return null;
+  }
+
+  let uTxt='—',uCls='upside', barW=0, barCls='', pctTxt='—', pctCls='progress-pct empty';
+  if(v?.price){
+    const pct=(v.price/s.peak)*100;
+    const up=((s.peak-v.price)/v.price)*100;
+    uTxt=(up>=0?'+':'')+up.toFixed(1)+'%';
+    uCls='upside '+(up>=0?'pos':'neg');
+    barW=Math.min(pct,100); barCls=progressClass(pct);
+    pctTxt=pct.toFixed(1)+'%'; pctCls='progress-pct';
+  }
+
+  return `<tr class="stock-row entered" data-row="${s.code}" data-theme="${theme.id}">
+    <td>
+      <div class="stock-name-row">
+        <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')" title="즐겨찾기">★</button>
+        <div class="stock-name-info">
+          <div class="stock-name">${s.name}</div>
+          <div class="stock-code">${s.code}</div>
+        </div>
+      </div>
+    </td>
+    <td>${renderRoleTags(s.roles)}</td>
+    <td><span class="reason-tag" title="${s.reason}">${s.reason}</span></td>
+    <td><div class="price-cell">
+      <span class="${pCls}" id="p-${id}">${pTxt}</span>
+      <div class="price-meta" id="m-${id}">${metaHtml}</div>
+    </div></td>
+    <td><span class="${cCls}" id="c-${id}">${cTxt}</span></td>
+    <td><span class="peak-price">${formatPrice(s.peak, theme.country)}</span><div class="peak-timing">${s.peakTime}</div></td>
+    <td><div class="progress-row">
+      <div class="progress-bar"><div class="progress-fill ${barCls}" id="pb-${id}" style="width:${barW}%"></div></div>
+      <span class="${pctCls}" id="pp-${id}">${pctTxt}</span>
+    </div></td>
+    <td><span class="${uCls}" id="u-${id}">${uTxt}</span></td>
+  </tr>`;
+}
+
+/* 스켈레톤 행 (가격 조회 중) */
+function renderSkeletonRow(s){
+  return `<tr class="stock-row skeleton-row" data-skeleton="${s.code}">
+    <td>
+      <div class="stock-name-row">
+        <span class="fav-btn" style="opacity:.3">★</span>
+        <div class="stock-name-info">
+          <div class="stock-name">${s.name}</div>
+          <div class="stock-code">${s.code}</div>
+        </div>
+      </div>
+    </td>
+    <td><span class="skel w-md"></span></td>
+    <td><span class="skel" style="width:90%"></span></td>
+    <td style="text-align:right"><span class="skel w-md"></span></td>
+    <td style="text-align:right"><span class="skel w-sm"></span></td>
+    <td style="text-align:right"><span class="skel w-md"></span></td>
+    <td style="text-align:right"><span class="skel w-bar"></span></td>
+    <td style="text-align:right"><span class="skel w-sm"></span></td>
+  </tr>`;
+}
+
+function renderContent(){
+  const main=document.getElementById('mainContent'); main.innerHTML='';
+  const themes = getVisibleThemes();
+  if(themes.length===0){
+    let msg = '해당 필터에 종목이 없습니다.';
+    if(getActivePool().length===0){
+      msg = `📦 ${currentCountry==='KR'?'한국':'미국'} ${currentGroup==='season'?'시즌별':'산업 섹터별'} 데이터 없음`;
+    } else if(currentFilter==='fav') msg = '⭐ 아직 즐겨찾기에 추가된 종목이 없습니다.';
+    else if(currentFilter==='low') msg = '🟢 진입 추천 구간 종목이 없습니다.';
+    else if(currentFilter==='mid') msg = '🟡 피크 임박 구간 종목이 없습니다.';
+    else if(currentFilter==='high') msg = '🔴 과열 구간 종목이 없습니다.';
+    else if(currentStyle!=='all') msg = `현재 성향(${currentStyle==='blue'?'우량':'공격'})에 맞는 종목이 없습니다.`;
+    main.innerHTML = `<div class="empty-msg">${msg}</div>`;
+    return;
+  }
+  themes.forEach(theme=>{
+    const block=document.createElement('div');
+    block.className='category-block'; block.dataset.themeId=theme.id;
+    const sortedStocks = sortStocks(theme.stocks, theme.id);
+
+    // 종목 분류: 가격 있음(즉시 표시) / 가격 없음(스켈레톤) — 데스크톱
+    const rowsHtml = sortedStocks.map(s => {
+      const html = renderStockRowHtml(s, theme);
+      return html || renderSkeletonRow(s);
+    }).join('');
+
+    // 모바일 카드도 같이
+    const cardsHtml = sortedStocks.map(s => {
+      const html = renderStockCardHtml(s, theme);
+      return html || renderStockCardSkel(s);
+    }).join('');
+
+    block.innerHTML=`
+      <div class="cat-header">
+        <span class="cat-icon">${theme.icon}</span>
+        <span class="cat-color-dot" style="background:${theme.color}"></span>
+        <span class="cat-name-ko">${theme.name}</span>
+        ${renderStars(theme.reliability)}
+        <span class="cat-timing">${theme.timing}</span>
+        ${renderBacktestBadge(theme.id)}
+        <span class="cat-desc">${theme.desc}</span>
+      </div>
+      ${renderBacktestPanel(theme.id)}
+      <table>
+        <colgroup>
+          <col class="c-name"><col class="c-tag"><col class="c-reason"><col class="c-price">
+          <col class="c-change"><col class="c-peak"><col class="c-pct"><col class="c-upside">
+        </colgroup>
+        <thead><tr>
+          <th class="${thClass(theme.id,'name')}" data-sort="name" data-theme="${theme.id}">종목명 / 코드${sortIcon(theme.id,'name')}</th>
+          <th>성격</th>
+          <th>차별점</th>
+          <th class="${thClass(theme.id,'price')}" data-sort="price" data-theme="${theme.id}">현재가${sortIcon(theme.id,'price')}</th>
+          <th class="${thClass(theme.id,'change')}" data-sort="change" data-theme="${theme.id}">등락률${sortIcon(theme.id,'change')}</th>
+          <th class="${thClass(theme.id,'peak')}" data-sort="peak" data-theme="${theme.id}">목표가${sortIcon(theme.id,'peak')}</th>
+          <th class="${thClass(theme.id,'pct')}" data-sort="pct" data-theme="${theme.id}">달성률${sortIcon(theme.id,'pct')}</th>
+          <th class="${thClass(theme.id,'upside')}" data-sort="upside" data-theme="${theme.id}">여력${sortIcon(theme.id,'upside')}</th>
+        </tr></thead>
+        <tbody data-tbody="${theme.id}">${rowsHtml}</tbody>
+      </table>
+      <div class="mobile-cards" data-cards="${theme.id}">${cardsHtml}</div>`;
+    main.appendChild(block);
+  });
+  main.querySelectorAll('th.sortable').forEach(th=>{
+    th.addEventListener('click',()=>toggleSort(th.dataset.theme, th.dataset.sort));
+  });
+  main.querySelectorAll('.bt-badge[data-bt-toggle]').forEach(b=>{
+    b.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      toggleBacktestPanel(b.dataset.btToggle);
+    });
+  });
+}
+
+function filterByTheme(themeId){
+  const t=ALL_THEMES.find(x=>x.id===themeId);
+  if(!t) return;
+  if(t.country !== currentCountry || t.group !== currentGroup){
+    currentCountry = t.country;
+    currentGroup = t.group;
+    syncSegControls();
+    document.getElementById('calendarSection').classList.toggle('hidden', currentGroup!=='season');
+  }
+  currentFilter=t.cat;
+  buildFilterBar();
+  buildSummary();
+  renderContent();
+  setTimeout(()=>document.querySelector(`[data-theme-id="${themeId}"]`)?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+
+function syncSegControls(){
+  document.querySelectorAll('#segCountry .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.country===currentCountry));
+  document.querySelectorAll('#segGroup .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.group===currentGroup));
+  document.querySelectorAll('#segStyle .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.style===currentStyle));
+  updateBreadcrumb();
+}
+
+function updateBreadcrumb(){
+  const cvC = document.getElementById('cvCountry');
+  const cvG = document.getElementById('cvGroup');
+  const cvS = document.getElementById('cvStyle');
+  if(cvC) cvC.textContent = currentCountry==='KR' ? '🇰🇷 한국' : '🇺🇸 미국';
+  if(cvG) cvG.textContent = currentGroup==='season' ? '📅 시즌별' : '📱 산업 섹터별';
+  if(cvS) cvS.textContent = currentStyle==='all' ? '전체 종목' : currentStyle==='blue' ? '🏛️ 우량' : '🎰 공격';
+}
+
+/* 3축 토글 핸들러 */
+document.querySelectorAll('#segCountry .seg-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(currentCountry===btn.dataset.country) return;
+    currentCountry = btn.dataset.country;
+    currentFilter = 'all';
+    syncSegControls();
+    document.getElementById('calendarSection').classList.toggle('hidden', currentGroup!=='season');
+    buildCalendar();
+    buildFilterBar();
+    buildSummary();
+    renderContent();
+    loadPrices();
+  });
+});
+document.querySelectorAll('#segGroup .seg-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(currentGroup===btn.dataset.group) return;
+    currentGroup = btn.dataset.group;
+    currentFilter = 'all';
+    syncSegControls();
+    document.getElementById('calendarSection').classList.toggle('hidden', currentGroup!=='season');
+    buildFilterBar();
+    buildSummary();
+    renderContent();
+    loadPrices();
+  });
+});
+document.querySelectorAll('#segStyle .seg-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(currentStyle===btn.dataset.style) return;
+    currentStyle = btn.dataset.style;
+    syncSegControls();
+    buildSummary();
+    renderContent();
+  });
+});
+
+loadCache();
+loadFavorites();
+updateBreadcrumb();
+buildCalendar();
+buildFilterBar();
+buildSummary();
+renderContent();
+loadPrices(true);  // 초기 로드: fresh 캐시는 스킵 (즉시 화면 표시)
+
+/* ===== 자동 갱신 (5분 주기, 비활성 탭 일시정지) ===== */
+let autoRefreshOn = true;
+let autoRefreshTimer = null;
+
+function startAutoRefresh(){
+  stopAutoRefresh();
+  if(!autoRefreshOn) return;
+  autoRefreshTimer = setInterval(()=>{
+    if(document.hidden) return;
+    loadPrices(true);  // fresh 스킵: stale·never만 호출
+  }, REFRESH_INTERVAL_MS);
+}
+function stopAutoRefresh(){
+  if(autoRefreshTimer){ clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+}
+function toggleAutoRefresh(){
+  autoRefreshOn = !autoRefreshOn;
+  const btn = document.getElementById('autoRefreshBtn');
+  if(btn){
+    btn.textContent = autoRefreshOn ? '⏱ 자동갱신 ON' : '⏱ 자동갱신 OFF';
+    btn.style.opacity = autoRefreshOn ? '1' : '0.5';
+  }
+  if(autoRefreshOn) startAutoRefresh();
+  else stopAutoRefresh();
+}
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+    stopAutoRefresh();
+  } else if(autoRefreshOn){
+    startAutoRefresh();
+    const stocks = getActivePool().flatMap(t=>t.stocks);
+    const staleCount = stocks.filter(s=>{
+      const e = priceCache[s.code];
+      return e && e.status === 'stale';
+    }).length;
+    if(staleCount > stocks.length / 2) loadPrices(true);
+  }
+});
+startAutoRefresh();
+
+/* ===== Heatmap Page (IIFE) ===== */
+window.__heatmapInit = function(){
 /* ========== DATA ========== */
 function genSpark(trend, n = 30) {
   const data = []; let val = 100;
@@ -2488,7 +4934,78 @@ document.querySelectorAll('.market-tab').forEach(btn => {
     renderAll();
   });
 });
-</script>
 
+};
+
+
+/* ============================================================
+   ✦ APP ROUTER + SIDEBAR
+   ============================================================ */
+const ROUTES = ['calendar', 'heatmap'];
+let currentRoute = 'calendar';
+let heatmapInited = false;
+
+function navigate(route){
+  if(!ROUTES.includes(route)) route = 'calendar';
+  currentRoute = route;
+
+  // 페이지 표시/숨김
+  ROUTES.forEach(r => {
+    const el = document.getElementById('page-'+r);
+    if(el) el.style.display = (r === route) ? '' : 'none';
+  });
+
+  // 네비 active
+  document.querySelectorAll('.nav-item').forEach(a => {
+    a.classList.toggle('active', a.dataset.route === route);
+  });
+
+  // 히트맵 페이지: 첫 진입 시 초기화
+  if(route === 'heatmap' && !heatmapInited){
+    if(typeof window.__heatmapInit === 'function'){
+      try { window.__heatmapInit(); heatmapInited = true; }
+      catch(e){ console.error('히트맵 초기화 실패:', e); }
+    }
+  }
+
+  // URL 해시
+  if(location.hash !== '#'+route){
+    history.replaceState(null, '', '#'+route);
+  }
+
+  closeSidebar();
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarBackdrop').style.display =
+    document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').style.display = 'none';
+}
+
+// 네비 클릭 핸들러
+document.querySelectorAll('.nav-item').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    navigate(a.dataset.route);
+  });
+});
+
+// 해시 변경 (뒤로가기 등)
+window.addEventListener('hashchange', () => {
+  const route = (location.hash || '#calendar').slice(1);
+  navigate(route);
+});
+
+// 초기 라우트
+const initialRoute = (location.hash || '#calendar').slice(1);
+if(ROUTES.includes(initialRoute) && initialRoute !== 'calendar'){
+  navigate(initialRoute);
+}
+
+</script>
 </body>
 </html>
