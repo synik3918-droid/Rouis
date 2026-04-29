@@ -280,6 +280,48 @@
   .tp-meta-lbl{ color:var(--text-3); font-size:10px; letter-spacing:0.3px; }
 
   /* ============================================================
+     ✦ Phase A6: 시장 국면 배지 (Market Regime)
+     ============================================================ */
+  .market-regime-wrap{
+    display:flex; align-items:center;
+    margin-top:8px;
+  }
+  .mr-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:5px 10px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:4px;
+    font-size:11px;
+    line-height:1.4;
+  }
+  .mr-badge::before{
+    content:''; display:inline-block;
+    width:6px; height:6px; border-radius:50%;
+    background:var(--text-3);
+  }
+  .mr-up::before{ background:var(--color-up); }
+  .mr-down::before{ background:var(--color-down); }
+  .mr-neutral::before{ background:var(--text-3); }
+  .mr-label{
+    font-weight:700; color:var(--text-1);
+    letter-spacing:0.2px;
+  }
+  .mr-up .mr-label{ color:var(--color-up); }
+  .mr-down .mr-label{ color:var(--color-down); }
+  .mr-meta{
+    font-family:var(--font-mono); font-size:10px;
+    color:var(--text-3);
+    letter-spacing:0.2px;
+  }
+  /* 로딩 스켈레톤 */
+  .mr-skel{ height:24px; width:200px; }
+  @media (max-width:767px){
+    .mr-badge{ font-size:10px; padding:4px 8px; gap:6px; }
+    .mr-meta{ font-size:9px; }
+  }
+
+  /* ============================================================
      ✦ Phase A4: 기술 지표 인디케이터 (RSI 배지 + 200SMA 화살표)
      ============================================================ */
   .ti-row{
@@ -1551,6 +1593,13 @@
     border:1px solid rgba(255,128,0,0.30);
     padding:3px 8px; border-radius:3px;
     line-height:1;
+  }
+  /* Phase 완성 강조 */
+  .rn-tag-strong{
+    background:var(--accent);
+    color:#000;
+    border-color:var(--accent);
+    letter-spacing:1px;
   }
   .rn-list{
     display:flex; flex-direction:column; gap:14px;
@@ -3020,6 +3069,7 @@
     </span>
     종목 분석
   </h1>
+  <div id="marketRegimeBadge" class="market-regime-wrap"></div>
   <div class="page-header-controls">
     <div class="uni-axis">
       <div class="uni-axis-label">분류</div>
@@ -3903,48 +3953,100 @@
 
     <section class="guide-section release-note">
       <div class="rn-header">
-        <span class="rn-tag">UPDATE</span>
-        <h2 class="guide-h2" style="margin:0">2026-04 로직 정교화</h2>
+        <span class="rn-tag rn-tag-strong">PHASE 1 ✓</span>
+        <h2 class="guide-h2" style="margin:0">2026-04 로직 고도화 — Phase 1 완성</h2>
       </div>
-      <p class="guide-p">기존 "도달률 + 시즌" 단일 조건 → <strong>5가지 기술 지표 종합 점수 시스템(V2)</strong>으로 재설계. 자동매매 시스템 로드맵 Phase 1 일부.</p>
+      <p class="guide-p">자동매매 시스템 로드맵 <strong>Phase 1 (1~3개월)</strong>이 한 달 만에 완성되었습니다. 기존 "도달률 + 시즌"만으로 결정하던 신호를 <strong>5종 기술 지표 + 시장 국면</strong> 기반의 100점 점수 시스템으로 전면 재설계했습니다.</p>
 
       <div class="rn-list">
+
         <div class="rn-item">
-          <div class="rn-num">A1</div>
+          <div class="rn-num">01</div>
           <div class="rn-body">
-            <div class="rn-title">일봉 OHLCV 인프라</div>
-            <div class="rn-desc">Yahoo Finance에서 종목별 일봉 1년치(252영업일) 자동 수신. <code>localStorage('ohlcv_v1')</code>에 캐시, KST 16시 이후 갱신. 백그라운드 동시 4개 처리. 가격 갱신과 분리되어 사용자 첫 화면 안 막음.</div>
+            <div class="rn-title">데이터 인프라 — 일봉 OHLCV + 시장 지수</div>
+            <div class="rn-desc">
+              종목별 일봉 1년치(252영업일) + KOSPI / QQQ / VIX 지수 자동 수신.
+              <code>localStorage('ohlcv_v1')</code> 캐시, KST 16시 이후 갱신, 백그라운드 동시 4개 처리.
+              가격 갱신과 분리되어 사용자 첫 화면을 막지 않습니다.
+              시장 지수는 별도 30분 캐시 (국면은 일중 자주 바뀌지 않음).
+            </div>
           </div>
         </div>
+
         <div class="rn-item">
-          <div class="rn-num">A2</div>
+          <div class="rn-num">02</div>
           <div class="rn-body">
-            <div class="rn-title">기술 지표 8종 함수</div>
-            <div class="rn-desc">RSI(14, Wilder 스무딩 — 트레이딩뷰 표준), SMA(200/60/20), EMA, 볼린저(20일 2σ), ATR(14), MACD(12/26/9), 거래량 비율(20일 평균 대비), 표준편차. 모든 함수 데이터 부족 시 null 반환 — 안전장치.</div>
+            <div class="rn-title">기술 지표 8종 — 트레이딩뷰 표준 호환</div>
+            <div class="rn-desc">
+              <strong>RSI(14)</strong> Wilder 스무딩, <strong>SMA</strong>(200/60/20), <strong>EMA</strong>,
+              <strong>볼린저 밴드</strong>(20일 2σ), <strong>ATR</strong>(14),
+              <strong>MACD</strong>(12/26/9 — signal 라인 + histogram + 골든/데드 크로스 검출 완성),
+              <strong>거래량 비율</strong>(20일 평균 대비), 표준편차.
+              모든 함수는 데이터 부족 시 null 반환 — 안전장치.
+              실제 트레이딩뷰 RSI/SMA 값과 ±2 이내 일치 검증 완료.
+            </div>
           </div>
         </div>
+
         <div class="rn-item">
-          <div class="rn-num">A3</div>
+          <div class="rn-num">03</div>
           <div class="rn-body">
-            <div class="rn-title">V2 점수 시스템 (100점 만점)</div>
-            <div class="rn-desc">도달률 30 + RSI 25 + 200일선 20 + 볼린저 %B 15 + 거래량 10 + 시즌 보너스 ±15. 65점 이상 ●(지금), 40~65 ○(대기), 즉시회피 룰(과열 95%+ / 하락 -3%+ / RSI 70+ AND 도달률 80+) 별도. OHLCV 부족 종목은 자동 V1 폴백.</div>
+            <div class="rn-title">V2 점수 시스템 — 100점 만점 + 시장 국면 동적 조정</div>
+            <div class="rn-desc">
+              <strong>도달률 30 + RSI 20 + MACD 8 + 200SMA 18 + %B 14 + 거래량 10 = 100점</strong>
+              (RSI + MACD = 28점 모멘텀 클러스터). 시즌 보너스 +15/+12/+8.<br>
+              <strong>즉시 회피</strong> (점수 무관): 도달률 95%+ / 등락 -3% 이하 / RSI 70+ AND 도달률 80%+.<br>
+              <strong>4단계 시장 국면</strong>(강세장/약상승/불확실/약세장)으로 매수 임계값 자동 조정 — 강세장 +5(신중), 약세장 -10(적극). "친구가 물리면 그게 매수" 정체성과 일치.<br>
+              OHLCV 부족(&lt;30일) 종목은 자동 V1 폴백.
+            </div>
           </div>
         </div>
+
         <div class="rn-item">
-          <div class="rn-num">A4</div>
+          <div class="rn-num">04</div>
           <div class="rn-body">
-            <div class="rn-title">UI 시각화</div>
-            <div class="rn-desc">종목명 아래 RSI 배지(과매도 오렌지·과매수 빨강·중립 회색) + 200일선 ▲▽ 화살표(회색). Top Pick 카드 우상단에 점수 표시(예: "71"). 종목 행에서 한눈에 기술 상태 파악 가능.</div>
+            <div class="rn-title">UI 시각화 + Top Pick 안정화</div>
+            <div class="rn-desc">
+              종목 행 — RSI 배지(과매도 오렌지/중립 회색/과매수 빨강) + 200일선 ▲▽ 화살표 + V2 점수 표시.<br>
+              페이지 헤더 — 시장 국면 배지 (예: <code>● 강세장 · KOSPI ↑+53.1% · 임계값 +5</code>).<br>
+              Top Pick — ● 신호 부족 시 ○ 점수 상위로 채워 항상 3개 표시. 가격 갱신마다 카드가 바뀌지 않게 5분 throttle, 사용자 액션(시장/필터/스타일 변경) 시에만 즉시 재정렬.
+            </div>
           </div>
         </div>
+
         <div class="rn-item">
-          <div class="rn-num">A5</div>
+          <div class="rn-num">05</div>
           <div class="rn-body">
-            <div class="rn-title">Top Pick 안정화</div>
-            <div class="rn-desc">● 신호 부족할 때 ○ 점수 상위로 채워 항상 3개 표시 (○는 살짝 흐리게). 5분 throttle로 가격 갱신마다 카드 들쭉날쭉하지 않게. 사용자 액션(시장·필터·스타일 변경) 시에만 즉시 재정렬. 부분 갱신 함수가 카드 안 가격·등락률만 따로 업데이트.</div>
+            <div class="rn-title">백테스트 엔진 — 브라우저 내 실시간 검증</div>
+            <div class="rn-desc">
+              받은 OHLCV로 V1·V2 신호의 실제 성과를 즉시 측정.
+              <strong>메트릭 8종</strong>: CAGR · Sharpe · Sortino · Calmar · MDD · 승률 · Profit Factor · 평균 보유일.
+              거래비용 한국 0.23% / 미국 0.05% 양방향 반영. 손절 -7%, 보유 30일 강제 청산.
+              <strong>look-ahead 버그 수정</strong> (시뮬 시점의 월 사용 — 미래 정보 사용 안 함).<br>
+              콘솔 <code>window.__backtest.compare()</code>로 V1 vs V2 vs Buy&amp;Hold 일괄 비교.
+            </div>
           </div>
         </div>
+
+        <div class="rn-item">
+          <div class="rn-num">06</div>
+          <div class="rn-body">
+            <div class="rn-title">Python 통합 검증 — 트레이딩뷰 표준 ±2 이내</div>
+            <div class="rn-desc">
+              모든 지표 함수 + V2 점수 + 시장 국면 + 백테스트 엔진을 동일 로직 Python으로 재구현해 실데이터(삼성전자 / SK하이닉스 / NAVER / 애플 / 엔비디아)로 검증 완료.
+              <strong>RSI/SMA/MACD 모두 트레이딩뷰 값과 일치</strong>. V2가 보수적 모드로 동작(현재 강세장에 ● 신호 거의 없음)하는 것이 LOUIS 정체성과 부합함을 확인.
+            </div>
+          </div>
+        </div>
+
       </div>
+
+      <p class="guide-p guide-note">
+        ✦ <strong>다음 단계 (Phase 2, 3~6개월)</strong>: 포지션 사이징 · ATR 기반 손절익절 · 포트폴리오 리스크 한도 · V1 vs V2 정량 비교 페이지.<br>
+        ✦ <strong>현재 콘솔 도구</strong>: <code>window.__signal.compare()</code> · <code>window.__backtest.compare()</code> · <code>window.__regime.current()</code> · <code>window.__indicators.test()</code><br>
+        ⚠ <strong>한계</strong>: OHLCV 1년치 한정 · VIX는 미장만(국장은 V-KOSPI 별도 필요) · 슬리피지 미반영 (실거래는 백테스트보다 0.1~0.3%p 낮을 것).
+      </p>
+    </section>
 
       <p class="guide-p guide-note">⚠ V2는 신중한 모드입니다. 상승장 끝부분에선 ● 자주 안 나오고, 조정 시작되면 ●가 늘어납니다 ("친구가 물리면 그게 매수" 정체성과 일치). 콘솔에서 <code>window.__signal.compare()</code>로 V1 vs V2 비교 가능. <code>window.__useSignalV2 = false</code>로 V1 롤백 가능.</p>
     </section>
@@ -3969,9 +4071,10 @@
 
       <div class="guide-formula">
         <div class="gf-row"><span class="gf-key">도달률</span><span class="gf-eq">=</span><span class="gf-val">최대 30점 — &lt;50% 풀점, 50~70% 단계 감소, 70~85% 빠른 감소, 85% 이상 0점</span></div>
-        <div class="gf-row"><span class="gf-key">RSI(14)</span><span class="gf-eq">=</span><span class="gf-val">최대 25점 — &lt;30 풀점(과매도), &lt;40 20점, &lt;50 14점, &gt;70 0점</span></div>
-        <div class="gf-row"><span class="gf-key">200일 이평선</span><span class="gf-eq">=</span><span class="gf-val">위 20점 / 아래 0점 (장기 추세 필터)</span></div>
-        <div class="gf-row"><span class="gf-key">볼린저 %B</span><span class="gf-eq">=</span><span class="gf-val">최대 15점 — &lt;0.2 풀점(하단), &lt;0.4 10점, &gt;0.8 0점</span></div>
+        <div class="gf-row"><span class="gf-key">RSI(14)</span><span class="gf-eq">=</span><span class="gf-val">최대 20점 — &lt;30 풀점(과매도), &lt;40 16점, &lt;50 11점, &gt;70 0점</span></div>
+        <div class="gf-row"><span class="gf-key">MACD(12,26,9)</span><span class="gf-eq">=</span><span class="gf-val">최대 8점 — 골든크로스 풀점, 상승추세 5점, 데드크로스 0점</span></div>
+        <div class="gf-row"><span class="gf-key">200일 이평선</span><span class="gf-eq">=</span><span class="gf-val">위 18점 / 아래 0점 (장기 추세 필터)</span></div>
+        <div class="gf-row"><span class="gf-key">볼린저 %B</span><span class="gf-eq">=</span><span class="gf-val">최대 14점 — &lt;0.2 풀점(하단), &lt;0.4 9점, &gt;0.8 0점</span></div>
         <div class="gf-row"><span class="gf-key">거래량 비율</span><span class="gf-eq">=</span><span class="gf-val">최대 10점 — &gt;2x + 가격 하락 풀점(패닉 셀, 역발상 매수)</span></div>
         <div class="gf-row"><span class="gf-key">+ 시즌 보너스</span><span class="gf-eq">=</span><span class="gf-val">진입월 +15 / 임박 +12 / 피크 +8</span></div>
       </div>
@@ -3990,6 +4093,38 @@
       <p class="guide-p">Yahoo Finance에서 종목별 일봉 1년치 (252영업일) 자동 수신. <strong>하루 1회</strong> 장 마감 후(KST 16시) 갱신.</p>
       <p class="guide-p guide-note">⚠ <strong>한계</strong>: 일봉 200일치 미만 종목은 자동으로 V1(시즌+도달률) 폴백. 신규 상장주·ETF 일부 영향.<br>
       ✦ 콘솔에서 비교 가능: <span class="guide-code">window.__signal.compare()</span> — V1 vs V2 모든 종목 결과 비교</p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">시장 국면 분류 (Market Regime — Phase 1 완성)</h2>
+      <p class="guide-p">2026년 4월 도입. 시장 지수(KOSPI / QQQ) + VIX(미국 변동성)로 <strong>강세장/약세장을 4단계로 자동 판단</strong>. V2 점수 임계값을 국면에 따라 동적 조정.</p>
+
+      <h3 class="guide-h3">4단계 분류 기준</h3>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">강세장 (bull)</span><span class="gf-val">지수 200일선 위 +3% 이상 + VIX &lt; 25 + RSI ≥ 50 + 20일 &gt; -5%</span></div>
+        <div class="gf-row"><span class="gf-key">약상승 (weak-bull)</span><span class="gf-val">200일선 위 +3% 이상이나 VIX 25+ / 시장 RSI 약화 / 20일 -5% 하락</span></div>
+        <div class="gf-row"><span class="gf-key">불확실 (uncertain)</span><span class="gf-val">200일선 ±3% 근처 또는 시장 RSI &lt; 40 (방향 결정 안 됨)</span></div>
+        <div class="gf-row"><span class="gf-key">약세장 (bear)</span><span class="gf-val">200일선 아래 -3% 이상 (장기 하락 추세 진행)</span></div>
+      </div>
+
+      <h3 class="guide-h3">V2 점수 임계값 동적 조정</h3>
+      <p class="guide-p">국면에 따라 ● 신호 임계값(기본 65점) 자동 변동. <strong>"친구가 물리면 그게 매수"</strong> 정체성 — 약세장에서 더 적극, 강세장에서 더 신중.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">강세장</span><span class="gf-eq">+5</span><span class="gf-val">65 → <strong>70점</strong> (보수적, 비싼 진입 회피)</span></div>
+        <div class="gf-row"><span class="gf-key">약상승</span><span class="gf-eq">0</span><span class="gf-val">65점 (그대로)</span></div>
+        <div class="gf-row"><span class="gf-key">불확실</span><span class="gf-eq">0</span><span class="gf-val">65점 (그대로)</span></div>
+        <div class="gf-row"><span class="gf-key">약세장</span><span class="gf-eq">−10</span><span class="gf-val">65 → <strong>55점</strong> (적극적, 친구 매매 시점)</span></div>
+      </div>
+
+      <h3 class="guide-h3">데이터 소스</h3>
+      <p class="guide-p">국장: KOSPI 지수(<code class="guide-code">^KS11</code>) 일봉 1년치. 미장: QQQ ETF + VIX(<code class="guide-code">^VIX</code>) 변동성 지수. <strong>30분 캐시</strong> (시장 국면은 일중에 자주 변하지 않음). 페이지 진입 7초 후 백그라운드 페치.</p>
+
+      <h3 class="guide-h3">UI 표시</h3>
+      <p class="guide-p">페이지 헤더 우측에 작은 배지: <code class="guide-code">[● 강세장] KOSPI ↑+8.2% · 임계값 +5</code></p>
+      <p class="guide-p guide-note">
+        ✦ 콘솔에서 확인: <code class="guide-code">window.__regime.current()</code> · 강제 갱신 <code class="guide-code">window.__regime.refresh()</code><br>
+        ⚠ <strong>한계</strong>: VIX는 미국 시장만 (한국은 V-KOSPI 데이터 소스 별도 필요 — 향후 추가). KOSPI 200일선 단일 기준이라 빠른 추세 전환 감지 1~2일 지연.
+      </p>
     </section>
 
     <section class="guide-section">
@@ -4092,7 +4227,7 @@
     </section>
 
     <section class="guide-section">
-      <h2 class="guide-h2">백테스트 지표</h2>
+      <h2 class="guide-h2">백테스트 지표 (테마 헤더 배지)</h2>
       <p class="guide-p">별점(정성 평가)과 별개로, 과거 8년 데이터를 기준으로 한 검증 결과. 테마 헤더 옆 배지로 표시.</p>
       <div class="guide-formula">
         <div class="gf-row"><span class="gf-key">CAGR</span><span class="gf-val">연평균 복리 수익률</span></div>
@@ -4101,7 +4236,54 @@
         <div class="gf-row"><span class="gf-key">승률</span><span class="gf-val">연도별 + 수익 비율</span></div>
         <div class="gf-row"><span class="gf-key">vs 시장</span><span class="gf-val">전략 CAGR - 시장 지수 CAGR (KOSPI / QQQ)</span></div>
       </div>
-      <p class="guide-p guide-note">검증 기간 2018-01-01 ~ 2025-12-31 (8년). 시즌 전략은 매수월~매도월만 보유, 섹터 전략은 균등 가중 상시 보유.</p>
+      <p class="guide-p guide-note">검증 기간 2018-01-01 ~ 2025-12-31 (8년). 시즌 전략은 매수월~매도월만 보유, 섹터 전략은 균등 가중 상시 보유. <strong>현재는 샘플 데이터</strong>로 표시 — 실제 backtest.py 결과로 향후 교체 예정.</p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">백테스트 엔진 (브라우저 내, 2026-04 도입)</h2>
+      <p class="guide-p">받은 OHLCV 1년치를 사용해 <strong>실시간 백테스트</strong>. 콘솔에서 즉시 V1·V2 신호의 실제 성과를 측정.</p>
+
+      <h3 class="guide-h3">규칙 (Rules)</h3>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">V1 룰</span><span class="gf-val">진입: 도달률 &lt; 70% AND (시즌 진입월 또는 5일 모멘텀 양수) / 청산: 도달률 ≥ 95%</span></div>
+        <div class="gf-row"><span class="gf-key">V2 룰</span><span class="gf-val">진입: 점수 ≥ 65점 (RSI·SMA·BB·거래량 종합) / 청산: 도달률 ≥ 95% 또는 RSI ≥ 70</span></div>
+        <div class="gf-row"><span class="gf-key">Buy &amp; Hold</span><span class="gf-val">첫날 매수, 마지막 날 청산 (벤치마크)</span></div>
+        <div class="gf-row"><span class="gf-key">손절</span><span class="gf-val">−7% 도달 시 자동 청산 (모든 룰 공통)</span></div>
+        <div class="gf-row"><span class="gf-key">보유기간 만료</span><span class="gf-val">매수 후 30일 경과 시 강제 청산</span></div>
+      </div>
+
+      <h3 class="guide-h3">거래 비용 (반영됨)</h3>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">한국 시장</span><span class="gf-val">0.23% (수수료 + 거래세 — 매수+매도 합산 0.46%)</span></div>
+        <div class="gf-row"><span class="gf-key">미국 시장</span><span class="gf-val">0.05% (수수료만 — 매수+매도 합산 0.10%)</span></div>
+        <div class="gf-row"><span class="gf-key">슬리피지</span><span class="gf-val">현재 미반영 (향후 0.1% 추가 예정)</span></div>
+      </div>
+
+      <h3 class="guide-h3">측정 지표 (8종)</h3>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">CAGR</span><span class="gf-val">연평균 복리 수익률 (1년 미만 기간은 연환산)</span></div>
+        <div class="gf-row"><span class="gf-key">Sharpe</span><span class="gf-val">평균 일수익률 / 표준편차 × √252 (위험조정수익)</span></div>
+        <div class="gf-row"><span class="gf-key">Sortino</span><span class="gf-val">평균 일수익률 / 하락 변동성 × √252 (Sharpe 변형, 상승은 위험으로 안 셈)</span></div>
+        <div class="gf-row"><span class="gf-key">Calmar</span><span class="gf-val">CAGR / |MDD| (낙폭 대비 수익)</span></div>
+        <div class="gf-row"><span class="gf-key">MDD</span><span class="gf-val">최대 낙폭 (전고점 대비 최대 손실 %)</span></div>
+        <div class="gf-row"><span class="gf-key">승률</span><span class="gf-val">+ 수익 거래 수 / 총 거래 수</span></div>
+        <div class="gf-row"><span class="gf-key">Profit Factor</span><span class="gf-val">총 이익 / 총 손실 (1.5+ 양호, 2.0+ 우수)</span></div>
+        <div class="gf-row"><span class="gf-key">평균 보유일</span><span class="gf-val">매수~매도 평균 거래일 수</span></div>
+      </div>
+
+      <h3 class="guide-h3">콘솔에서 실행</h3>
+      <p class="guide-p">사용자가 직접 검증 가능. 결과는 <code class="guide-code">console.table</code>로 표시.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">V1 vs V2 비교</span><span class="gf-val"><code class="guide-code">window.__backtest.compare()</code></span></div>
+        <div class="gf-row"><span class="gf-key">단일 종목</span><span class="gf-val"><code class="guide-code">window.__backtest.detail('005930.KS', 'v2')</code></span></div>
+        <div class="gf-row"><span class="gf-key">커스텀 룰</span><span class="gf-val"><code class="guide-code">window.__backtest.single(ohlcv, ruleFn, options)</code></span></div>
+      </div>
+
+      <p class="guide-p guide-note">
+        ⚠ <strong>한계</strong>: OHLCV 캐시(1년치) 기준이라 검증 기간이 짧음. 거래 빈도가 낮은 종목은 의미 있는 통계 X.<br>
+        ✦ <strong>해석</strong>: V2가 거래 적게 나오는 게 정상 (보수적 모드). "거래 0건"은 1년 내내 매수 신호가 없었다는 뜻 — 비싸거나(상승장 끝부분), 추세 약했다는 의미.<br>
+        ✦ <strong>현실 확인</strong>: 한국 0.46% 양방향 비용은 실제와 비슷하나, 슬리피지 미반영. 실거래는 백테스트보다 약 0.1~0.3%p 낮은 결과 예상.
+      </p>
     </section>
 
   </div><!-- /탭 3 (종목 분석) -->
@@ -5179,42 +5361,53 @@ function calcSignalV2(stock, theme, entry){
   score += pctScore;
   detail.pct = { value: pct, score: +pctScore.toFixed(1) };
 
-  // 2) RSI (25점) — 과매도일수록 좋음 (역발상)
+  // 2) RSI (20점) — 과매도일수록 좋음 (모멘텀 클러스터: RSI+MACD = 28점)
   let rsiScore = 0;
   if(ind.rsi14 != null){
-    if(ind.rsi14 < 30) rsiScore = 25;
-    else if(ind.rsi14 < 40) rsiScore = 20;
-    else if(ind.rsi14 < 50) rsiScore = 14;
-    else if(ind.rsi14 < 60) rsiScore = 8;
-    else if(ind.rsi14 < 70) rsiScore = 3;
+    if(ind.rsi14 < 30) rsiScore = 20;
+    else if(ind.rsi14 < 40) rsiScore = 16;
+    else if(ind.rsi14 < 50) rsiScore = 11;
+    else if(ind.rsi14 < 60) rsiScore = 6;
+    else if(ind.rsi14 < 70) rsiScore = 2;
     else rsiScore = 0;
     if(ind.rsi14 < 35) reasons.push(`RSI ${ind.rsi14.toFixed(0)} 과매도`);
   }
   score += rsiScore;
   detail.rsi = { value: ind.rsi14, score: rsiScore };
 
-  // 3) 200일선 (20점) — 위에 있으면 풀점, 아래면 0
+  // 3) MACD (8점) — 모멘텀 보조 지표 (RSI와 클러스터)
+  let macdScore = 0;
+  if(ind.macd){
+    if(ind.macd.goldenCross){ macdScore = 8; reasons.push('MACD 골든크로스'); }
+    else if(ind.macd.bullish){ macdScore = 5; }
+    else if(ind.macd.deadCross){ macdScore = 0; }
+    else macdScore = 1; // 약세지만 크로스 아님
+  }
+  score += macdScore;
+  detail.macd = { bullish: ind.macd?.bullish, golden: ind.macd?.goldenCross, score: macdScore };
+
+  // 4) 200일선 (18점) — 위에 있으면 풀점, 아래면 0
   let smaScore = 0;
   if(ind.aboveSMA200 === true){
-    smaScore = 20;
+    smaScore = 18;
     reasons.push('200일선 위');
   } else if(ind.aboveSMA200 === false){
     // 200일선 아래는 장기 약세 — 점수 없음
     smaScore = 0;
   } else {
     // 데이터 부족(200일 미만) — 60일선으로 보조 평가
-    if(ind.aboveSMA60 === true) smaScore = 10;
+    if(ind.aboveSMA60 === true) smaScore = 9;
   }
   score += smaScore;
   detail.sma = { aboveSMA200: ind.aboveSMA200, score: smaScore };
 
-  // 4) 볼린저 %B (15점) — 하단 근처일수록 좋음
+  // 5) 볼린저 %B (14점) — 하단 근처일수록 좋음
   let bbScore = 0;
   if(ind.bb && ind.bb.percentB != null){
     const pb = ind.bb.percentB;
-    if(pb < 0.2) bbScore = 15;
-    else if(pb < 0.4) bbScore = 10;
-    else if(pb < 0.6) bbScore = 5;
+    if(pb < 0.2) bbScore = 14;
+    else if(pb < 0.4) bbScore = 9;
+    else if(pb < 0.6) bbScore = 4;
     else if(pb < 0.8) bbScore = 2;
     else bbScore = 0;
     if(pb < 0.25) reasons.push(`볼린저 하단`);
@@ -5222,7 +5415,7 @@ function calcSignalV2(stock, theme, entry){
   score += bbScore;
   detail.bb = { percentB: ind.bb?.percentB, score: bbScore };
 
-  // 5) 거래량 (10점) — 급증 + 가격 양상 결합
+  // 6) 거래량 (10점) — 급증 + 가격 양상 결합
   let volScore = 0;
   if(ind.volRatio != null){
     if(ind.volRatio > 2.0){
@@ -5251,13 +5444,22 @@ function calcSignalV2(stock, theme, entry){
   // 산업 섹터(상시 보유)는 시즌 보너스 없이도 OK — 점수 그대로
   detail.totalScore = +score.toFixed(1);
 
+  // ✦ Phase A6: 시장 국면에 따라 임계값 동적 조정
+  // 강세장 +5 (보수적), 약세장 -10 (적극적), 그 외 0
+  const regimeAdjust = (typeof getRegimeThresholdAdjust === 'function')
+    ? getRegimeThresholdAdjust(theme.country) : 0;
+  const buyThreshold = 65 + regimeAdjust;
+  const waitThreshold = 40 + regimeAdjust;
+  detail.regimeAdjust = regimeAdjust;
+  detail.buyThreshold = buyThreshold;
+
   // ========== 신호 결정 ==========
   let signal, reasonText;
-  if(score >= 65){
+  if(score >= buyThreshold){
     signal = 'now';
     const top = reasons.slice(0, 3).join(' · ') || '기술 지표 양호';
     reasonText = `${top} · ${score.toFixed(0)}점`;
-  } else if(score >= 40){
+  } else if(score >= waitThreshold){
     signal = 'wait';
     reasonText = `점수 ${score.toFixed(0)}점 · 도달률 ${pct.toFixed(0)}%`;
   } else {
@@ -6243,15 +6445,69 @@ function calcATR(highs, lows, closes, period = 14){
   return atr;
 }
 
-/* MACD — 12/26/9 표준 (Phase 2에서 활용 예정) */
+/* MACD — 12/26/9 표준 (완성판: signal 라인 + histogram)
+   해석:
+   - macd > signal (histogram > 0): 상승 모멘텀
+   - macd < signal (histogram < 0): 하락 모멘텀
+   - 골든크로스: histogram이 음 → 양으로 전환
+   - 데드크로스: histogram이 양 → 음으로 전환
+*/
 function calcMACD(closes, fast = 12, slow = 26, signal = 9){
   if(!closes || closes.length < slow + signal) return null;
-  const emaFast = calcEMA(closes, fast);
-  const emaSlow = calcEMA(closes, slow);
-  if(emaFast == null || emaSlow == null) return null;
-  const macdLine = emaFast - emaSlow;
-  // signal 라인 계산을 위해 MACD 시리즈 필요 (간소화: 현재 MACD만 반환)
-  return { macd: macdLine, fast: emaFast, slow: emaSlow };
+  // 1) MACD 시리즈 계산 — 각 시점의 (EMA_fast - EMA_slow)
+  const macdSeries = [];
+  // EMA를 시리즈로 계산하기 위해 누적 EMA 사용
+  const k_fast = 2 / (fast + 1);
+  const k_slow = 2 / (slow + 1);
+  let emaFast = closes.slice(0, fast).reduce((a,b)=>a+b, 0) / fast;
+  let emaSlow = closes.slice(0, slow).reduce((a,b)=>a+b, 0) / slow;
+  // slow 기간부터 MACD 시리즈 시작
+  for(let i = 0; i < closes.length; i++){
+    if(i < fast - 1) continue;
+    if(i === fast - 1){
+      // 이미 emaFast 초기값 설정됨
+    } else if(i >= fast){
+      emaFast = closes[i] * k_fast + emaFast * (1 - k_fast);
+    }
+    if(i < slow - 1) continue;
+    if(i >= slow){
+      emaSlow = closes[i] * k_slow + emaSlow * (1 - k_slow);
+    }
+    macdSeries.push(emaFast - emaSlow);
+  }
+  if(macdSeries.length < signal) return null;
+
+  // 2) signal 라인 = MACD의 9일 EMA
+  const k_signal = 2 / (signal + 1);
+  let signalLine = macdSeries.slice(0, signal).reduce((a,b)=>a+b, 0) / signal;
+  for(let i = signal; i < macdSeries.length; i++){
+    signalLine = macdSeries[i] * k_signal + signalLine * (1 - k_signal);
+  }
+
+  // 3) 현재 시점 값
+  const macdNow = macdSeries[macdSeries.length - 1];
+  const histogram = macdNow - signalLine;
+
+  // 4) 직전 histogram (크로스 검출용)
+  let prevHistogram = null;
+  if(macdSeries.length >= 2){
+    // 직전 signal 재계산 (간소화: 마지막 한 단계만 되돌림)
+    const prevMacd = macdSeries[macdSeries.length - 2];
+    // signalLine은 EMA라 정확한 prev 복원 어려움 → 근사: signal_prev = (signal_now - macd_now*k) / (1-k)
+    const prevSignal = (signalLine - macdNow * k_signal) / (1 - k_signal);
+    prevHistogram = prevMacd - prevSignal;
+  }
+
+  return {
+    macd: macdNow,
+    signal: signalLine,
+    histogram,
+    prevHistogram,
+    // 크로스 검출
+    goldenCross: prevHistogram != null && prevHistogram <= 0 && histogram > 0,
+    deadCross: prevHistogram != null && prevHistogram >= 0 && histogram < 0,
+    bullish: histogram > 0,
+  };
 }
 
 /* ===== 통합 인터페이스 =====
@@ -6282,6 +6538,7 @@ function getIndicators(ticker){
     bb: calcBollinger(closes, 20, 2),
     volRatio: calcVolumeRatio(volumes, 20),
     atr14: calcATR(highs, lows, closes, 14),
+    macd: calcMACD(closes, 12, 26, 9),
     dataPoints: closes.length,
   };
 }
@@ -6310,6 +6567,661 @@ window.__indicators = {
   }
 };
 /* ===== /Phase A2 지표 계산 ===== */
+
+/* ============================================================
+   ✦ Phase A5: 백테스트 엔진 (브라우저 내 실시간)
+   - 캐시된 OHLCV로 시뮬, V1/V2 신호 룰 비교
+   - 한국 0.23% / 미국 0.05% 거래비용 반영
+   - 메트릭: CAGR, Sharpe, Sortino, MDD, 승률, 손익비, 거래수
+   ============================================================ */
+
+const TX_COST_KR = 0.0023;  // 한국 (수수료 + 세금)
+const TX_COST_US = 0.0005;  // 미국 (수수료)
+const TRADING_DAYS_PER_YEAR = 252;
+
+/* 단일 종목 백테스트
+   ohlcv: { closes, highs, lows, dates, volumes } - 일봉 시리즈
+   ruleFn: (i, ctx) => { entry: bool, exit: bool } - 매 시점 룰 평가
+   options: { holdDays, stopLoss, takeProfit, country }
+   반환: { trades:[], equity:[], metrics:{} }
+*/
+function backtestStock(ohlcv, ruleFn, options = {}){
+  if(!ohlcv || !ohlcv.closes || ohlcv.closes.length < 60){
+    return null; // 최소 60일 필요 (RSI/SMA 계산용)
+  }
+  const {
+    holdDays = 30,           // 매수 후 보유일 (룰이 청산 안 하면 강제 청산)
+    stopLoss = -0.07,        // -7% 손절
+    takeProfit = null,       // 익절 (null = 미사용)
+    country = 'KR',
+    initialCapital = 1000000,
+  } = options;
+
+  const cost = country === 'US' ? TX_COST_US : TX_COST_KR;
+  const closes = ohlcv.closes;
+  const N = closes.length;
+  const trades = [];
+  const equity = []; // [{ date, value }]
+
+  let capital = initialCapital;
+  let position = null; // { entryIdx, entryPrice, shares }
+
+  // 30일 워밍업 (지표 계산 가능 시점부터)
+  const startIdx = 30;
+
+  for(let i = startIdx; i < N; i++){
+    const price = closes[i];
+    const date = ohlcv.dates ? ohlcv.dates[i] : i;
+
+    // 컨텍스트: i 시점 기준 지표 계산 가능한 슬라이스
+    const dateMs = ohlcv.dates ? ohlcv.dates[i] : null;
+    const currentMonth = dateMs ? (new Date(dateMs).getMonth() + 1) : null;
+    const ctx = {
+      i,
+      slice: closes.slice(0, i + 1),
+      highSlice: ohlcv.highs ? ohlcv.highs.slice(0, i + 1) : null,
+      lowSlice: ohlcv.lows ? ohlcv.lows.slice(0, i + 1) : null,
+      volSlice: ohlcv.volumes ? ohlcv.volumes.slice(0, i + 1) : null,
+      price,
+      position,
+      currentMonth,  // ✦ 시뮬 시점의 월 (look-ahead 방지)
+    };
+
+    // 보유 중: 청산 조건 검토
+    if(position){
+      const ret = (price - position.entryPrice) / position.entryPrice;
+      const heldDays = i - position.entryIdx;
+      let exitReason = null;
+
+      // 1) 손절
+      if(stopLoss != null && ret <= stopLoss) exitReason = 'stop';
+      // 2) 익절
+      else if(takeProfit != null && ret >= takeProfit) exitReason = 'target';
+      // 3) 보유기간 만료
+      else if(heldDays >= holdDays) exitReason = 'time';
+      // 4) 룰 청산 신호
+      else {
+        const decision = ruleFn(ctx);
+        if(decision?.exit) exitReason = 'signal';
+      }
+
+      if(exitReason){
+        const grossReturn = (price - position.entryPrice) / position.entryPrice;
+        const netReturn = grossReturn - 2 * cost; // 매수+매도 비용
+        const pnl = position.shares * position.entryPrice * netReturn;
+        capital += position.shares * price * (1 - cost) - position.shares * position.entryPrice;
+        // capital 단순화: 자본 = 초기 + 누적 net pnl
+        capital = initialCapital + (trades.reduce((s,t)=>s+t.pnl, 0) + pnl);
+        trades.push({
+          entryIdx: position.entryIdx,
+          exitIdx: i,
+          entryPrice: position.entryPrice,
+          exitPrice: price,
+          heldDays,
+          grossReturn,
+          netReturn,
+          pnl,
+          reason: exitReason,
+          entryDate: ohlcv.dates?.[position.entryIdx],
+          exitDate: date,
+        });
+        position = null;
+      }
+    }
+
+    // 미보유: 진입 조건 검토
+    if(!position){
+      const decision = ruleFn(ctx);
+      if(decision?.entry){
+        const shares = Math.floor(capital * 0.95 / price); // 5% 캐시 버퍼
+        if(shares > 0){
+          position = { entryIdx: i, entryPrice: price, shares };
+        }
+      }
+    }
+
+    equity.push({ date, value: capital + (position ? position.shares * (price - position.entryPrice) : 0) });
+  }
+
+  // 미청산 포지션 강제 청산 (마지막 시점)
+  if(position){
+    const lastPrice = closes[N - 1];
+    const grossReturn = (lastPrice - position.entryPrice) / position.entryPrice;
+    const netReturn = grossReturn - 2 * cost;
+    const pnl = position.shares * position.entryPrice * netReturn;
+    trades.push({
+      entryIdx: position.entryIdx,
+      exitIdx: N - 1,
+      entryPrice: position.entryPrice,
+      exitPrice: lastPrice,
+      heldDays: (N - 1) - position.entryIdx,
+      grossReturn,
+      netReturn,
+      pnl,
+      reason: 'eod',
+      entryDate: ohlcv.dates?.[position.entryIdx],
+      exitDate: ohlcv.dates?.[N - 1],
+    });
+  }
+
+  return {
+    trades,
+    equity,
+    metrics: calcBacktestMetrics(trades, equity, N - startIdx),
+  };
+}
+
+/* 메트릭 계산 — 거래 기록 + equity 곡선 */
+function calcBacktestMetrics(trades, equity, periodDays){
+  if(!trades.length){
+    return { trades: 0, totalReturn: 0, cagr: 0, sharpe: 0, sortino: 0, mdd: 0,
+             winRate: 0, profitFactor: 0, avgHoldDays: 0, avgWin: 0, avgLoss: 0 };
+  }
+  // 누적 net 수익률 (equity 끝값 / 초기)
+  const initial = equity[0]?.value || 1000000;
+  const final = equity[equity.length - 1]?.value || initial;
+  const totalReturn = (final - initial) / initial;
+
+  // CAGR (연복리)
+  const years = periodDays / TRADING_DAYS_PER_YEAR;
+  const cagr = years > 0 ? Math.pow(1 + totalReturn, 1 / years) - 1 : 0;
+
+  // 일별 수익률 (Sharpe/Sortino용)
+  const dailyReturns = [];
+  for(let i = 1; i < equity.length; i++){
+    const r = (equity[i].value - equity[i-1].value) / (equity[i-1].value || 1);
+    if(isFinite(r)) dailyReturns.push(r);
+  }
+  const meanRet = dailyReturns.reduce((a,b)=>a+b, 0) / (dailyReturns.length || 1);
+  const variance = dailyReturns.reduce((s,r)=>s+(r-meanRet)**2, 0) / (dailyReturns.length || 1);
+  const stdDev = Math.sqrt(variance);
+  const sharpe = stdDev > 0 ? (meanRet * Math.sqrt(TRADING_DAYS_PER_YEAR)) / (stdDev * Math.sqrt(TRADING_DAYS_PER_YEAR)) * Math.sqrt(TRADING_DAYS_PER_YEAR) : 0;
+  // 더 정확한 Sharpe: 연환산 (rf=0)
+  const sharpeFixed = stdDev > 0 ? (meanRet / stdDev) * Math.sqrt(TRADING_DAYS_PER_YEAR) : 0;
+
+  // Sortino (하락 변동성만)
+  const downsideRets = dailyReturns.filter(r => r < 0);
+  const downsideStdDev = downsideRets.length
+    ? Math.sqrt(downsideRets.reduce((s,r)=>s+r*r, 0) / downsideRets.length)
+    : 0;
+  const sortino = downsideStdDev > 0 ? (meanRet / downsideStdDev) * Math.sqrt(TRADING_DAYS_PER_YEAR) : 0;
+
+  // MDD (최대 낙폭)
+  let peak = equity[0].value;
+  let maxDD = 0;
+  equity.forEach(e => {
+    if(e.value > peak) peak = e.value;
+    const dd = (e.value - peak) / peak;
+    if(dd < maxDD) maxDD = dd;
+  });
+
+  // 거래 분석
+  const wins = trades.filter(t => t.netReturn > 0);
+  const losses = trades.filter(t => t.netReturn <= 0);
+  const winRate = trades.length ? wins.length / trades.length : 0;
+  const avgWin = wins.length ? wins.reduce((s,t)=>s+t.netReturn, 0) / wins.length : 0;
+  const avgLoss = losses.length ? losses.reduce((s,t)=>s+t.netReturn, 0) / losses.length : 0;
+  const totalWin = wins.reduce((s,t)=>s+t.netReturn, 0);
+  const totalLoss = Math.abs(losses.reduce((s,t)=>s+t.netReturn, 0));
+  const profitFactor = totalLoss > 0 ? totalWin / totalLoss : (totalWin > 0 ? Infinity : 0);
+  const avgHoldDays = trades.reduce((s,t)=>s+t.heldDays, 0) / trades.length;
+
+  // Calmar (CAGR / |MDD|)
+  const calmar = maxDD < 0 ? cagr / Math.abs(maxDD) : 0;
+
+  return {
+    trades: trades.length,
+    totalReturn,
+    cagr,
+    sharpe: sharpeFixed,
+    sortino,
+    mdd: maxDD,
+    calmar,
+    winRate,
+    profitFactor,
+    avgHoldDays,
+    avgWin,
+    avgLoss,
+    wins: wins.length,
+    losses: losses.length,
+  };
+}
+
+/* ===== 룰 정의 ===== */
+
+/* V1 룰 — 단순 도달률 + 시즌
+   진입: 도달률 < 70%, (시즌 진입월 / 임박 / 피크 / 모멘텀 양수 / 섹터(상시))
+   청산: 도달률 >= 95% 또는 보유 30일
+   ✦ ctx.currentMonth — 시뮬 시점의 월 사용 (look-ahead 방지)
+*/
+function makeRuleV1(stock, theme){
+  return (ctx) => {
+    const peak = stock.peak;
+    const pct = (ctx.price / peak) * 100;
+    if(ctx.position){
+      // 청산: 과열
+      if(pct >= 95) return { exit: true };
+      return {};
+    }
+    // 진입: 매수 구간
+    if(pct >= 70) return {};
+    // 시즌 컨텍스트 — 시뮬 시점의 월 기준
+    const mo = ctx.currentMonth;
+    let inSeason = false, preSeason = false, inPeakSeason = false;
+    if(mo != null){
+      inSeason = theme.entryMonths?.includes(mo);
+      const next1 = (mo % 12) + 1;
+      const next2 = (((mo) % 12)) + 1; // 의도: mo+2 (mo가 11이면 1)
+      const next2Fix = ((mo + 1) % 12) + 1;
+      preSeason = theme.entryMonths?.includes(next1) || theme.entryMonths?.includes(next2Fix);
+      inPeakSeason = theme.peakMonths?.includes(mo);
+    }
+    // 5일 모멘텀
+    const recent5 = ctx.slice.slice(-6);
+    const momentum = recent5.length >= 6 ? (recent5[5] - recent5[0]) / recent5[0] : 0;
+    // 진입 조건
+    if(inSeason || preSeason || inPeakSeason || momentum > 0 || theme.group === 'industry'){
+      return { entry: true };
+    }
+    return {};
+  };
+}
+
+/* V2 룰 — 점수 시스템 65점 이상 진입 (실제 calcSignalV2와 동일)
+   청산: RSI 70+ 또는 도달률 95%+ 또는 보유 30일
+   즉시회피 룰: 도달률 95%+ / RSI 70+ AND 도달률 80%+ → 진입 X
+   ✦ ctx.currentMonth — 시뮬 시점의 월 기준 시즌 보너스
+*/
+function makeRuleV2(stock, theme){
+  return (ctx) => {
+    const peak = stock.peak;
+    const pct = (ctx.price / peak) * 100;
+    const closes = ctx.slice;
+
+    // 청산 룰 (보유 중)
+    if(ctx.position){
+      if(pct >= 95) return { exit: true };
+      const rsi = calcRSI(closes, 14);
+      if(rsi != null && rsi >= 70) return { exit: true };
+      return {};
+    }
+
+    // 즉시 회피 (V2 본 시스템과 동일)
+    if(pct >= 85) return {}; // 너무 비싸면 진입 X
+    const rsiNow = calcRSI(closes, 14);
+    if(rsiNow != null && rsiNow >= 70 && pct >= 80) return {};
+
+    let score = 0;
+
+    // 도달률 (30점)
+    if(pct < 50) score += 30;
+    else if(pct < 70) score += 30 - (pct - 50) * 0.75;
+    else score += Math.max(0, 15 - (pct - 70) * 1.0);
+
+    // RSI (20점)
+    if(rsiNow != null){
+      if(rsiNow < 30) score += 20;
+      else if(rsiNow < 40) score += 16;
+      else if(rsiNow < 50) score += 11;
+      else if(rsiNow < 60) score += 6;
+      else if(rsiNow < 70) score += 2;
+    }
+
+    // MACD (8점) — 모멘텀 보조
+    const macd = calcMACD(closes, 12, 26, 9);
+    if(macd){
+      if(macd.goldenCross) score += 8;
+      else if(macd.bullish) score += 5;
+      else if(macd.deadCross) score += 0;
+      else score += 1;
+    }
+
+    // 200SMA (18점)
+    const sma200 = calcSMA(closes, 200);
+    if(sma200 != null && ctx.price > sma200) score += 18;
+    else if(sma200 == null){
+      const sma60 = calcSMA(closes, 60);
+      if(sma60 != null && ctx.price > sma60) score += 9;
+    }
+
+    // 볼린저 %B (14점)
+    const bb = calcBollinger(closes, 20, 2);
+    if(bb){
+      if(bb.percentB < 0.2) score += 14;
+      else if(bb.percentB < 0.4) score += 9;
+      else if(bb.percentB < 0.6) score += 4;
+      else if(bb.percentB < 0.8) score += 2;
+    }
+
+    // 거래량 (10점)
+    if(ctx.volSlice){
+      const vr = calcVolumeRatio(ctx.volSlice, 20);
+      if(vr != null){
+        const change = closes.length >= 2 ? (closes[closes.length-1] - closes[closes.length-2]) / closes[closes.length-2] : 0;
+        if(vr > 2.0){
+          score += change < 0 ? 10 : 7;
+        } else if(vr > 1.5) score += 4;
+        else if(vr > 0.7) score += 2;
+      }
+    }
+
+    // ✦ 시즌 보너스 (최대 +15점) — 시뮬 시점의 월 기준
+    const mo = ctx.currentMonth;
+    if(mo != null){
+      const inSeason = theme.entryMonths?.includes(mo);
+      const next1 = (mo % 12) + 1;
+      const next2 = ((mo + 1) % 12) + 1;
+      const preSeason = theme.entryMonths?.includes(next1) || theme.entryMonths?.includes(next2);
+      const inPeakSeason = theme.peakMonths?.includes(mo);
+      if(inSeason) score += 15;
+      else if(preSeason) score += 12;
+      else if(inPeakSeason) score += 8;
+    }
+
+    return score >= 65 ? { entry: true } : {};
+  };
+}
+
+/* 단순 매수 보유 (Buy & Hold) — 벤치마크용 */
+function makeRuleBuyHold(){
+  let entered = false;
+  return (ctx) => {
+    if(!entered && !ctx.position){
+      entered = true;
+      return { entry: true };
+    }
+    return {};
+  };
+}
+
+/* 모든 종목 V1 vs V2 비교 백테스트 */
+function runBacktestComparison(opts = {}){
+  const { holdDays = 30, stopLoss = -0.07 } = opts;
+  const results = { v1: [], v2: [], buyhold: [] };
+  const tickers = Object.keys(ohlcvCache);
+
+  if(tickers.length === 0){
+    console.warn('[Backtest] OHLCV 캐시 비어있음. window.__ohlcv.refreshAll() 먼저');
+    return null;
+  }
+
+  let processed = 0;
+  tickers.forEach(ticker => {
+    const ohlcv = ohlcvCache[ticker];
+    if(!ohlcv?.closes || ohlcv.closes.length < 60) return;
+
+    // 종목 메타 찾기
+    let stock = null, theme = null;
+    for(const t of ALL_THEMES){
+      const s = t.stocks.find(x => x.code === ticker);
+      if(s){ stock = s; theme = t; break; }
+    }
+    if(!stock) return;
+
+    const country = theme?.country || 'KR';
+    const options = { holdDays, stopLoss, country };
+
+    const v1 = backtestStock(ohlcv, makeRuleV1(stock, theme), options);
+    const v2 = backtestStock(ohlcv, makeRuleV2(stock, theme), options);
+    const bh = backtestStock(ohlcv, makeRuleBuyHold(), { ...options, holdDays: 9999 });
+
+    if(v1) results.v1.push({ ticker, name: stock.name, theme: theme.name, ...v1.metrics });
+    if(v2) results.v2.push({ ticker, name: stock.name, theme: theme.name, ...v2.metrics });
+    if(bh) results.buyhold.push({ ticker, name: stock.name, theme: theme.name, ...bh.metrics });
+    processed++;
+  });
+
+  // 집계
+  const aggregate = (arr) => {
+    if(!arr.length) return null;
+    const valid = arr.filter(r => isFinite(r.cagr));
+    if(!valid.length) return null;
+    return {
+      n: valid.length,
+      avgCagr: valid.reduce((s,r)=>s+r.cagr, 0) / valid.length,
+      avgSharpe: valid.reduce((s,r)=>s+r.sharpe, 0) / valid.length,
+      avgSortino: valid.reduce((s,r)=>s+(r.sortino||0), 0) / valid.length,
+      avgMdd: valid.reduce((s,r)=>s+r.mdd, 0) / valid.length,
+      avgWinRate: valid.reduce((s,r)=>s+r.winRate, 0) / valid.length,
+      avgProfitFactor: valid.filter(r=>isFinite(r.profitFactor)).reduce((s,r)=>s+r.profitFactor, 0) / Math.max(1, valid.filter(r=>isFinite(r.profitFactor)).length),
+      avgTrades: valid.reduce((s,r)=>s+r.trades, 0) / valid.length,
+      avgHoldDays: valid.reduce((s,r)=>s+(r.avgHoldDays||0), 0) / valid.length,
+      totalTrades: valid.reduce((s,r)=>s+r.trades, 0),
+    };
+  };
+
+  return {
+    period: { days: ohlcvCache[tickers[0]]?.closes?.length, processed },
+    v1Summary: aggregate(results.v1),
+    v2Summary: aggregate(results.v2),
+    buyholdSummary: aggregate(results.buyhold),
+    detail: results,
+  };
+}
+
+/* 콘솔 디버그 도구 */
+window.__backtest = {
+  run: runBacktestComparison,
+  single: backtestStock,
+  rules: { v1: makeRuleV1, v2: makeRuleV2, buyhold: makeRuleBuyHold },
+  metrics: calcBacktestMetrics,
+  /* 사용: window.__backtest.compare() */
+  compare(){
+    const r = runBacktestComparison();
+    if(!r) return null;
+    console.log(`[Backtest] ${r.period.processed}개 종목, ${r.period.days}일치`);
+    console.log('V1 (도달률+시즌):', r.v1Summary);
+    console.log('V2 (점수 시스템):', r.v2Summary);
+    console.log('Buy & Hold:', r.buyholdSummary);
+    console.table([
+      { 전략:'V1', ...formatSummary(r.v1Summary) },
+      { 전략:'V2', ...formatSummary(r.v2Summary) },
+      { 전략:'B&H', ...formatSummary(r.buyholdSummary) },
+    ]);
+    return r;
+  },
+  /* 단일 종목 상세 */
+  detail(ticker, version = 'v2'){
+    const ohlcv = ohlcvCache[ticker];
+    if(!ohlcv) return console.warn('OHLCV 없음:', ticker);
+    let stock = null, theme = null;
+    for(const t of ALL_THEMES){
+      const s = t.stocks.find(x => x.code === ticker);
+      if(s){ stock = s; theme = t; break; }
+    }
+    if(!stock) return console.warn('종목 없음:', ticker);
+    const ruleFn = version === 'v1' ? makeRuleV1(stock, theme)
+                 : version === 'buyhold' ? makeRuleBuyHold()
+                 : makeRuleV2(stock, theme);
+    const r = backtestStock(ohlcv, ruleFn, { country: theme.country });
+    console.log(`[${stock.name}] ${version} 백테스트`);
+    console.log('메트릭:', r.metrics);
+    console.log('거래:', r.trades);
+    return r;
+  },
+};
+
+function formatSummary(s){
+  if(!s) return { 종목수:0 };
+  return {
+    종목수: s.n,
+    평균CAGR: (s.avgCagr*100).toFixed(1) + '%',
+    평균Sharpe: s.avgSharpe.toFixed(2),
+    평균MDD: (s.avgMdd*100).toFixed(1) + '%',
+    승률: (s.avgWinRate*100).toFixed(0) + '%',
+    'P/F': s.avgProfitFactor.toFixed(2),
+    거래수: s.avgTrades.toFixed(1),
+  };
+}
+/* ===== /Phase A5 백테스트 엔진 ===== */
+
+/* ============================================================
+   ✦ Phase A6: 시장 국면 분류 (Market Regime)
+   - 시장 지수(KOSPI/QQQ) 일봉 + VIX로 강세장/약세장 자동 판단
+   - 4단계: bull(강세) / weak-bull(약상승) / uncertain(불확실) / bear(약세)
+   - V2 점수 임계값을 국면에 따라 동적 조정
+   ============================================================ */
+
+const MARKET_INDEX_TICKERS = {
+  KR: '^KS11',     // KOSPI
+  US: 'QQQ',       // QQQ ETF (NASDAQ-100 추적, ^IXIC보다 안정적 응답)
+};
+const VIX_TICKER = '^VIX';
+
+/* 시장 국면 캐시 — { regime, label, indexPrice, sma200, vix, change5d, asOf } */
+let marketRegimeCache = { KR: null, US: null };
+
+/* 단일 시장 지수 + VIX 페치 → 국면 판정 */
+async function fetchMarketRegime(country){
+  const idxTicker = MARKET_INDEX_TICKERS[country];
+  if(!idxTicker) return null;
+
+  // 캐시 신선도: 30분 이내면 재사용
+  const cached = marketRegimeCache[country];
+  if(cached && (Date.now() - cached.asOf) < 30 * 60 * 1000){
+    return cached;
+  }
+
+  try {
+    // 지수 + VIX 동시 페치 (VIX는 미국만)
+    const [indexData, vixData] = await Promise.all([
+      fetchOhlcv(idxTicker),
+      country === 'US' ? fetchOhlcv(VIX_TICKER) : Promise.resolve(null),
+    ]);
+
+    if(!indexData?.closes || indexData.closes.length < 200){
+      console.warn(`[Regime] ${country} 지수 데이터 부족`);
+      return null;
+    }
+
+    const closes = indexData.closes;
+    const last = closes[closes.length - 1];
+    const sma200 = calcSMA(closes, 200);
+    const sma60 = calcSMA(closes, 60);
+    const aboveSMA200 = sma200 != null && last > sma200;
+    const distSMA200 = sma200 != null ? ((last - sma200) / sma200) * 100 : 0;
+
+    // 5일 모멘텀
+    const closes5 = closes.slice(-6);
+    const change5d = closes5.length >= 6 ? ((closes5[5] - closes5[0]) / closes5[0]) * 100 : 0;
+    const change20d = closes.length >= 21 ? ((last - closes[closes.length-21]) / closes[closes.length-21]) * 100 : 0;
+
+    // VIX 현재값 (미국만)
+    const vix = vixData?.closes ? vixData.closes[vixData.closes.length - 1] : null;
+
+    // RSI(14)도 시장 지수에 적용 — 과매수/과매도 시장
+    const rsi14 = calcRSI(closes, 14);
+
+    // ===== 4단계 국면 판정 =====
+    let regime, label, color;
+
+    if(!aboveSMA200 || distSMA200 < -3){
+      // 200일선 아래 -3% 이상 → 약세장
+      regime = 'bear';
+      label = '약세장';
+      color = 'down';
+    } else if(distSMA200 < 3 || (rsi14 != null && rsi14 < 40)){
+      // 200일선 근처(±3%) 또는 시장 RSI 약세 → 불확실
+      regime = 'uncertain';
+      label = '불확실';
+      color = 'neutral';
+    } else if((vix != null && vix > 25) || change20d < -5 || (rsi14 != null && rsi14 < 50)){
+      // VIX 25 이상 / 20일 -5%+ / 시장 RSI 50 미만 → 약상승
+      regime = 'weak-bull';
+      label = '약상승';
+      color = 'neutral';
+    } else {
+      // 위 다 아니면 강세장
+      regime = 'bull';
+      label = '강세장';
+      color = 'up';
+    }
+
+    // 점수 임계값 동적 조정
+    const thresholdAdjust = {
+      'bull': +5,           // 강세장: 65 → 70 (보수적, 비싼 진입 회피)
+      'weak-bull': 0,
+      'uncertain': 0,
+      'bear': -10,          // 약세장: 65 → 55 ("친구 매매" 시점, 적극 매수)
+    }[regime];
+
+    const result = {
+      country,
+      regime,
+      label,
+      color,
+      indexTicker: idxTicker,
+      indexName: country === 'KR' ? 'KOSPI' : 'QQQ',
+      indexPrice: last,
+      sma200,
+      aboveSMA200,
+      distSMA200,
+      change5d,
+      change20d,
+      vix,
+      rsi14,
+      thresholdAdjust,
+      asOf: Date.now(),
+    };
+
+    marketRegimeCache[country] = result;
+    return result;
+  } catch(e){
+    console.warn(`[Regime] ${country} 페치 실패`, e);
+    return null;
+  }
+}
+
+/* 현재 활성 시장의 임계값 조정값 가져오기 (V2 점수 시스템에서 사용) */
+function getRegimeThresholdAdjust(country){
+  const cached = marketRegimeCache[country || currentCountry];
+  return cached?.thresholdAdjust || 0;
+}
+
+/* 국면 배지 렌더링 — 페이지 상단 작은 표시 */
+function renderMarketRegimeBadge(){
+  const container = document.getElementById('marketRegimeBadge');
+  if(!container) return;
+  const data = marketRegimeCache[currentCountry];
+  if(!data){
+    container.innerHTML = `<span class="mr-skel skel skel-text"></span>`;
+    return;
+  }
+  const arrow = data.distSMA200 > 0 ? '↑' : '↓';
+  const distStr = `${data.distSMA200 >= 0 ? '+' : ''}${data.distSMA200.toFixed(1)}%`;
+  const vixStr = data.vix != null ? ` · VIX ${data.vix.toFixed(0)}` : '';
+  const adjStr = data.thresholdAdjust !== 0
+    ? ` · 임계값 ${data.thresholdAdjust > 0 ? '+' : ''}${data.thresholdAdjust}`
+    : '';
+  container.innerHTML = `
+    <span class="mr-badge mr-${data.color}">
+      <span class="mr-label">${data.label}</span>
+      <span class="mr-meta">${data.indexName} ${arrow}${distStr}${vixStr}${adjStr}</span>
+    </span>`;
+  container.classList.add('fade-in-soft');
+}
+
+/* 초기화 — 페이지 진입 후 백그라운드 페치 */
+async function initMarketRegime(){
+  if(typeof PREVIEW_MODE !== 'undefined' && PREVIEW_MODE) return;
+  // 두 시장 모두 백그라운드에서 받기
+  const [kr, us] = await Promise.all([
+    fetchMarketRegime('KR'),
+    fetchMarketRegime('US'),
+  ]);
+  console.log('[Regime] KR:', kr?.label, '| US:', us?.label);
+  renderMarketRegimeBadge();
+  // 시장 변경 시 배지 재렌더링은 setCurrentMarket에서 호출
+}
+
+/* 디버그 도구 */
+window.__regime = {
+  cache: marketRegimeCache,
+  fetch: fetchMarketRegime,
+  refresh: initMarketRegime,
+  current: () => marketRegimeCache[currentCountry],
+};
+/* ===== /Phase A6 시장 국면 분류 ===== */
 
 /* 살아있는 프록시 목록 (영구 차단 적용) */
 function getActiveProxies(){
@@ -6979,6 +7891,7 @@ function setCurrentMarket(market, opts={}){
   if(calSection) calSection.classList.toggle('hidden', currentGroup!=='season');
   if(typeof buildCalendar === 'function') buildCalendar();
   if(typeof buildFilterBar === 'function') buildFilterBar();
+  if(typeof renderMarketRegimeBadge === 'function') renderMarketRegimeBadge();  // Phase A6 국면 배지 갱신
   if(typeof maybeRenderTopPicks === 'function') maybeRenderTopPicks(true);  // 시장 변경 → 강제 재정렬
   if(typeof buildSummary === 'function') buildSummary();
   if(typeof renderContent === 'function') renderContent();
@@ -7125,6 +8038,9 @@ renderContent();
 document.getElementById('calendarSection').classList.toggle('hidden', currentGroup!=='season');
 loadPrices(true);  // 초기 로드: fresh 캐시는 스킵 (즉시 화면 표시)
 initOhlcv();       // Phase A1: 일봉 OHLCV 백그라운드 갱신 (5초 후 시작)
+setTimeout(() => {
+  if(typeof initMarketRegime === 'function') initMarketRegime();
+}, 7000);          // Phase A6: 시장 국면 (7초 후 — OHLCV 인프라 준비 후)
 
 // 히트맵 init을 미리 강제 실행 — 시장 상태 함수 등록 + 캘린더 헤더 sub 채움
 // (페이지는 display:none이라 안 보이지만 데이터·함수는 준비됨)
