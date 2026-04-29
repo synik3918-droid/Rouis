@@ -276,41 +276,81 @@
     .ti-row{ gap:4px; margin-top:3px; }
   }
 
-  /* OHLCV 미도착 시 — 펄스 스켈레톤 (높이 유지로 레이아웃 점프 방지) */
-  .ti-row-skel{ pointer-events:none; }
-  .ti-skel{
+  /* ============================================================
+     ✦ 스켈레톤 시스템 (표준)
+     사용:
+       <span class="skel skel-text"></span>           <!-- 작은 텍스트 -->
+       <span class="skel skel-badge"></span>          <!-- 배지 (RSI 등) -->
+       <span class="skel skel-arrow"></span>          <!-- 화살표 -->
+       <span class="skel skel-num-lg"></span>         <!-- 큰 숫자 (카드 -->
+       <span class="skel skel-line" style="width:..."></span>
+       <div class="skel-block skel" style="..."></div> <!-- 블록형 -->
+     ============================================================ */
+  .skel{
     display:inline-block;
-    height:14px;
     border-radius:3px;
     background:linear-gradient(90deg,
       var(--surface) 0%,
       var(--surface-2) 50%,
       var(--surface) 100%);
-    background-size: 200% 100%;
-    animation: ti-pulse 1.4s ease-in-out infinite;
+    background-size:200% 100%;
+    animation: skel-pulse 1.4s ease-in-out infinite;
+    border:1px solid var(--border);
+    opacity:0.6;
+    vertical-align:middle;
+  }
+  .skel-block{ display:block; }
+  /* 사이즈 변형 */
+  .skel-text{ height:11px; width:60px; }
+  .skel-text-sm{ height:9px; width:40px; }
+  .skel-badge{ height:14px; width:48px; }
+  .skel-arrow{ height:14px; width:36px; }
+  .skel-num-lg{ height:32px; width:80px; border-radius:4px; }
+  .skel-num-md{ height:18px; width:60px; }
+  .skel-line{ height:8px; width:100%; border-radius:2px; }
+  /* 펄스 애니메이션 */
+  @keyframes skel-pulse{
+    0%, 100%{ background-position: 200% 0; opacity:0.4; }
+    50%{ background-position: -200% 0; opacity:0.7; }
+  }
+  /* 모바일 */
+  @media (max-width:767px){
+    .skel-badge{ height:12px; width:42px; }
+    .skel-arrow{ height:12px; width:32px; }
+    .skel-num-lg{ height:26px; width:64px; }
+    .skel-num-md{ height:15px; width:50px; }
+  }
+
+  /* 도착 시 부드러운 페이드인 — 모든 lazy 컨텐츠에 사용 */
+  .fade-in-soft{
+    animation: fade-in-soft 0.35s ease-out;
+  }
+  @keyframes fade-in-soft{
+    from{ opacity:0; transform:translateY(-2px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* RSI/200SMA 인디케이터 — 위 표준 스켈레톤 alias (호환성 유지) */
+  .ti-row-skel{ pointer-events:none; }
+  .ti-skel{
+    /* alias: .skel 와 동일 (legacy) */
+    display:inline-block;
+    height:14px;
+    border-radius:3px;
+    background:linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 50%, var(--surface) 100%);
+    background-size:200% 100%;
+    animation: skel-pulse 1.4s ease-in-out infinite;
     border:1px solid var(--border);
     opacity:0.6;
   }
   .ti-skel-badge{ width:48px; }
   .ti-skel-arrow{ width:36px; }
-  @keyframes ti-pulse{
-    0%, 100%{ background-position: 200% 0; opacity:0.4; }
-    50%{ background-position: -200% 0; opacity:0.7; }
-  }
   @media (max-width:767px){
     .ti-skel{ height:12px; }
     .ti-skel-badge{ width:42px; }
     .ti-skel-arrow{ width:32px; }
   }
-
-  /* OHLCV 도착 시 — 부드러운 페이드인 */
-  .ti-fade-in{
-    animation: ti-fade-in 0.35s ease-out;
-  }
-  @keyframes ti-fade-in{
-    from{ opacity:0; transform:translateY(-2px); }
-    to{ opacity:1; transform:translateY(0); }
-  }
+  .ti-fade-in{ animation: fade-in-soft 0.35s ease-out; }
   .tp-name{
     font-size:var(--text-base); font-weight:700; color:var(--text-1);
     display:flex; align-items:baseline; gap:8px;
@@ -403,6 +443,8 @@
   }
   .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
   .summary-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--subtle);border-radius:6px;padding:18px 20px;cursor:pointer;transition:all .15s;}
+  .summary-card-skel{ cursor:default; pointer-events:none; }
+  .summary-card-skel .summary-value{ display:flex; align-items:center; min-height:32px; }
   .summary-card:hover{border-color:var(--muted);transform:translateY(-2px);}
   .summary-card.active{border-color:var(--text);}
   .summary-card.low{border-left-color:var(--green);}
@@ -3256,6 +3298,50 @@
           <div class="ds-comp-note">신호(16px) + gap(4px) + 별(15px) = 35px / 컬럼 43px (좌측 padding 4px 포함)</div>
         </div>
 
+        <!-- 스켈레톤 시스템 (표준) -->
+        <div class="ds-comp">
+          <div class="ds-comp-label">스켈레톤 시스템 (Loading State)</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div>
+              <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-family:var(--font-mono);">기본 모양 (.skel + 변형)</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                <span class="skel skel-text" title=".skel-text"></span>
+                <span class="skel skel-text-sm" title=".skel-text-sm"></span>
+                <span class="skel skel-badge" title=".skel-badge"></span>
+                <span class="skel skel-arrow" title=".skel-arrow"></span>
+                <span class="skel skel-num-md" title=".skel-num-md"></span>
+                <span class="skel skel-num-lg" title=".skel-num-lg"></span>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-family:var(--font-mono);">사용 패턴 — 카드</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="summary-card low summary-card-skel" style="cursor:default;padding:14px">
+                  <div class="summary-label">매수 구간</div>
+                  <div class="summary-value" style="display:flex;align-items:center;min-height:32px"><span class="skel skel-num-lg"></span></div>
+                  <div class="summary-sub"><span class="skel skel-text"></span></div>
+                </div>
+                <div class="summary-card mid summary-card-skel" style="cursor:default;padding:14px">
+                  <div class="summary-label">고점 근접</div>
+                  <div class="summary-value" style="display:flex;align-items:center;min-height:32px"><span class="skel skel-num-lg"></span></div>
+                  <div class="summary-sub"><span class="skel skel-text"></span></div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-family:var(--font-mono);">사용 패턴 — 인라인 (RSI 자리)</div>
+              <div class="ti-row" style="margin-top:0">
+                <span class="skel skel-badge"></span>
+                <span class="skel skel-arrow"></span>
+              </div>
+            </div>
+          </div>
+          <div class="ds-comp-note">
+            <code>.skel</code> + 사이즈 변형 클래스 조합. 1.4s 펄스 애니메이션 + 좌우 그라데이션 이동. 도착 시 <code>.fade-in-soft</code> 적용 (0.35s, opacity+translateY).<br>
+            ⚠ 데이터 자리에 <strong>같은 높이</strong>로 배치 — 레이아웃 점프 방지.
+          </div>
+        </div>
+
         <!-- 기술 지표 인디케이터 (Phase A4) -->
         <div class="ds-comp">
           <div class="ds-comp-label">기술 지표 인디케이터</div>
@@ -3284,15 +3370,8 @@
                 <span class="tp-score" style="position:static">65점</span>
               </div>
             </div>
-            <div>
-              <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-family:var(--font-mono);">로딩 스켈레톤 (OHLCV 도착 전)</div>
-              <div class="ti-row ti-row-skel" style="margin-top:0">
-                <span class="ti-skel ti-skel-badge"></span>
-                <span class="ti-skel ti-skel-arrow"></span>
-              </div>
-            </div>
           </div>
-          <div class="ds-comp-note">RSI &lt;30 오렌지 (과매도) · 30~40 약오렌지 · 50~70 회색 · &gt;70 빨강 (과매수). 데이터 도착 전엔 펄스 스켈레톤, 도착 시 0.35s 페이드인.</div>
+          <div class="ds-comp-note">RSI &lt;30 오렌지 (과매도) · 30~40 약오렌지 · 50~70 회색 · &gt;70 빨강 (과매수). 데이터 도착 전엔 펄스 스켈레톤(위 섹션 참조), 도착 시 0.35s 페이드인.</div>
         </div>
 
         <!-- 라인 아이콘 규격 -->
@@ -5056,6 +5135,21 @@ function buildSummary(){
   const highAvg = highOverflows.length ? highOverflows.reduce((a,b)=>a+b,0)/highOverflows.length : 0;
 
   const grid = document.getElementById('summaryGrid');
+
+  // freshCount가 0이면 (가격 데이터 도착 전) 스켈레톤 카드 표시
+  if(freshCount === 0){
+    const skelCards = ['low','mid','high','fav'];
+    const labels = ['매수 구간','고점 근접','과열','★ 즐겨찾기'];
+    grid.innerHTML = skelCards.map((cls, i) => `
+      <div class="summary-card ${cls} summary-card-skel">
+        <div class="summary-label">${labels[i]}</div>
+        <div class="summary-value"><span class="skel skel-num-lg"></span></div>
+        <div class="summary-sub"><span class="skel skel-text"></span></div>
+      </div>
+    `).join('');
+    return;
+  }
+
   const cards = [
     { key:'low', cls:'low', label:'매수 구간', count:lowCount, sub: lowCount? `평균 여력 <strong>+${lowAvg.toFixed(1)}%</strong>`:'분석 가능 종목 없음' },
     { key:'mid', cls:'mid', label:'고점 근접', count:midCount, sub: '달성률 70~95%' },
@@ -5064,7 +5158,7 @@ function buildSummary(){
   ];
   grid.innerHTML = cards.map(c=>{
     const isActive = currentFilter===c.key;
-    return `<div class="summary-card ${c.cls}${isActive?' active':''}" data-summary="${c.key}">
+    return `<div class="summary-card ${c.cls}${isActive?' active':''} fade-in-soft" data-summary="${c.key}">
       <div class="summary-label">${c.label}</div>
       <div class="summary-value">${c.count}<span class="summary-value-unit"> 종목</span></div>
       <div class="summary-sub">${c.sub}</div>
