@@ -209,6 +209,72 @@
     font-family:var(--font-display); font-size:18px;
     color:rgba(255,128,0,0.35); line-height:1;
   }
+  .tp-score{
+    position:absolute; top:8px; right:42px;
+    font-family:var(--font-mono); font-size:10px; font-weight:700;
+    color:var(--accent); letter-spacing:0.5px;
+    background:rgba(255,128,0,0.08);
+    border:1px solid rgba(255,128,0,0.25);
+    padding:2px 6px; border-radius:3px;
+    line-height:1;
+  }
+
+  /* ============================================================
+     ✦ Phase A4: 기술 지표 인디케이터 (RSI 배지 + 200SMA 화살표)
+     ============================================================ */
+  .ti-row{
+    display:flex; gap:6px; align-items:center;
+    margin-top:4px; flex-wrap:wrap;
+  }
+  .ti-badge{
+    font-family:var(--font-mono); font-size:9.5px; font-weight:700;
+    padding:1px 5px; border-radius:3px; line-height:1.4;
+    letter-spacing:0.3px;
+    border:1px solid var(--border);
+    color:var(--text-3);
+    background:var(--surface);
+  }
+  /* RSI 상태별 색상 — 디자인 토큰 활용 */
+  .ti-badge.ti-strong{
+    /* 과매도 (<30) — 친구 매매 시점, 강조 */
+    color:var(--accent);
+    background:rgba(255,128,0,0.10);
+    border-color:rgba(255,128,0,0.40);
+  }
+  .ti-badge.ti-good{
+    /* 약과매도 (30~40) */
+    color:#ffa040;
+    background:rgba(255,128,0,0.05);
+    border-color:rgba(255,128,0,0.20);
+  }
+  .ti-badge.ti-warn{
+    /* 과매수 (>70) — 조심 */
+    color:var(--color-up);
+    background:rgba(232,72,94,0.08);
+    border-color:rgba(232,72,94,0.25);
+  }
+  /* 200일선 화살표 */
+  .ti-arrow{
+    font-family:var(--font-mono); font-size:9.5px; font-weight:700;
+    padding:1px 5px; border-radius:3px; line-height:1.4;
+    letter-spacing:0.3px;
+    border:1px solid var(--border);
+  }
+  .ti-arrow.ti-up{
+    color:var(--color-up);
+    background:rgba(232,72,94,0.06);
+    border-color:rgba(232,72,94,0.20);
+  }
+  .ti-arrow.ti-down{
+    color:var(--color-down);
+    background:rgba(79,143,232,0.06);
+    border-color:rgba(79,143,232,0.20);
+  }
+  /* 모바일 카드용 — 살짝 더 작게 */
+  @media (max-width:767px){
+    .ti-badge, .ti-arrow{ font-size:9px; padding:1px 4px; }
+    .ti-row{ gap:4px; margin-top:3px; }
+  }
   .tp-name{
     font-size:var(--text-base); font-weight:700; color:var(--text-1);
     display:flex; align-items:baseline; gap:8px;
@@ -3154,6 +3220,38 @@
           <div class="ds-comp-note">신호(16px) + gap(4px) + 별(15px) = 35px / 컬럼 43px (좌측 padding 4px 포함)</div>
         </div>
 
+        <!-- 기술 지표 인디케이터 (Phase A4) -->
+        <div class="ds-comp">
+          <div class="ds-comp-label">기술 지표 인디케이터</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div>
+              <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-family:var(--font-mono);">RSI 배지 — 과매도/과매수 표시</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <span class="ti-badge ti-strong">RSI 28</span>
+                <span class="ti-badge ti-good">RSI 35</span>
+                <span class="ti-badge">RSI 52</span>
+                <span class="ti-badge ti-warn">RSI 75</span>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-family:var(--font-mono);">200일선 화살표 — 장기 추세</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <span class="ti-arrow ti-up">▲200</span>
+                <span class="ti-arrow ti-down">▽200</span>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-family:var(--font-mono);">Top Pick 점수 배지</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <span class="tp-score" style="position:static">82점</span>
+                <span class="tp-score" style="position:static">71점</span>
+                <span class="tp-score" style="position:static">65점</span>
+              </div>
+            </div>
+          </div>
+          <div class="ds-comp-note">RSI &lt;30 오렌지 (과매도) · 30~40 약오렌지 · 50~70 회색 · &gt;70 빨강 (과매수)</div>
+        </div>
+
         <!-- 라인 아이콘 규격 -->
         <div class="ds-comp">
           <div class="ds-comp-label">라인 아이콘</div>
@@ -3464,16 +3562,69 @@
     </section>
 
     <section class="guide-section">
-      <h2 class="guide-h2">이번 주 주목 (Top Pick)</h2>
-      <p class="guide-p">현재 시장·필터 풀에서 <strong>● 지금 검토</strong> 신호 종목 중 우선순위 상위 3개를 페이지 상단에 표시.</p>
+      <h2 class="guide-h2">점수 시스템 (V2 — 기술 지표 통합)</h2>
+      <p class="guide-p">2026년 4월 도입. 기존 "도달률 + 시즌"만으로 결정하던 신호를 <strong>5가지 기술 지표 종합 점수(100점 만점)</strong>로 재산출합니다.</p>
+
       <div class="guide-formula">
-        <div class="gf-row"><span class="gf-key">우선순위 점수</span><span class="gf-eq">=</span><span class="gf-val">(70 − 도달률) × 0.7</span></div>
-        <div class="gf-row"><span class="gf-key">+ 시즌 진입월</span><span class="gf-eq">=</span><span class="gf-val">+25점</span></div>
-        <div class="gf-row"><span class="gf-key">+ 진입월 임박</span><span class="gf-eq">=</span><span class="gf-val">+18점 (1~2개월 안에 시즌 시작 — 선취매)</span></div>
-        <div class="gf-row"><span class="gf-key">+ 피크 시즌</span><span class="gf-eq">=</span><span class="gf-val">+12점</span></div>
-        <div class="gf-row"><span class="gf-key">+ 양수 등락률</span><span class="gf-eq">=</span><span class="gf-val">+ min(등락률 × 2, 10)점</span></div>
+        <div class="gf-row"><span class="gf-key">도달률</span><span class="gf-eq">=</span><span class="gf-val">최대 30점 — &lt;50% 풀점, 50~70% 단계 감소, 70~85% 빠른 감소, 85% 이상 0점</span></div>
+        <div class="gf-row"><span class="gf-key">RSI(14)</span><span class="gf-eq">=</span><span class="gf-val">최대 25점 — &lt;30 풀점(과매도), &lt;40 20점, &lt;50 14점, &gt;70 0점</span></div>
+        <div class="gf-row"><span class="gf-key">200일 이평선</span><span class="gf-eq">=</span><span class="gf-val">위 20점 / 아래 0점 (장기 추세 필터)</span></div>
+        <div class="gf-row"><span class="gf-key">볼린저 %B</span><span class="gf-eq">=</span><span class="gf-val">최대 15점 — &lt;0.2 풀점(하단), &lt;0.4 10점, &gt;0.8 0점</span></div>
+        <div class="gf-row"><span class="gf-key">거래량 비율</span><span class="gf-eq">=</span><span class="gf-val">최대 10점 — &gt;2x + 가격 하락 풀점(패닉 셀, 역발상 매수)</span></div>
+        <div class="gf-row"><span class="gf-key">+ 시즌 보너스</span><span class="gf-eq">=</span><span class="gf-val">진입월 +15 / 임박 +12 / 피크 +8</span></div>
       </div>
-      <p class="guide-p guide-note">시장(국장/미장)·투자 스타일·필터를 바꾸면 Top Pick도 자동 갱신됩니다. 카드 클릭 시 해당 종목 행으로 스크롤.</p>
+
+      <h3 class="guide-h3">신호 결정 임계값</h3>
+      <div class="guide-grid">
+        <div class="guide-item"><span class="sig now" style="margin-bottom:4px">●</span>
+          <div class="guide-item-desc"><strong style="color:var(--accent)">65점 이상</strong> — 여러 지표가 동시 양호 (예: RSI 과매도 + 200일선 위 + 볼린저 하단)</div></div>
+        <div class="guide-item"><span class="sig wait" style="margin-bottom:4px">○</span>
+          <div class="guide-item-desc"><strong>40~65점</strong> — 일부 지표만 양호, 추가 확인 필요</div></div>
+        <div class="guide-item"><span class="sig avoid" style="margin-bottom:4px">✕</span>
+          <div class="guide-item-desc"><strong>즉시 회피</strong> — 도달률 95%+ / 등락 -3% 이하 / RSI 70+ AND 도달률 80+ (점수 무관)</div></div>
+      </div>
+
+      <h3 class="guide-h3">데이터 소스</h3>
+      <p class="guide-p">Yahoo Finance에서 종목별 일봉 1년치 (252영업일) 자동 수신. <strong>하루 1회</strong> 장 마감 후(KST 16시) 갱신.</p>
+      <p class="guide-p guide-note">⚠ <strong>한계</strong>: 일봉 200일치 미만 종목은 자동으로 V1(시즌+도달률) 폴백. 신규 상장주·ETF 일부 영향.<br>
+      ✦ 콘솔에서 비교 가능: <span class="guide-code">window.__signal.compare()</span> — V1 vs V2 모든 종목 결과 비교</p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">기술 지표 인디케이터 (종목 행)</h2>
+      <p class="guide-p">종목 이름 아래에 <strong>RSI 배지 + 200일선 화살표</strong>를 작게 표시. 한눈에 종목 상태 파악.</p>
+      <div class="guide-grid">
+        <div class="guide-item">
+          <span class="ti-badge ti-strong" style="margin-bottom:4px">RSI 28</span>
+          <div class="guide-item-desc"><strong style="color:var(--accent)">과매도 (오렌지)</strong> — RSI &lt;30. 친구가 패닉 셀 시점 가능성. 다른 지표(200일선·볼린저) 함께 보고 판단.</div>
+        </div>
+        <div class="guide-item">
+          <span class="ti-badge ti-good" style="margin-bottom:4px">RSI 35</span>
+          <div class="guide-item-desc"><strong>약과매도</strong> — RSI 30~40. 살짝 매수 우위 구간.</div>
+        </div>
+        <div class="guide-item">
+          <span class="ti-badge" style="margin-bottom:4px">RSI 52</span>
+          <div class="guide-item-desc"><strong>중립</strong> — RSI 40~70. 추세에 따라 판단.</div>
+        </div>
+        <div class="guide-item">
+          <span class="ti-badge ti-warn" style="margin-bottom:4px">RSI 75</span>
+          <div class="guide-item-desc"><strong style="color:var(--color-up)">과매수 (빨강)</strong> — RSI &gt;70. 단기 조정 가능. 매수 자제.</div>
+        </div>
+        <div class="guide-item">
+          <span class="ti-arrow ti-up" style="margin-bottom:4px">▲200</span>
+          <div class="guide-item-desc"><strong>200일선 위</strong> — 장기 상승 추세. 보유·매수 적합.</div>
+        </div>
+        <div class="guide-item">
+          <span class="ti-arrow ti-down" style="margin-bottom:4px">▽200</span>
+          <div class="guide-item-desc"><strong>200일선 아래</strong> — 장기 하락 추세. 매수 신중 (반등 노린다면 OK).</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">이번 주 주목 (Top Pick)</h2>
+      <p class="guide-p">현재 시장·필터 풀에서 <strong>● 지금 검토</strong> 신호 종목 중 점수 상위 3개를 페이지 상단에 표시. <strong>각 카드 우상단에 V2 점수 표시</strong> (예: 82점).</p>
+      <p class="guide-p guide-note">우선순위 = 위 "점수 시스템 V2"의 총점. 시장(국장/미장)·투자 스타일·필터를 바꾸면 Top Pick도 자동 갱신. 카드 클릭 시 해당 종목 행으로 스크롤 + 1.5초 강조.</p>
     </section>
 
     <section class="guide-section">
@@ -4560,6 +4711,223 @@ function calcSignal(stock, theme, entry){
   return { signal: 'wait', reason: `고점 근접 ${pct.toFixed(0)}%`, score: 0 };
 }
 
+/* ============================================================
+   ✦ Phase A3: 신호 점수 시스템 V2 (기술 지표 기반)
+   - 100점 만점: 도달률 30 + RSI 25 + 200일선 20 + %B 15 + 거래량 10
+   - 시즌 보너스: 진입월/임박 +15점
+   - OHLCV 데이터 없으면 자동으로 기존 calcSignal로 폴백
+   ============================================================ */
+
+/* 신호 시스템 토글 — 기본은 V2 활성화, 콘솔에서 끄고 켤 수 있음
+   window.__useSignalV2 = false  → 기존 calcSignal 사용
+   window.__useSignalV2 = true   → 점수 시스템 사용 (기본)
+*/
+window.__useSignalV2 = true;
+
+function calcSignalV2(stock, theme, entry){
+  // 가격 데이터 없으면 분석 불가
+  if(!entry || entry.status !== 'fresh' || !entry.value?.price){
+    return { signal: 'wait', reason: '가격 분석 대기', score: 0, version: 'v2' };
+  }
+
+  // OHLCV 없으면 V1으로 폴백 (단계적 적용 안전장치)
+  const ind = (typeof getIndicators === 'function') ? getIndicators(stock.code) : null;
+  if(!ind || ind.dataPoints < 30){
+    const v1 = calcSignal(stock, theme, entry);
+    return { ...v1, reason: v1.reason + ' (지표 대기)', version: 'v1-fallback' };
+  }
+
+  const price = entry.value.price;
+  const peak = stock.peak;
+  const pct = (price / peak) * 100;
+  const change = entry.value.change || 0;
+
+  // 시즌 컨텍스트
+  const inSeason = theme.entryMonths && theme.entryMonths.includes(CURRENT_MONTH);
+  const inPeakSeason = theme.peakMonths && theme.peakMonths.includes(CURRENT_MONTH);
+  const next1 = (CURRENT_MONTH % 12) + 1;
+  const next2 = (((CURRENT_MONTH + 1) % 12)) + 1;
+  const preSeason = theme.entryMonths
+    && (theme.entryMonths.includes(next1) || theme.entryMonths.includes(next2));
+
+  // ========== 즉시 회피 조건 ==========
+  if(pct >= 95){
+    return { signal: 'avoid', reason: `과열 (도달률 ${pct.toFixed(0)}%)`, score: 0, version: 'v2', detail: {} };
+  }
+  if(change <= -3){
+    return { signal: 'avoid', reason: `하락 모멘텀 ${change.toFixed(1)}%`, score: 0, version: 'v2', detail: {} };
+  }
+  // RSI 70+ + 도달률 80+ → 명확한 과매수
+  if(ind.rsi14 != null && ind.rsi14 >= 70 && pct >= 80){
+    return { signal: 'avoid', reason: `과매수 (RSI ${ind.rsi14.toFixed(0)} · 도달률 ${pct.toFixed(0)}%)`, score: 0, version: 'v2', detail: {rsi: ind.rsi14} };
+  }
+
+  // ========== 점수 계산 ==========
+  let score = 0;
+  const detail = {};
+  const reasons = [];
+
+  // 1) 도달률 (30점) — 낮을수록 좋음
+  let pctScore;
+  if(pct < 50) pctScore = 30;
+  else if(pct < 70) pctScore = 30 - (pct - 50) * 0.75; // 50→30, 70→15
+  else if(pct < 85) pctScore = 15 - (pct - 70) * 1.0;  // 70→15, 85→0
+  else pctScore = 0;
+  score += pctScore;
+  detail.pct = { value: pct, score: +pctScore.toFixed(1) };
+
+  // 2) RSI (25점) — 과매도일수록 좋음 (역발상)
+  let rsiScore = 0;
+  if(ind.rsi14 != null){
+    if(ind.rsi14 < 30) rsiScore = 25;
+    else if(ind.rsi14 < 40) rsiScore = 20;
+    else if(ind.rsi14 < 50) rsiScore = 14;
+    else if(ind.rsi14 < 60) rsiScore = 8;
+    else if(ind.rsi14 < 70) rsiScore = 3;
+    else rsiScore = 0;
+    if(ind.rsi14 < 35) reasons.push(`RSI ${ind.rsi14.toFixed(0)} 과매도`);
+  }
+  score += rsiScore;
+  detail.rsi = { value: ind.rsi14, score: rsiScore };
+
+  // 3) 200일선 (20점) — 위에 있으면 풀점, 아래면 0
+  let smaScore = 0;
+  if(ind.aboveSMA200 === true){
+    smaScore = 20;
+    reasons.push('200일선 위');
+  } else if(ind.aboveSMA200 === false){
+    // 200일선 아래는 장기 약세 — 점수 없음
+    smaScore = 0;
+  } else {
+    // 데이터 부족(200일 미만) — 60일선으로 보조 평가
+    if(ind.aboveSMA60 === true) smaScore = 10;
+  }
+  score += smaScore;
+  detail.sma = { aboveSMA200: ind.aboveSMA200, score: smaScore };
+
+  // 4) 볼린저 %B (15점) — 하단 근처일수록 좋음
+  let bbScore = 0;
+  if(ind.bb && ind.bb.percentB != null){
+    const pb = ind.bb.percentB;
+    if(pb < 0.2) bbScore = 15;
+    else if(pb < 0.4) bbScore = 10;
+    else if(pb < 0.6) bbScore = 5;
+    else if(pb < 0.8) bbScore = 2;
+    else bbScore = 0;
+    if(pb < 0.25) reasons.push(`볼린저 하단`);
+  }
+  score += bbScore;
+  detail.bb = { percentB: ind.bb?.percentB, score: bbScore };
+
+  // 5) 거래량 (10점) — 급증 + 가격 양상 결합
+  let volScore = 0;
+  if(ind.volRatio != null){
+    if(ind.volRatio > 2.0){
+      // 거래량 급증 — 가격 하락이면 패닉(역발상 매수), 상승이면 모멘텀
+      if(change < 0){ volScore = 10; reasons.push(`거래량 ${ind.volRatio.toFixed(1)}x 패닉`); }
+      else { volScore = 7; reasons.push(`거래량 ${ind.volRatio.toFixed(1)}x 급증`); }
+    } else if(ind.volRatio > 1.5){
+      volScore = 4;
+    } else if(ind.volRatio > 0.7){
+      volScore = 2; // 평균 수준
+    } else {
+      volScore = 0; // 거래 부진
+    }
+  }
+  score += volScore;
+  detail.vol = { ratio: ind.volRatio, score: volScore };
+
+  // ========== 시즌 보너스 (최대 +15점) ==========
+  let seasonBonus = 0;
+  if(inSeason){ seasonBonus = 15; reasons.push('시즌 진입월'); }
+  else if(preSeason){ seasonBonus = 12; reasons.push('진입월 임박'); }
+  else if(inPeakSeason){ seasonBonus = 8; reasons.push('피크 시즌'); }
+  score += seasonBonus;
+  detail.season = { bonus: seasonBonus, inSeason, preSeason, inPeakSeason };
+
+  // 산업 섹터(상시 보유)는 시즌 보너스 없이도 OK — 점수 그대로
+  detail.totalScore = +score.toFixed(1);
+
+  // ========== 신호 결정 ==========
+  let signal, reasonText;
+  if(score >= 65){
+    signal = 'now';
+    const top = reasons.slice(0, 3).join(' · ') || '기술 지표 양호';
+    reasonText = `${top} · ${score.toFixed(0)}점`;
+  } else if(score >= 40){
+    signal = 'wait';
+    reasonText = `점수 ${score.toFixed(0)}점 · 도달률 ${pct.toFixed(0)}%`;
+  } else {
+    signal = 'wait'; // V2에서는 회피보다 대기 우선 (즉시회피만 avoid)
+    reasonText = `점수 ${score.toFixed(0)}점 부족`;
+  }
+
+  return {
+    signal,
+    reason: reasonText,
+    score,
+    detail,
+    version: 'v2',
+  };
+}
+
+/* 디스패처 — 토글에 따라 V1 또는 V2 호출 */
+function calcSignalAuto(stock, theme, entry){
+  if(window.__useSignalV2){
+    return calcSignalV2(stock, theme, entry);
+  }
+  return calcSignal(stock, theme, entry);
+}
+
+/* ===== 디버그·비교 도구 ===== */
+window.__signal = {
+  v1: calcSignal,
+  v2: calcSignalV2,
+  auto: calcSignalAuto,
+  /* 모든 종목에 대해 V1 vs V2 결과 비교 */
+  compare(){
+    const rows = [];
+    ALL_THEMES.forEach(theme => {
+      theme.stocks.forEach(stock => {
+        const entry = priceCache[stock.code];
+        if(!entry || !entry.value?.price) return;
+        const v1 = calcSignal(stock, theme, entry);
+        const v2 = calcSignalV2(stock, theme, entry);
+        rows.push({
+          종목: stock.name,
+          V1: v1.signal,
+          V2: v2.signal,
+          'V1점수': +v1.score.toFixed(1),
+          'V2점수': +v2.score.toFixed(1),
+          일치: v1.signal === v2.signal ? '✓' : '✕',
+        });
+      });
+    });
+    console.table(rows);
+    const same = rows.filter(r => r.일치 === '✓').length;
+    const diff = rows.filter(r => r.일치 === '✕').length;
+    console.log(`[V1 vs V2] 일치 ${same} / 불일치 ${diff} / 전체 ${rows.length}`);
+    return { rows, same, diff };
+  },
+  /* 단일 종목 상세 */
+  detail(code){
+    let target = null, theme = null;
+    ALL_THEMES.forEach(t => t.stocks.forEach(s => {
+      if(s.code === code){ target = s; theme = t; }
+    }));
+    if(!target) return console.warn('종목 없음');
+    const entry = priceCache[code];
+    const result = calcSignalV2(target, theme, entry);
+    console.log(`[${target.name}] V2 결과:`);
+    console.log('  signal:', result.signal);
+    console.log('  total score:', result.score?.toFixed(1));
+    console.log('  reason:', result.reason);
+    console.log('  detail:', result.detail);
+    return result;
+  },
+};
+/* ===== /Phase A3 ===== */
+
 // 현재 필터 풀에서 Top Pick 3개 추출 (signal === 'now' 중 score 상위)
 function getTopPicks(){
   const themes = applyStyleFilter(getActivePool());
@@ -4567,7 +4935,7 @@ function getTopPicks(){
   themes.forEach(theme => {
     theme.stocks.forEach(stock => {
       const entry = priceCache[stock.code];
-      const sig = calcSignal(stock, theme, entry);
+      const sig = calcSignalAuto(stock, theme, entry);
       if(sig.signal === 'now'){
         candidates.push({ stock, theme, entry, ...sig });
       }
@@ -4594,6 +4962,7 @@ function renderTopPicks(){
     return `
       <div class="toppick-card" onclick="scrollToStock('${p.stock.code}')">
         <span class="tp-rank">#${i + 1}</span>
+        ${p.version === 'v2' && p.score ? `<span class="tp-score" title="V2 점수 (RSI·200일선·%B·거래량·도달률 종합)">${Math.round(p.score)}점</span>` : ''}
         <div class="tp-name">
           ${p.stock.name}
           <span class="tp-code">${p.stock.code}</span>
@@ -5207,13 +5576,23 @@ function initOhlcv(){
   loadOhlcvCache();
   if(typeof PREVIEW_MODE !== 'undefined' && PREVIEW_MODE){
     console.log('[OHLCV] 프리뷰 모드 — 갱신 스킵');
+    // 프리뷰 모드도 캐시된 OHLCV가 있으면 화면에 인디케이터 표시
+    if(Object.keys(ohlcvCache).length > 0 && typeof buildSummary === 'function'){
+      setTimeout(() => buildSummary(), 100);
+    }
     return;
   }
   // 가격 로드 끝난 후 백그라운드에서 OHLCV 갱신 (사용자 첫 화면 막지 않음)
   setTimeout(() => {
     refreshAllOhlcv().then(result => {
-      if(result.skipped) return;
+      if(result.skipped){
+        // 캐시가 fresh — 즉시 화면 재렌더 (RSI·SMA 표시 위해)
+        if(typeof buildSummary === 'function') buildSummary();
+        return;
+      }
       console.log(`[OHLCV] 백그라운드 갱신 완료`, result);
+      // 신규 데이터 도착 — 화면 재렌더 (Top Pick + 종목 행 인디케이터 갱신)
+      if(typeof buildSummary === 'function') buildSummary();
     });
   }, 5000);
 }
@@ -5763,14 +6142,35 @@ function renderStockCardHtml(s, theme){
   const cacheBadge = (st==='stale' && entry.updatedAt)
     ? `<div class="scd-cache"><span class="cache-badge">캐시 · ${timeSince(entry.updatedAt)}</span></div>` : '';
 
-  const sig = calcSignal(s, theme, entry);
+  const sig = calcSignalAuto(s, theme, entry);
   const sigChar = sig.signal === 'now' ? '●' : sig.signal === 'wait' ? '○' : '✕';
+
+  // 기술 지표 인디케이터 (모바일 카드용)
+  const indM = (typeof getIndicators === 'function') ? getIndicators(s.code) : null;
+  let techBadgesM = '';
+  if(indM){
+    const badges = [];
+    if(indM.rsi14 != null){
+      let rsiCls = 'ti-neutral';
+      if(indM.rsi14 < 30) rsiCls = 'ti-strong';
+      else if(indM.rsi14 < 40) rsiCls = 'ti-good';
+      else if(indM.rsi14 > 70) rsiCls = 'ti-warn';
+      badges.push(`<span class="ti-badge ${rsiCls}">RSI ${indM.rsi14.toFixed(0)}</span>`);
+    }
+    if(indM.aboveSMA200 === true){
+      badges.push(`<span class="ti-arrow ti-up">▲200</span>`);
+    } else if(indM.aboveSMA200 === false){
+      badges.push(`<span class="ti-arrow ti-down">▽200</span>`);
+    }
+    if(badges.length) techBadgesM = `<div class="ti-row">${badges.join('')}</div>`;
+  }
 
   return `<div class="stock-card entered" data-card="${s.code}" data-code="${s.code}" data-theme="${theme.id}">
     <div class="scd-top">
       <div class="stock-name-info" style="flex:1;min-width:0;">
         <div class="stock-name">${s.name}</div>
         <div class="stock-code">${s.code}</div>
+        ${techBadgesM}
       </div>
       <div class="scd-corner">
         <span class="sig ${sig.signal}" data-tip="${sig.reason}" tabindex="0">${sigChar}</span>
@@ -5853,12 +6253,34 @@ function renderStockRowHtml(s, theme){
   }
 
   // 신호 계산
-  const sig = calcSignal(s, theme, entry);
+  const sig = calcSignalAuto(s, theme, entry);
   const sigChar = sig.signal === 'now' ? '●' : sig.signal === 'wait' ? '○' : '✕';
   const sigCell = `<td><div class="sig-cell">
     <span class="sig ${sig.signal}" data-tip="${sig.reason}" tabindex="0">${sigChar}</span>
     <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')" title="즐겨찾기">★</button>
   </div></td>`;
+
+  // 기술 지표 인디케이터 (Phase A4)
+  const ind = (typeof getIndicators === 'function') ? getIndicators(s.code) : null;
+  let techBadges = '';
+  if(ind){
+    const badges = [];
+    // RSI 배지
+    if(ind.rsi14 != null){
+      let rsiCls = 'ti-neutral';
+      if(ind.rsi14 < 30) rsiCls = 'ti-strong';      // 과매도 (오렌지)
+      else if(ind.rsi14 < 40) rsiCls = 'ti-good';   // 약과매도 (회색)
+      else if(ind.rsi14 > 70) rsiCls = 'ti-warn';   // 과매수 (빨강)
+      badges.push(`<span class="ti-badge ${rsiCls}" title="RSI ${ind.rsi14.toFixed(1)} — ${ind.rsi14<30?'과매도':ind.rsi14>70?'과매수':'중립'}">RSI ${ind.rsi14.toFixed(0)}</span>`);
+    }
+    // 200일선 화살표
+    if(ind.aboveSMA200 === true){
+      badges.push(`<span class="ti-arrow ti-up" title="200일 이평선 위 — 장기 상승 추세">▲200</span>`);
+    } else if(ind.aboveSMA200 === false){
+      badges.push(`<span class="ti-arrow ti-down" title="200일 이평선 아래 — 장기 약세">▽200</span>`);
+    }
+    if(badges.length) techBadges = `<div class="ti-row">${badges.join('')}</div>`;
+  }
 
   return `<tr class="stock-row entered" data-row="${s.code}" data-code="${s.code}" data-theme="${theme.id}">
     ${sigCell}
@@ -5867,6 +6289,7 @@ function renderStockRowHtml(s, theme){
         <div class="stock-name-info">
           <div class="stock-name">${s.name}</div>
           <div class="stock-code">${s.code}</div>
+          ${techBadges}
         </div>
       </div>
     </td>
