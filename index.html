@@ -2744,10 +2744,6 @@
 
 <div class="filters" id="filterBar"></div>
 
-<div class="diag-bar">
-  <button class="diag-toggle" onclick="toggleDiag()">진단</button>
-  <span class="diag-summary" id="diagSummary">진단 버튼을 누르면 프록시·API 상태를 확인합니다</span>
-</div>
 <div class="diag-panel" id="diagPanel">
   <div class="diag-grid">
     <div class="diag-section">
@@ -2769,6 +2765,7 @@
     <span id="statusMsg">실시간 가격 조회 준비 중...</span>
   </div>
   <div class="status-actions">
+    <button class="refresh-btn" onclick="toggleDiag()" title="프록시·API 상태 확인">🔧 진단</button>
     <button class="refresh-btn" id="autoRefreshBtn" onclick="toggleAutoRefresh()" title="5분마다 자동 갱신">⏱ 자동갱신 ON</button>
     <button class="refresh-btn retry-failed-btn" id="retryFailedBtn" onclick="retryFailed()" style="display:none">↻ 실패만 재시도</button>
     <button class="refresh-btn" id="refreshBtn" onclick="loadPrices(!event.shiftKey)" title="클릭: 캐시 외 갱신 / Shift+클릭: 강제 전체 갱신">↻ 새로고침</button>
