@@ -988,6 +988,57 @@
      ============================================================ */
   .page-guide{ padding:0 0 var(--gap-7); max-width:1100px; }
   .guide-body{ display:flex; flex-direction:column; gap:var(--gap-6); padding: 0 var(--pad-page-x); }
+
+  /* ============================================================
+     ✦ 가이드 페이지 탭 네비게이션 (sticky)
+     ============================================================ */
+  .guide-tabs{
+    display:flex;
+    gap:0;
+    padding:0 var(--pad-page-x);
+    margin-bottom:var(--gap-5);
+    border-bottom:1px solid var(--border);
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:var(--bg);
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .guide-tabs::-webkit-scrollbar{ display:none; }
+  .guide-tab{
+    background:transparent;
+    border:none;
+    padding:14px 20px;
+    font-family:var(--font-sans);
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-3);
+    cursor:pointer;
+    position:relative;
+    white-space:nowrap;
+    transition:color .15s ease;
+    flex-shrink:0;
+  }
+  .guide-tab:hover{ color:var(--text-2); }
+  .guide-tab.active{ color:var(--accent); }
+  .guide-tab.active::after{
+    content:'';
+    position:absolute;
+    left:12px; right:12px; bottom:-1px;
+    height:2px;
+    background:var(--accent);
+    border-radius:1px;
+  }
+
+  /* 탭 패널 — 한 번에 한 탭만 표시 */
+  .guide-pane{ display:none; flex-direction:column; gap:var(--gap-6); }
+  .guide-pane.active{ display:flex; }
+
+  @media (max-width:767px){
+    .guide-tab{ padding:12px 14px; font-size:12px; }
+  }
+  /* ===== /가이드 탭 ===== */
   .guide-section{ }
   .guide-h2{
     font-family:var(--font-sans); font-size:18px; font-weight:700;
@@ -2526,7 +2577,18 @@
     </h1>
   </div>
 
+  <!-- 탭 네비게이션 (sticky) -->
+  <div class="guide-tabs" id="guideTabs">
+    <button class="guide-tab active" data-guide-tab="overview">개요</button>
+    <button class="guide-tab" data-guide-tab="calendar">종목 분석</button>
+    <button class="guide-tab" data-guide-tab="heatmap">테마 분석</button>
+    <button class="guide-tab" data-guide-tab="data">데이터 · 면책</button>
+  </div>
+
   <div class="guide-body">
+
+  <!-- ========== 탭 1: 개요 (디자인 시스템) ========== -->
+  <div class="guide-pane active" data-guide-pane="overview">
 
     <section class="guide-section">
       <h2 class="guide-h2">디자인 시스템</h2>
@@ -2646,6 +2708,11 @@
       </div>
     </section>
 
+  </div><!-- /탭 1 (개요) -->
+
+  <!-- ========== 탭 2: 종목 분석 ========== -->
+  <div class="guide-pane" data-guide-pane="calendar">
+
     <section class="guide-section">
       <h2 class="guide-h2">행동 제안 신호</h2>
       <p class="guide-p">종목 행 첫 컬럼에 표시되는 1글자 신호. <strong>참고용 분석 결과</strong>이며 매매 권유가 아닙니다.</p>
@@ -2748,6 +2815,65 @@
       <p class="guide-p guide-note">검증 기간 2018-01-01 ~ 2025-12-31 (8년). 시즌 전략은 매수월~매도월만 보유, 섹터 전략은 균등 가중 상시 보유.</p>
     </section>
 
+  </div><!-- /탭 2 (종목 분석) -->
+
+  <!-- ========== 탭 3: 테마 분석 ========== -->
+  <div class="guide-pane" data-guide-pane="heatmap">
+
+    <section class="guide-section">
+      <h2 class="guide-h2">테마 분석 데이터 (자동 산출)</h2>
+      <p class="guide-p">테마 분석 페이지의 모든 지표는 <strong>종목 분석 페이지의 실시간 가격에서 자동 산출</strong>됩니다 (캘린더의 12개 산업 섹터 기준).</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">strength</span><span class="gf-eq">=</span><span class="gf-val">(100 − 평균도달률) × 0.7 + 평균등락률 × 5 + 30</span></div>
+        <div class="gf-row"><span class="gf-key">change</span><span class="gf-eq">=</span><span class="gf-val">테마 종목들의 평균 등락률</span></div>
+        <div class="gf-row"><span class="gf-key">leaders</span><span class="gf-eq">=</span><span class="gf-val">등락률 상위 7개 종목</span></div>
+        <div class="gf-row"><span class="gf-key">rank</span><span class="gf-eq">=</span><span class="gf-val">strength 내림차순 자동 부여</span></div>
+        <div class="gf-row"><span class="gf-key">RRG 좌표</span><span class="gf-eq">=</span><span class="gf-val">(strength, change) 시계열 누적</span></div>
+      </div>
+      <p class="guide-p guide-note">5분마다 자동 갱신. 시장(국장/미장) 토글 시 즉시 재산출.</p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">RRG 시계열 누적 (브라우저 localStorage)</h2>
+      <p class="guide-p">매일 1회 (KST 날짜 기준) 자동 저장되어 RRG 차트에 궤적이 그려집니다.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">저장 키</span><span class="gf-val"><span class="guide-code">rrgHistory_v1</span></span></div>
+        <div class="gf-row"><span class="gf-key">저장 시점</span><span class="gf-val">페이지 진입 시 (오늘 첫 방문이면 신규 추가, 이미 있으면 덮어씀)</span></div>
+        <div class="gf-row"><span class="gf-key">최대 보관</span><span class="gf-val">90일 (초과 시 오래된 데이터 자동 제거)</span></div>
+      </div>
+      <p class="guide-p guide-note">
+        ⚠ <strong>한계</strong>: 사용자가 매일 페이지를 열어야 시계열이 누적됩니다. 첫 1~3일은 점만 보이고, 일주일~한 달 후부터 의미 있는 궤적이 형성됩니다.<br>
+        ✦ <strong>서버 추가 시 개선</strong>: 맥 스튜디오 서버를 두면 사용자 방문과 무관하게 매일 자동 저장 → 즉시 풀 궤적 가능. 또한 거래대금·시총 등 추가 데이터로 strength 정확도 향상.
+      </p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">시장 분석 메시지 (Market Read)</h2>
+      <p class="guide-p">사분면 분포·평균 모멘텀·강세/약세 섹터를 분석하여 자동 생성. 시장 흐름·강세·약세·회전 4가지 카드로 표시.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">흐름 메시지</span><span class="gf-val">평균 모멘텀 +1↑ "상승 우위" / -1↓ "약세 진행" / 외 "혼조세"</span></div>
+        <div class="gf-row"><span class="gf-key">강세 섹터</span><span class="gf-val">change +0.3% 이상 상위 2개 자동 추출</span></div>
+        <div class="gf-row"><span class="gf-key">약세 섹터</span><span class="gf-val">change −0.3% 이하 하위 2개 자동 추출</span></div>
+        <div class="gf-row"><span class="gf-key">회전 신호</span><span class="gf-val">Improving 사분면 3개 이상 시 발동</span></div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">시장 지수 (Market Index)</h2>
+      <p class="guide-p">테마 분석 페이지 하단에 시장 전체 흐름을 비교 지표로 표시.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">국장 (KR)</span><span class="gf-val">KOSPI 종합지수</span></div>
+        <div class="gf-row"><span class="gf-key">미장 (US)</span><span class="gf-val">NASDAQ 종합지수 (IXIC)</span></div>
+        <div class="gf-row"><span class="gf-key">표시 항목</span><span class="gf-val">현재가 · 등락률 · 200일/50일 이평선 대비 · 52주 고점 대비 낙폭 · YTD</span></div>
+      </div>
+      <p class="guide-p guide-note">백테스트 "vs 시장" 항목도 동일 지수 기준 (KOSPI / QQQ). 현재 정적 더미 데이터이며, 서버 도입 시 실시간 갱신 예정.</p>
+    </section>
+
+  </div><!-- /탭 3 (테마 분석) -->
+
+  <!-- ========== 탭 4: 데이터 · 면책 ========== -->
+  <div class="guide-pane" data-guide-pane="data">
+
     <section class="guide-section">
       <h2 class="guide-h2">현재가 데이터</h2>
       <p class="guide-p">한국·미국 주가는 외부 API에서 실시간 조회합니다.</p>
@@ -2771,43 +2897,12 @@
       </div>
     </section>
 
-    <section class="guide-section">
-      <h2 class="guide-h2">테마 분석 데이터</h2>
-      <p class="guide-p">테마 분석 페이지의 모든 지표는 <strong>종목 분석 페이지의 실시간 가격에서 자동 산출</strong>됩니다 (캘린더의 12개 산업 섹터 기준).</p>
-      <div class="guide-formula">
-        <div class="gf-row"><span class="gf-key">strength</span><span class="gf-eq">=</span><span class="gf-val">(100 − 평균도달률) × 0.7 + 평균등락률 × 5 + 30</span></div>
-        <div class="gf-row"><span class="gf-key">change</span><span class="gf-eq">=</span><span class="gf-val">테마 종목들의 평균 등락률</span></div>
-        <div class="gf-row"><span class="gf-key">leaders</span><span class="gf-eq">=</span><span class="gf-val">등락률 상위 7개 종목</span></div>
-        <div class="gf-row"><span class="gf-key">rank</span><span class="gf-eq">=</span><span class="gf-val">strength 내림차순 자동 부여</span></div>
-        <div class="gf-row"><span class="gf-key">RRG 좌표</span><span class="gf-eq">=</span><span class="gf-val">(strength, change) 시계열 누적</span></div>
-      </div>
-
-      <h3 class="guide-h3">RRG 시계열 누적 (브라우저 localStorage)</h3>
-      <p class="guide-p">매일 1회 (KST 날짜 기준) 자동 저장되어 RRG 차트에 궤적이 그려집니다.</p>
-      <div class="guide-formula">
-        <div class="gf-row"><span class="gf-key">저장 키</span><span class="gf-val"><span class="guide-code">rrgHistory_v1</span></span></div>
-        <div class="gf-row"><span class="gf-key">저장 시점</span><span class="gf-val">페이지 진입 시 (오늘 첫 방문이면 신규 추가, 이미 있으면 덮어씀)</span></div>
-        <div class="gf-row"><span class="gf-key">최대 보관</span><span class="gf-val">90일 (초과 시 오래된 데이터 자동 제거)</span></div>
-      </div>
-      <p class="guide-p guide-note">
-        ⚠ <strong>한계</strong>: 사용자가 매일 페이지를 열어야 시계열이 누적됩니다. 첫 1~3일은 점만 보이고, 일주일~한 달 후부터 의미 있는 궤적이 형성됩니다.<br>
-        ✦ <strong>서버 추가 시 개선</strong>: 맥 스튜디오 서버를 두면 사용자 방문과 무관하게 매일 자동 저장 → 즉시 풀 궤적 가능. 또한 거래대금·시총 등 추가 데이터로 strength 정확도 향상.
-      </p>
-
-      <h3 class="guide-h3">시장 분석 메시지 (Market Read)</h3>
-      <p class="guide-p">사분면 분포·평균 모멘텀·강세/약세 섹터를 분석하여 자동 생성.</p>
-      <div class="guide-formula">
-        <div class="gf-row"><span class="gf-key">흐름 메시지</span><span class="gf-val">평균 모멘텀 +1↑ "상승 우위" / -1↓ "약세 진행" / 외 "혼조세"</span></div>
-        <div class="gf-row"><span class="gf-key">강세 섹터</span><span class="gf-val">change +0.3% 이상 상위 2개 자동 추출</span></div>
-        <div class="gf-row"><span class="gf-key">약세 섹터</span><span class="gf-val">change −0.3% 이하 하위 2개 자동 추출</span></div>
-        <div class="gf-row"><span class="gf-key">회전 신호</span><span class="gf-val">Improving 사분면 3개 이상 시 발동</span></div>
-      </div>
-    </section>
-
     <section class="guide-section guide-disclaimer">
       <h2 class="guide-h2">면책 (Disclaimer)</h2>
       <p class="guide-p">이 도구는 <strong>투자 참고용</strong>입니다. 수익을 보장하지 않으며 모든 결정과 결과는 본인 책임입니다. 데이터는 무료 외부 API에서 가져오며 정확성을 보증하지 않습니다.</p>
     </section>
+
+  </div><!-- /탭 4 (데이터·면책) -->
 
   </div>
 </div><!-- /page-guide -->
@@ -6535,6 +6630,23 @@ const initialRoute = (location.hash || '#calendar').slice(1);
 if(ROUTES.includes(initialRoute) && initialRoute !== 'calendar'){
   navigate(initialRoute);
 }
+
+/* ===== 가이드 페이지 탭 토글 ===== */
+document.addEventListener('click', (e) => {
+  const tabBtn = e.target.closest('.guide-tab');
+  if(!tabBtn) return;
+  const target = tabBtn.dataset.guideTab;
+  if(!target) return;
+  // 탭 버튼 활성 토글
+  document.querySelectorAll('.guide-tab').forEach(b => b.classList.remove('active'));
+  tabBtn.classList.add('active');
+  // 패널 활성 토글
+  document.querySelectorAll('.guide-pane').forEach(p => p.classList.remove('active'));
+  const pane = document.querySelector(`.guide-pane[data-guide-pane="${target}"]`);
+  if(pane) pane.classList.add('active');
+  // 페이지 상단으로 부드럽게 스크롤
+  document.querySelector('.page-guide')?.scrollIntoView({ behavior:'smooth', block:'start' });
+});
 
 /* ===== 신호 배지 툴팁 — 터치 환경 (아이패드/모바일) ===== */
 // 탭하면 .show 클래스 추가 → 잠시 후 자동 제거 + 다른 곳 탭하면 닫힘
