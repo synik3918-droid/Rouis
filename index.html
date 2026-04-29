@@ -186,37 +186,38 @@
   }
   .toppick-card{
     position:relative;
-    background:linear-gradient(180deg, rgba(255,128,0,0.06), rgba(255,128,0,0.02));
-    border:1px solid rgba(255,128,0,0.20);
+    background:var(--surface);
+    border:1px solid var(--border);
     border-radius:var(--r-md);
     padding:var(--gap-3) var(--gap-4);
     cursor:pointer;
-    transition:all .15s ease;
+    transition:border-color .15s ease, transform .15s ease;
     display:flex; flex-direction:column; gap:6px;
     overflow:hidden;
   }
   .toppick-card::before{
-    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+    content:''; position:absolute; left:0; top:0; bottom:0; width:2px;
     background:var(--accent);
   }
   .toppick-card:hover{
-    background:linear-gradient(180deg, rgba(255,128,0,0.10), rgba(255,128,0,0.04));
-    border-color:rgba(255,128,0,0.40);
+    border-color:var(--border2);
     transform:translateY(-1px);
   }
   .tp-rank{
     position:absolute; top:8px; right:10px;
-    font-family:var(--font-display); font-size:18px;
-    color:rgba(255,128,0,0.35); line-height:1;
+    font-family:var(--font-mono); font-size:11px; font-weight:700;
+    color:var(--text-3); line-height:1;
+    letter-spacing:0.5px;
   }
   .tp-score{
     position:absolute; top:8px; right:42px;
     font-family:var(--font-mono); font-size:10px; font-weight:700;
-    color:var(--accent); letter-spacing:0.5px;
-    background:rgba(255,128,0,0.08);
-    border:1px solid rgba(255,128,0,0.25);
-    padding:2px 6px; border-radius:3px;
+    color:var(--text-2);
+    background:transparent;
+    border:none;
+    padding:0;
     line-height:1;
+    letter-spacing:0.3px;
   }
 
   /* ============================================================
@@ -253,22 +254,23 @@
     background:rgba(232,72,94,0.08);
     border-color:rgba(232,72,94,0.25);
   }
-  /* 200일선 화살표 */
+  /* 200일선 화살표 — 무채색, 방향만 표시 */
   .ti-arrow{
     font-family:var(--font-mono); font-size:9.5px; font-weight:700;
     padding:1px 5px; border-radius:3px; line-height:1.4;
     letter-spacing:0.3px;
     border:1px solid var(--border);
+    color:var(--text-3);
+    background:transparent;
   }
   .ti-arrow.ti-up{
-    color:var(--color-up);
-    background:rgba(232,72,94,0.06);
-    border-color:rgba(232,72,94,0.20);
+    color:var(--text-2);
+    border-color:var(--border);
   }
   .ti-arrow.ti-down{
-    color:var(--color-down);
-    background:rgba(79,143,232,0.06);
-    border-color:rgba(79,143,232,0.20);
+    color:var(--text-3);
+    border-color:var(--border);
+    opacity:0.7;
   }
   /* 모바일 카드용 — 살짝 더 작게 */
   @media (max-width:767px){
@@ -398,7 +400,6 @@
   }
   .sig.now{
     background:var(--accent); color:#000;
-    box-shadow:0 0 8px rgba(255,128,0,0.4);
   }
   .sig.wait{
     background:var(--surface-3); color:var(--text-3);
@@ -569,14 +570,25 @@
   .stock-name{font-weight:600;font-size:16px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .stock-code{font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-top:3px;}
 
-  /* 성격 태그 */
+  /* 성격 태그 — 무채색 통일, 텍스트 자체로 구분 */
   .role-tags{display:flex;flex-wrap:wrap;gap:4px;}
-  .role-tag{font-size:11px;padding:3px 7px;border-radius:3px;font-weight:600;white-space:nowrap;border:1px solid var(--border2);background:var(--surface);color:var(--muted);}
-  .role-tag.lead{color:#9bb8d4;border-color:rgba(155,184,212,.3);}     /* 주도주 */
-  .role-tag.momentum{color:#f5a460;border-color:rgba(245,164,96,.3);}  /* 모멘텀 */
-  .role-tag.smallcap{color:#d68fd6;border-color:rgba(214,143,214,.3);} /* 소형주 */
-  .role-tag.turn{color:#7fc8a3;border-color:rgba(127,200,163,.3);}     /* 회복 기대 */
-  .role-tag.value{color:#c9b870;border-color:rgba(201,184,112,.3);}    /* 배당주 */
+  .role-tag{
+    font-size:11px; padding:3px 7px; border-radius:3px;
+    font-weight:600; white-space:nowrap;
+    border:1px solid var(--border);
+    background:transparent;
+    color:var(--text-2);
+    letter-spacing:0.2px;
+  }
+  /* 5종 모두 동일 — 클래스는 호환성 유지 */
+  .role-tag.lead,
+  .role-tag.momentum,
+  .role-tag.smallcap,
+  .role-tag.turn,
+  .role-tag.value{
+    color:var(--text-2);
+    border-color:var(--border);
+  }
 
   .reason-tag{display:inline-block;background:var(--border);border-radius:3px;padding:4px 10px;font-size:12px;color:var(--text);font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
@@ -938,7 +950,12 @@
     background:var(--accent-soft);
     color:var(--accent);
   }
-  .nav-icon{ font-size:18px; width:22px; text-align:center; }
+  .nav-icon{
+    width:22px; height:22px;
+    display:inline-flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .nav-icon svg{ width:18px; height:18px; }
   .nav-label{ flex:1; }
   .sidebar-disclaimer{
     margin-top:auto; padding:16px 20px 4px; font-size:11px;
@@ -2789,15 +2806,37 @@
 
   <nav class="sidebar-nav">
     <a href="#calendar" class="nav-item active" data-route="calendar">
-      <span class="nav-icon">📅</span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="16" rx="2"/>
+          <path d="M3 10 H21"/>
+          <path d="M8 3 V7"/>
+          <path d="M16 3 V7"/>
+        </svg>
+      </span>
       <span class="nav-label">종목 분석</span>
     </a>
     <a href="#heatmap" class="nav-item" data-route="heatmap">
-      <span class="nav-icon">🔥</span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19 V11"/>
+          <path d="M9 19 V7"/>
+          <path d="M14 19 V14"/>
+          <path d="M19 19 V4"/>
+          <path d="M3 19 H21"/>
+        </svg>
+      </span>
       <span class="nav-label">테마 분석</span>
     </a>
     <a href="#guide" class="nav-item" data-route="guide">
-      <span class="nav-icon">📖</span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 5 a2 2 0 0 1 2 -2 h11 a1 1 0 0 1 1 1 v15 a1 1 0 0 1 -1 1 H6 a2 2 0 0 1 -2 -2 z"/>
+          <path d="M4 17 h13"/>
+          <path d="M9 8 h5"/>
+          <path d="M9 12 h5"/>
+        </svg>
+      </span>
       <span class="nav-label">이용 안내</span>
     </a>
   </nav>
@@ -4742,7 +4781,7 @@ function buildFilterBar(){
   pool.forEach(t=>{
     if(!seen.has(t.cat)){
       seen.add(t.cat);
-      cats.push([t.cat, `${t.icon} ${t.cat}`]);
+      cats.push([t.cat, t.cat]);
     }
   });
   bar.innerHTML=`<span class="filter-label">FILTER :</span>` + cats.map(([k,v])=>
