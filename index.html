@@ -536,6 +536,101 @@
   }
   .sidebar-disclaimer strong{ color:var(--red); }
 
+  /* ============================================================
+     ✦ 플로팅 KR/US 시장 토글 (우측 하단 캡슐)
+     ============================================================ */
+  .floating-market{
+    position:fixed; bottom:28px; right:28px; z-index:90;
+    transition:transform .25s ease, opacity .25s ease;
+  }
+  .floating-market.scroll-hidden{
+    transform:translateY(140%);
+    opacity:0;
+    pointer-events:none;
+  }
+  .fm-capsule{
+    position:relative;
+    display:flex; align-items:stretch;
+    background:var(--surface-2);
+    border:1px solid var(--border-2);
+    border-radius:999px;
+    padding:5px;
+    box-shadow:0 8px 28px rgba(0,0,0,0.55);
+    backdrop-filter:blur(10px);
+  }
+  /* 슬라이더 (액티브 배경) */
+  .fm-slider{
+    position:absolute; top:5px; left:5px;
+    width:calc(50% - 5px); height:calc(100% - 10px);
+    background:var(--accent);
+    border-radius:999px;
+    transition:transform .28s cubic-bezier(.4,.0,.2,1);
+    box-shadow:0 3px 12px rgba(255,128,0,0.45);
+    pointer-events:none;
+    z-index:1;
+  }
+  .fm-capsule[data-active="US"] .fm-slider{
+    transform:translateX(100%);
+  }
+  /* 버튼 — 슬라이더 위에 텍스트만 떠있게 */
+  .fm-btn{
+    position:relative; z-index:2;
+    background:transparent; border:none; cursor:pointer;
+    padding:14px 28px; min-width:72px;
+    color:var(--text-2);
+    font-family:var(--font-mono); font-size:18px; font-weight:800;
+    letter-spacing:1.5px;
+    transition:color .2s ease;
+  }
+  .fm-btn:hover{ color:var(--text-1); }
+  .fm-btn.active{ color:#000; }
+
+  @media (max-width:767px){
+    .floating-market{ bottom:18px; right:18px; }
+    .fm-btn{ padding:12px 22px; min-width:62px; font-size:16px; letter-spacing:1.2px; }
+  }
+
+  /* ============================================================
+     ✦ 사이드바 테마 토글 (다크/라이트)
+     ============================================================ */
+  .sidebar-theme-toggle{
+    padding:var(--gap-3) var(--gap-4);
+    border-top:1px solid var(--border);
+    display:flex; align-items:center; gap:var(--gap-3);
+  }
+  .theme-toggle{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:3px 8px; cursor:pointer;
+    display:flex; align-items:center; gap:6px;
+    transition:all .15s ease;
+  }
+  .theme-toggle:hover{ border-color:var(--border-2); }
+  .tt-icon{
+    font-size:11px; color:var(--text-3);
+    line-height:1; width:12px; text-align:center;
+  }
+  .tt-icon.tt-dark{ color:var(--accent); }
+  .theme-toggle.light .tt-icon.tt-dark{ color:var(--text-3); }
+  .theme-toggle.light .tt-icon.tt-light{ color:var(--accent); }
+  .tt-track{
+    width:24px; height:14px; background:var(--surface-3);
+    border-radius:8px; position:relative;
+    transition:background .2s;
+  }
+  .tt-thumb{
+    position:absolute; top:1px; left:1px;
+    width:12px; height:12px; border-radius:50%;
+    background:var(--accent);
+    transition:transform .2s ease;
+  }
+  .theme-toggle.light .tt-thumb{ transform:translateX(10px); }
+  .theme-toggle-label{
+    font-size:11px; color:var(--text-2); font-weight:500;
+    font-family:var(--font-mono); letter-spacing:.5px;
+  }
+
   /* 모바일 햄버거 + 백드롭 */
   .hamburger{
     display:none; position:fixed; top:14px; left:14px; z-index:101;
@@ -543,6 +638,12 @@
     width:40px; height:40px; border-radius:6px;
     flex-direction:column; align-items:center; justify-content:center;
     gap:4px; cursor:pointer; padding:0;
+    transition:transform .25s ease, opacity .25s ease;
+  }
+  .hamburger.scroll-hidden{
+    transform:translateY(-120%);
+    opacity:0;
+    pointer-events:none;
   }
   .hamburger span{
     display:block; width:18px; height:2px; background:var(--text);
@@ -790,6 +891,9 @@
       transition:transform .25s ease;
     }
     .sidebar.open{ transform:translateX(0); }
+    /* 사이드바 로고는 햄버거(좌측 14px + 40px = 54px)와 동일 라인,
+       좌측 패딩만 늘려서 햄버거 우측에서 시작 */
+    .sidebar-logo{ padding-left:68px; }
     .hamburger{ display:flex; }
     .sidebar.open ~ .sidebar-backdrop{ display:block; }
     .app-shell{ margin-left:0; padding-top:56px; }
@@ -1942,18 +2046,10 @@
 <!-- ===== Sidebar (Global Navigation) ===== -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <span class="sb-logo-mark">▲</span>
     <span class="sb-logo-text">LOUIS</span>
   </div>
 
-  <!-- 시장 토글 (글로벌) -->
-  <div class="sidebar-market">
-    <div class="uni-axis-label">시장</div>
-    <div class="uni-seg full" role="group">
-      <button class="uni-seg-btn active sb-market-btn" data-market="KR">KR 한국</button>
-      <button class="uni-seg-btn sb-market-btn" data-market="US">US 미국</button>
-    </div>
-  </div>
+  <!-- 시장 토글은 우측 하단 플로팅으로 이동 -->
 
   <nav class="sidebar-nav">
     <a href="#calendar" class="nav-item active" data-route="calendar">
@@ -1969,6 +2065,15 @@
       <span class="nav-label">이용 안내</span>
     </a>
   </nav>
+  <div class="sidebar-theme-toggle">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="테마 전환">
+      <span class="tt-icon tt-dark">●</span>
+      <span class="tt-track"><span class="tt-thumb"></span></span>
+      <span class="tt-icon tt-light">○</span>
+    </button>
+    <span class="theme-toggle-label">다크 모드</span>
+  </div>
+
   <div class="sidebar-disclaimer">
     <strong>⚠ 투자 참고용</strong><br>
     수익을 보장하지 않습니다.<br>모든 결정은 본인 책임입니다.
@@ -1980,6 +2085,15 @@
   <span></span><span></span><span></span>
 </button>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
+<!-- ===== 플로팅 KR/US 시장 토글 ===== -->
+<div class="floating-market" id="floatingMarket">
+  <div class="fm-capsule" data-active="KR">
+    <button class="fm-btn fm-market-btn active" data-market="KR" aria-label="한국 시장">KR</button>
+    <button class="fm-btn fm-market-btn" data-market="US" aria-label="미국 시장">US</button>
+    <span class="fm-slider"></span>
+  </div>
+</div>
 
 <!-- ===== Main Content Wrapper ===== -->
 <div class="app-shell">
@@ -4210,9 +4324,12 @@ function setCurrentMarket(market, opts={}){
   currentFilter = 'all';
   // localStorage 저장
   try { localStorage.setItem(MARKET_KEY, market); } catch(e){}
-  // 사이드바 active 표시
-  document.querySelectorAll('.sb-market-btn').forEach(b =>
+  // 시장 토글 버튼들 active 표시 (사이드바·플로팅 모두)
+  document.querySelectorAll('.sb-market-btn, .fm-market-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.market === market));
+  // 캡슐 슬라이더 이동
+  const capsule = document.querySelector('.fm-capsule');
+  if(capsule) capsule.dataset.active = market;
   // 캘린더 페이지 갱신
   syncSegControls();
   const calSection = document.getElementById('calendarSection');
@@ -4232,9 +4349,33 @@ function setCurrentMarket(market, opts={}){
   }
 }
 
-document.querySelectorAll('.sb-market-btn').forEach(btn=>{
+// 사이드바·플로팅 시장 토글 버튼 모두 같은 핸들러
+document.querySelectorAll('.sb-market-btn, .fm-market-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> setCurrentMarket(btn.dataset.market));
 });
+
+/* ===== 라이트/다크 테마 토글 (UI만, 실제 라이트 모드 미구현) ===== */
+const THEME_KEY = 'theme_v1';
+function toggleTheme(){
+  const tt = document.getElementById('themeToggle');
+  const label = document.querySelector('.theme-toggle-label');
+  const isLight = tt.classList.toggle('light');
+  document.body.classList.toggle('light-mode', isLight);
+  if(label) label.textContent = isLight ? '라이트 모드' : '다크 모드';
+  try { localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark'); } catch(e){}
+}
+// 초기 상태 복원
+try {
+  if(localStorage.getItem(THEME_KEY) === 'light'){
+    const tt = document.getElementById('themeToggle');
+    if(tt){
+      tt.classList.add('light');
+      document.body.classList.add('light-mode');
+      const label = document.querySelector('.theme-toggle-label');
+      if(label) label.textContent = '라이트 모드';
+    }
+  }
+} catch(e){}
 
 document.querySelectorAll('#segCountry .seg-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
@@ -4281,8 +4422,10 @@ try {
   const savedMarket = localStorage.getItem(MARKET_KEY);
   if(savedMarket === 'KR' || savedMarket === 'US'){
     currentCountry = savedMarket;
-    document.querySelectorAll('.sb-market-btn').forEach(b =>
+    document.querySelectorAll('.sb-market-btn, .fm-market-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.market === savedMarket));
+    const capsule = document.querySelector('.fm-capsule');
+    if(capsule) capsule.dataset.active = savedMarket;
   }
 } catch(e){}
 
@@ -5657,6 +5800,50 @@ const initialRoute = (location.hash || '#calendar').slice(1);
 if(ROUTES.includes(initialRoute) && initialRoute !== 'calendar'){
   navigate(initialRoute);
 }
+
+/* ===== 스크롤 방향 감지 — 플로팅 토글 + 햄버거 hide/show ===== */
+(function(){
+  let lastY = window.scrollY;
+  let ticking = false;
+  const THRESHOLD = 8;       // 작은 흔들림 무시
+  const TOP_GUARD = 50;      // 상단 근처에선 항상 보임
+
+  const fm = document.getElementById('floatingMarket');
+  const hb = document.getElementById('hamburgerBtn');
+
+  function update(){
+    const y = window.scrollY;
+    const dy = y - lastY;
+
+    // 상단 가드: 스크롤이 거의 위쪽이면 무조건 보임
+    if(y < TOP_GUARD){
+      if(fm) fm.classList.remove('scroll-hidden');
+      if(hb) hb.classList.remove('scroll-hidden');
+      lastY = y; ticking = false; return;
+    }
+
+    if(Math.abs(dy) < THRESHOLD){ ticking = false; return; }
+
+    if(dy > 0){
+      // 아래로 → 숨김
+      if(fm) fm.classList.add('scroll-hidden');
+      if(hb) hb.classList.add('scroll-hidden');
+    } else {
+      // 위로 → 보임
+      if(fm) fm.classList.remove('scroll-hidden');
+      if(hb) hb.classList.remove('scroll-hidden');
+    }
+    lastY = y;
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if(!ticking){
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+})();
 
 </script>
 </body>
