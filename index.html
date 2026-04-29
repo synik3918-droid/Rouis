@@ -30,7 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -73,7 +73,7 @@
 
     /* — 폰트 패밀리 */
     --font-sans:        'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono:        'IBM Plex Mono', ui-monospace, monospace;
+    --font-mono:        'Roboto Mono', ui-monospace, monospace;
     --font-display:     var(--font-display);
 
     /* — 폰트 크기 */
@@ -1099,13 +1099,24 @@
     transform:translateY(-1px);
   }
   .p-num{
-    font-family:var(--font-display);
-    font-size:24px;
-    line-height:1;
-    color:var(--accent);
-    opacity:0.7;
     flex-shrink:0;
-    letter-spacing:1px;
+    width:36px; height:36px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--accent);
+    opacity:0.85;
+    border:1px solid rgba(255,128,0,0.25);
+    border-radius:50%;
+    background:rgba(255,128,0,0.05);
+    transition:all .15s ease;
+  }
+  .p-num svg{
+    width:22px; height:22px;
+    display:block;
+  }
+  .principle:hover .p-num{
+    opacity:1;
+    border-color:rgba(255,128,0,0.5);
+    background:rgba(255,128,0,0.1);
   }
   .p-body{ flex:1; min-width:0; }
   .p-title{
@@ -1170,7 +1181,8 @@
     .brand-tagline{ font-size:13px; }
     .brand-principles{ grid-template-columns:1fr; }
     .principle{ padding:12px 14px; }
-    .p-num{ font-size:20px; }
+    .p-num{ width:32px; height:32px; }
+    .p-num svg{ width:18px; height:18px; }
     .p-title{ font-size:13px; }
     .p-desc{ font-size:12px; }
   }
@@ -1188,11 +1200,13 @@
     font-size:12px; color:var(--subtle); padding:10px 14px;
     background:var(--surface); border-left:2px solid var(--border2);
     border-radius:0 4px 4px 0;
+    margin-top:14px;
   }
   .guide-p.guide-note strong{ color:var(--text); }
   .guide-grid{
     display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
     gap:12px;
+    margin-bottom:14px;
   }
   .guide-item{
     background:var(--surface); border:1px solid var(--border); border-radius:6px;
@@ -1303,6 +1317,89 @@
     color:var(--text-2); margin-bottom:var(--gap-3);
     letter-spacing:1px; text-transform:uppercase;
   }
+  .ds-comp-note{
+    margin-top:var(--gap-3);
+    font-size:11px; color:var(--text-3); line-height:1.5;
+  }
+  .ds-comp-note code{
+    font-family:var(--font-mono); font-size:10px;
+    background:var(--surface-2); padding:1px 5px; border-radius:3px;
+    color:var(--text-2);
+  }
+  .ds-mini{
+    font-size:10px; color:var(--text-3);
+    font-family:var(--font-mono); letter-spacing:.5px;
+  }
+
+  /* 라인 아이콘 미리보기 컨테이너 */
+  .ds-icon{
+    width:36px; height:36px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--accent);
+    border:1px solid rgba(255,128,0,0.25);
+    border-radius:50%;
+    background:rgba(255,128,0,0.05);
+  }
+  .ds-icon svg{ width:22px; height:22px; }
+
+  /* 트랜지션 타이밍 표 */
+  .ds-trans-grid{ display:flex; flex-direction:column; gap:6px; }
+  .ds-trans-row{
+    display:flex; align-items:baseline; gap:14px;
+    padding:6px 10px;
+    background:var(--surface-2); border-radius:4px;
+  }
+  .ds-trans-key{
+    font-family:var(--font-mono); font-size:12px; font-weight:700;
+    color:var(--accent); min-width:48px;
+  }
+  .ds-trans-desc{ font-size:12px; color:var(--text-2); }
+
+  /* z-index 계층 시각화 */
+  .ds-z-stack{
+    position:relative;
+    display:flex; flex-direction:column; gap:4px;
+    padding:8px;
+  }
+  .ds-z-layer{
+    display:flex; gap:14px; align-items:center;
+    padding:8px 12px;
+    background:var(--surface-2);
+    border-left:2px solid var(--accent);
+    border-radius:0 4px 4px 0;
+    font-size:12px; color:var(--text-2);
+    transform:translateX(0);
+    transition:transform .15s ease;
+  }
+  .ds-z-layer:nth-child(1){ transform:translateX(0); }
+  .ds-z-layer:nth-child(2){ transform:translateX(8px); }
+  .ds-z-layer:nth-child(3){ transform:translateX(16px); }
+  .ds-z-layer:nth-child(4){ transform:translateX(24px); }
+  .ds-z-layer:nth-child(5){ transform:translateX(32px); }
+  .ds-z-num{
+    font-family:var(--font-mono); font-size:11px;
+    color:var(--accent); font-weight:700;
+    min-width:36px;
+  }
+
+  /* 카드 패턴 미리보기 */
+  .ds-card-mini{
+    margin-bottom:8px;
+    padding:12px 14px;
+    background:var(--surface-1);
+    border:1px solid var(--border);
+    border-radius:6px;
+  }
+  .ds-card-mini.ds-card-accent{
+    background:linear-gradient(180deg, rgba(255,128,0,0.06), rgba(255,128,0,0.01));
+    border:1px solid rgba(255,128,0,0.2);
+    border-left:3px solid var(--accent);
+  }
+  .ds-card-h{
+    font-size:12px; font-weight:700; color:var(--text-1);
+    margin-bottom:4px;
+  }
+  .ds-card-b{ font-size:11px; color:var(--text-2); line-height:1.5; }
 
   @media (max-width:767px){
     .page-guide{ padding:0 0 var(--gap-7); }
@@ -2716,6 +2813,7 @@
   <!-- 탭 네비게이션 (sticky) -->
   <div class="guide-tabs" id="guideTabs">
     <button class="guide-tab active" data-guide-tab="overview">개요</button>
+    <button class="guide-tab" data-guide-tab="design">디자인</button>
     <button class="guide-tab" data-guide-tab="calendar">종목 분석</button>
     <button class="guide-tab" data-guide-tab="heatmap">테마 분석</button>
     <button class="guide-tab" data-guide-tab="data">데이터 · 면책</button>
@@ -2750,21 +2848,49 @@
       <p class="guide-p">새 기능 만들 때마다 이 셋으로 돌아옵니다.</p>
       <div class="brand-principles">
         <div class="principle">
-          <div class="p-num">01</div>
+          <div class="p-num">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <!-- 우상향 화살표 (남들이 사는 방향) -->
+              <path d="M14 4 L20 4 L20 10"/>
+              <path d="M20 4 L13 11"/>
+              <!-- 좌하향 화살표 (우리가 사는 방향) -->
+              <path d="M10 20 L4 20 L4 14"/>
+              <path d="M4 20 L11 13"/>
+            </svg>
+          </div>
           <div class="p-body">
             <div class="p-title">친구가 물리면 그게 매수</div>
             <div class="p-desc">환호 말고 <strong>짜증 들릴 때</strong>가 진짜 시점. 모두가 살 때 우리는 빠지고, 모두가 후회할 때 우리는 줍습니다. <span class="sig now" style="display:inline-flex">●</span> <span class="sig wait" style="display:inline-flex">○</span> <span class="sig avoid" style="display:inline-flex">✕</span> 신호도 그 원리.</div>
           </div>
         </div>
         <div class="principle">
-          <div class="p-num">02</div>
+          <div class="p-num">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <!-- 코인 스택 - 동전 두 개 -->
+              <ellipse cx="12" cy="9" rx="6" ry="2.2"/>
+              <path d="M6 9 L6 12 C 6 13.5 8.7 14.5 12 14.5 C 15.3 14.5 18 13.5 18 12 L 18 9"/>
+              <path d="M6 12 L6 15 C 6 16.5 8.7 17.5 12 17.5 C 15.3 17.5 18 16.5 18 15 L 18 12"/>
+            </svg>
+          </div>
           <div class="p-body">
             <div class="p-title">치킨값이면 충분</div>
             <div class="p-desc">대박 안 노립니다. <strong>안 잃는 게 1순위</strong>, 가끔 치킨값 얹히면 그날은 좋은 날. 그게 본업 있는 사람의 현실적인 목표죠.</div>
           </div>
         </div>
         <div class="principle">
-          <div class="p-num">03</div>
+          <div class="p-num">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <!-- 한 점 → 세 갈래로 분기 (각자의 LOUIS) -->
+              <circle cx="12" cy="5" r="1.8"/>
+              <path d="M12 7 L12 12"/>
+              <path d="M12 12 C 12 14 9 14 6 14 L 6 17"/>
+              <path d="M12 12 L 12 17"/>
+              <path d="M12 12 C 12 14 15 14 18 14 L 18 17"/>
+              <circle cx="6" cy="19" r="1.8"/>
+              <circle cx="12" cy="19" r="1.8"/>
+              <circle cx="18" cy="19" r="1.8"/>
+            </svg>
+          </div>
           <div class="p-body">
             <div class="p-title">내 거 보고 너도 만들어</div>
             <div class="p-desc">이 LOUIS도 어차피 한 명의 매매 스타일일 뿐이에요. 부동산 보는 친구는 <strong>부동산 LOUIS</strong>, 코인 하는 친구는 <strong>코인 LOUIS</strong> 만들면 그만. 같이 가요.</div>
@@ -2793,6 +2919,11 @@
       <p class="guide-p">LOUIS는 한 명의 도구가 아니라 <strong>각자의 도구를 만드는 출발점</strong>이 됩니다.</p>
       <div class="brand-sign">— 친구가 물리면, 우린 산다</div>
     </section>
+
+  </div><!-- /탭 1 (개요) -->
+
+  <!-- ========== 탭 2: 디자인 시스템 ========== -->
+  <div class="guide-pane" data-guide-pane="design">
 
     <section class="guide-section">
       <h2 class="guide-h2">디자인 시스템</h2>
@@ -2832,7 +2963,7 @@
       <div class="ds-type-grid">
         <div class="ds-type-row">
           <span class="ds-type-label">Display · 32px</span>
-          <span class="ds-type-sample" style="font-family:var(--font-display);font-size:32px;letter-spacing:2px">SEASONAL TRACKER</span>
+          <span class="ds-type-sample" style="font-family:var(--font-display);font-size:32px;letter-spacing:2px">친구매매 LOUIS</span>
           <span class="ds-type-token">var(--font-display) · var(--text-display)</span>
         </div>
         <div class="ds-type-row">
@@ -2884,12 +3015,25 @@
       <h3 class="guide-h3">컴포넌트 미리보기</h3>
       <div class="ds-comp-grid">
         <div class="ds-comp">
-          <div class="ds-comp-label">통일 토글 (Segmented Control)</div>
-          <div class="uni-seg">
-            <button class="uni-seg-btn active">옵션 A</button>
-            <button class="uni-seg-btn">옵션 B</button>
-            <button class="uni-seg-btn">옵션 C</button>
+          <div class="ds-comp-label">토글 (Segmented Control)</div>
+          <div class="uni-seg" data-demo-toggle>
+            <button class="uni-seg-btn active" type="button">옵션 A</button>
+            <button class="uni-seg-btn" type="button">옵션 B</button>
+            <button class="uni-seg-btn" type="button">옵션 C</button>
           </div>
+        </div>
+
+        <!-- 시장 토글 (플로팅 캡슐) -->
+        <div class="ds-comp">
+          <div class="ds-comp-label">시장 토글 (Floating Capsule)</div>
+          <div style="display:flex;justify-content:center;padding:16px 0">
+            <div class="fm-capsule" data-active="KR" data-demo-market style="position:relative">
+              <button class="fm-btn fm-market-btn active" type="button" data-demo-side="KR">국장</button>
+              <button class="fm-btn fm-market-btn" type="button" data-demo-side="US">미장</button>
+              <span class="fm-slider"></span>
+            </div>
+          </div>
+          <div class="ds-comp-note">우측 하단 플로팅 위치 · 스크롤 시 자동 hide/show · 사이드바 토글과 동기화</div>
         </div>
         <div class="ds-comp">
           <div class="ds-comp-label">성격 태그</div>
@@ -2909,12 +3053,127 @@
             <span style="color:var(--accent)">★ 2.1배</span>
           </div>
         </div>
+
+        <!-- 신호 배지 -->
+        <div class="ds-comp">
+          <div class="ds-comp-label">신호 배지 (●○✕)</div>
+          <div style="display:flex;gap:18px;align-items:center">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+              <span class="sig now">●</span>
+              <span class="ds-mini">지금</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+              <span class="sig wait">○</span>
+              <span class="ds-mini">대기</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+              <span class="sig avoid">✕</span>
+              <span class="ds-mini">회피</span>
+            </div>
+          </div>
+          <div class="ds-comp-note">16×16px · 폰트 10px · 행동 제안용</div>
+        </div>
+
+        <!-- 라인 아이콘 규격 -->
+        <div class="ds-comp">
+          <div class="ds-comp-label">라인 아이콘</div>
+          <div style="display:flex;gap:16px;align-items:center">
+            <div class="ds-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 4 L20 4 L20 10"/>
+                <path d="M20 4 L13 11"/>
+                <path d="M10 20 L4 20 L4 14"/>
+                <path d="M4 20 L11 13"/>
+              </svg>
+            </div>
+            <div class="ds-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="9" rx="6" ry="2.2"/>
+                <path d="M6 9 L6 12 C 6 13.5 8.7 14.5 12 14.5 C 15.3 14.5 18 13.5 18 12 L 18 9"/>
+                <path d="M6 12 L6 15 C 6 16.5 8.7 17.5 12 17.5 C 15.3 17.5 18 16.5 18 15 L 18 12"/>
+              </svg>
+            </div>
+            <div class="ds-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="5" r="1.8"/>
+                <path d="M12 7 L12 12"/>
+                <path d="M12 12 C 12 14 9 14 6 14 L 6 17"/>
+                <path d="M12 12 L 12 17"/>
+                <path d="M12 12 C 12 14 15 14 18 14 L 18 17"/>
+                <circle cx="6" cy="19" r="1.8"/>
+                <circle cx="12" cy="19" r="1.8"/>
+                <circle cx="18" cy="19" r="1.8"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ds-comp-note">viewBox 24 · stroke 1.5 · round cap·join · color: <code>currentColor</code></div>
+        </div>
+
+        <!-- 커스텀 툴팁 -->
+        <div class="ds-comp">
+          <div class="ds-comp-label">커스텀 툴팁</div>
+          <div style="display:flex;gap:16px;align-items:center;padding:24px 0 8px">
+            <span class="sig now" data-tip="hover/탭 시 툴팁 표시" tabindex="0">●</span>
+            <span class="sig wait" data-tip="data-tip 속성 사용" tabindex="0">○</span>
+            <span class="sig avoid" data-tip="3초 후 자동 닫힘" tabindex="0">✕</span>
+          </div>
+          <div class="ds-comp-note">위 배지에 호버/탭 → 툴팁. <code>data-tip="..."</code> 속성 + <code>tabindex="0"</code></div>
+        </div>
+
+        <!-- 인터랙션 패턴 -->
+        <div class="ds-comp">
+          <div class="ds-comp-label">트랜지션 타이밍</div>
+          <div class="ds-trans-grid">
+            <div class="ds-trans-row">
+              <span class="ds-trans-key">.15s</span>
+              <span class="ds-trans-desc">호버·클릭 즉각 반응 (버튼, 토글)</span>
+            </div>
+            <div class="ds-trans-row">
+              <span class="ds-trans-key">.25s</span>
+              <span class="ds-trans-desc">상태 전환 (탭 활성화, 색상 변경)</span>
+            </div>
+            <div class="ds-trans-row">
+              <span class="ds-trans-key">.35s</span>
+              <span class="ds-trans-desc">큰 변화 (페이지 전환, fade in/out)</span>
+            </div>
+            <div class="ds-trans-row">
+              <span class="ds-trans-key">1.5s</span>
+              <span class="ds-trans-desc">강조 깜빡임 (Top Pick 클릭 시 flash)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- z-index 계층 -->
+        <div class="ds-comp">
+          <div class="ds-comp-label">z-index 계층</div>
+          <div class="ds-z-stack">
+            <div class="ds-z-layer" style="z-index:5"><span class="ds-z-num">1</span> 기본 컨텐츠</div>
+            <div class="ds-z-layer" style="z-index:4"><span class="ds-z-num">2-3</span> 카드 · 패널</div>
+            <div class="ds-z-layer" style="z-index:3"><span class="ds-z-num">10</span> sticky 헤더 (탭, 사이드바)</div>
+            <div class="ds-z-layer" style="z-index:2"><span class="ds-z-num">20</span> 플로팅 버튼 (시장 토글, 햄버거)</div>
+            <div class="ds-z-layer" style="z-index:1"><span class="ds-z-num">50+</span> 툴팁 · 모달 · 백드롭</div>
+          </div>
+        </div>
+
+        <!-- 카드 패턴 -->
+        <div class="ds-comp">
+          <div class="ds-comp-label">카드 패턴</div>
+          <div class="ds-card-mini">
+            <div class="ds-card-h">기본 카드</div>
+            <div class="ds-card-b">surface-1 배경 + 1px border + radius 6~8px + padding 14px</div>
+          </div>
+          <div class="ds-card-mini ds-card-accent">
+            <div class="ds-card-h">강조 카드 (Top Pick·브랜드)</div>
+            <div class="ds-card-b">accent 그라디언트 + 좌측 3px 보더</div>
+          </div>
+          <div class="ds-comp-note">호버: <code>translateY(-1px)</code> + 보더 진해짐</div>
+        </div>
       </div>
     </section>
 
-  </div><!-- /탭 1 (개요) -->
+  </div><!-- /탭 2 (디자인) -->
 
-  <!-- ========== 탭 2: 종목 분석 ========== -->
+  <!-- ========== 탭 3: 종목 분석 ========== -->
   <div class="guide-pane" data-guide-pane="calendar">
 
     <section class="guide-section">
@@ -3019,9 +3278,9 @@
       <p class="guide-p guide-note">검증 기간 2018-01-01 ~ 2025-12-31 (8년). 시즌 전략은 매수월~매도월만 보유, 섹터 전략은 균등 가중 상시 보유.</p>
     </section>
 
-  </div><!-- /탭 2 (종목 분석) -->
+  </div><!-- /탭 3 (종목 분석) -->
 
-  <!-- ========== 탭 3: 테마 분석 ========== -->
+  <!-- ========== 탭 4: 테마 분석 ========== -->
   <div class="guide-pane" data-guide-pane="heatmap">
 
     <section class="guide-section">
@@ -3073,9 +3332,9 @@
       <p class="guide-p guide-note">백테스트 "vs 시장" 항목도 동일 지수 기준 (KOSPI / QQQ). 현재 정적 더미 데이터이며, 서버 도입 시 실시간 갱신 예정.</p>
     </section>
 
-  </div><!-- /탭 3 (테마 분석) -->
+  </div><!-- /탭 4 (테마 분석) -->
 
-  <!-- ========== 탭 4: 데이터 · 면책 ========== -->
+  <!-- ========== 탭 5: 데이터 · 면책 ========== -->
   <div class="guide-pane" data-guide-pane="data">
 
     <section class="guide-section">
@@ -3106,7 +3365,7 @@
       <p class="guide-p">이 도구는 <strong>투자 참고용</strong>입니다. 수익을 보장하지 않으며 모든 결정과 결과는 본인 책임입니다. 데이터는 무료 외부 API에서 가져오며 정확성을 보증하지 않습니다.</p>
     </section>
 
-  </div><!-- /탭 4 (데이터·면책) -->
+  </div><!-- /탭 5 (데이터·면책) -->
 
   </div>
 </div><!-- /page-guide -->
@@ -3341,12 +3600,12 @@ function drawBacktestChart(themeId){
     options:{
       responsive:true, maintainAspectRatio:false,
       plugins:{
-        legend:{ labels:{ color:'#e8eaf0', font:{family:'IBM Plex Mono', size:11}, boxWidth:14 } },
+        legend:{ labels:{ color:'#e8eaf0', font:{family:'Roboto Mono', size:11}, boxWidth:14 } },
         tooltip:{ mode:'index', intersect:false, backgroundColor:'#111318', titleColor:'#e8eaf0', bodyColor:'#e8eaf0', borderColor:'#2a2d38', borderWidth:1 }
       },
       scales:{
-        x:{ ticks:{ color:'#8a8f9e', font:{family:'IBM Plex Mono', size:10}, maxTicksLimit:8 }, grid:{ color:'#1e2028' } },
-        y:{ ticks:{ color:'#8a8f9e', font:{family:'IBM Plex Mono', size:10}, callback:v=>v.toFixed(1)+'x' }, grid:{ color:'#1e2028' } }
+        x:{ ticks:{ color:'#8a8f9e', font:{family:'Roboto Mono', size:10}, maxTicksLimit:8 }, grid:{ color:'#1e2028' } },
+        y:{ ticks:{ color:'#8a8f9e', font:{family:'Roboto Mono', size:10}, callback:v=>v.toFixed(1)+'x' }, grid:{ color:'#1e2028' } }
       },
       interaction:{ mode:'nearest', axis:'x', intersect:false }
     }
@@ -5813,20 +6072,7 @@ const cls = c => c > 0.05 ? 'up' : c < -0.05 ? 'down' : 'neutral';
 // Sophisticated color: muted tones, not pure red/blue
 const col = c => {
   if (Math.abs(c) < 0.05) return '#5c6470';
-  const abs = Math.min(Math.abs(c), 5) / 5;
-  if (c > 0) {
-    // Refined coral/red
-    const r = Math.round(220 + 25 * abs);
-    const g = Math.round(95 - 35 * abs);
-    const b = Math.round(110 - 30 * abs);
-    return `rgb(${r},${g},${b})`;
-  } else {
-    // Refined steel blue
-    const r = Math.round(85 - 25 * abs);
-    const g = Math.round(135 - 25 * abs);
-    const b = Math.round(220 + 15 * abs);
-    return `rgb(${r},${g},${b})`;
-  }
+  return c > 0 ? '#e8485e' : '#4f8fe8';  // 디자인 토큰 --color-up / --color-down
 };
 const fmt = c => (c >= 0 ? '+' : '') + c.toFixed(2) + '%';
 const rnk = n => '#' + String(n).padStart(2, '0');
@@ -5929,11 +6175,11 @@ function rankRibbon(history, color, width, height) {
         <stop offset="1" stop-color="${color}" stop-opacity="0"/>
       </linearGradient>
     </defs>
-    <text x="2" y="9" fill="#3d434b" font-size="9" font-family="IBM Plex Mono, monospace">#${String(minRank).padStart(2,'0')}</text>
-    <text x="2" y="${height - 4}" fill="#3d434b" font-size="9" font-family="IBM Plex Mono, monospace">#${String(maxRank).padStart(2,'0')}</text>
-    <text x="${width - 2}" y="9" fill="#3d434b" font-size="9" font-family="IBM Plex Mono, monospace" text-anchor="end">Today</text>
-    <text x="2" y="${height - 4}" fill="#3d434b" font-size="9" font-family="IBM Plex Mono, monospace" style="opacity:0"></text>
-    <text x="${width / 2}" y="${height - 4}" fill="#3d434b" font-size="9" font-family="IBM Plex Mono, monospace" text-anchor="middle">${N}D ago</text>
+    <text x="2" y="9" fill="#3d434b" font-size="9" font-family="Roboto Mono, monospace">#${String(minRank).padStart(2,'0')}</text>
+    <text x="2" y="${height - 4}" fill="#3d434b" font-size="9" font-family="Roboto Mono, monospace">#${String(maxRank).padStart(2,'0')}</text>
+    <text x="${width - 2}" y="9" fill="#3d434b" font-size="9" font-family="Roboto Mono, monospace" text-anchor="end">Today</text>
+    <text x="2" y="${height - 4}" fill="#3d434b" font-size="9" font-family="Roboto Mono, monospace" style="opacity:0"></text>
+    <text x="${width / 2}" y="${height - 4}" fill="#3d434b" font-size="9" font-family="Roboto Mono, monospace" text-anchor="middle">${N}D ago</text>
     <path d="${area}" fill="url(#${gid})"/>
     <polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>
     <line x1="${xOf(runStart)}" y1="${yOf(last)}" x2="${lastX}" y2="${lastY}" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>
@@ -6834,6 +7080,27 @@ const initialRoute = (location.hash || '#calendar').slice(1);
 if(ROUTES.includes(initialRoute) && initialRoute !== 'calendar'){
   navigate(initialRoute);
 }
+
+/* ===== 가이드 페이지 — 데모 토글 미리보기 핸들러 ===== */
+document.addEventListener('click', (e) => {
+  // 일반 토글 (uni-seg)
+  const btn = e.target.closest('[data-demo-toggle] .uni-seg-btn');
+  if(btn){
+    const group = btn.closest('[data-demo-toggle]');
+    group.querySelectorAll('.uni-seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    return;
+  }
+  // 시장 토글 (플로팅 캡슐) — 미리보기 전용, 실제 시장 변경은 하지 않음
+  const mBtn = e.target.closest('[data-demo-market] .fm-market-btn');
+  if(mBtn){
+    const cap = mBtn.closest('[data-demo-market]');
+    const side = mBtn.dataset.demoSide;
+    cap.dataset.active = side;
+    cap.querySelectorAll('.fm-market-btn').forEach(b => b.classList.remove('active'));
+    mBtn.classList.add('active');
+  }
+});
 
 /* ===== 가이드 페이지 탭 토글 ===== */
 document.addEventListener('click', (e) => {
