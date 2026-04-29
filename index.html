@@ -2725,9 +2725,29 @@
         <div class="gf-row"><span class="gf-key">change</span><span class="gf-eq">=</span><span class="gf-val">테마 종목들의 평균 등락률</span></div>
         <div class="gf-row"><span class="gf-key">leaders</span><span class="gf-eq">=</span><span class="gf-val">등락률 상위 7개 종목</span></div>
         <div class="gf-row"><span class="gf-key">rank</span><span class="gf-eq">=</span><span class="gf-val">strength 내림차순 자동 부여</span></div>
-        <div class="gf-row"><span class="gf-key">RRG 좌표</span><span class="gf-eq">=</span><span class="gf-val">(strength, change) 현재점만</span></div>
+        <div class="gf-row"><span class="gf-key">RRG 좌표</span><span class="gf-eq">=</span><span class="gf-val">(strength, change) 시계열 누적</span></div>
       </div>
-      <p class="guide-p guide-note">5분마다 자동 갱신. <strong>시계열 데이터(rankHistory, RRG 궤적)는 비어있음</strong> — 브라우저는 시계열을 누적할 수 없어 추후 서버 도입 시 추가 예정. 시장 분석 텍스트, 거래대금, 시총 등도 동일.</p>
+
+      <h3 class="guide-h3">RRG 시계열 누적 (브라우저 localStorage)</h3>
+      <p class="guide-p">매일 1회 (KST 날짜 기준) 자동 저장되어 RRG 차트에 궤적이 그려집니다.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">저장 키</span><span class="gf-val"><span class="guide-code">rrgHistory_v1</span></span></div>
+        <div class="gf-row"><span class="gf-key">저장 시점</span><span class="gf-val">페이지 진입 시 (오늘 첫 방문이면 신규 추가, 이미 있으면 덮어씀)</span></div>
+        <div class="gf-row"><span class="gf-key">최대 보관</span><span class="gf-val">90일 (초과 시 오래된 데이터 자동 제거)</span></div>
+      </div>
+      <p class="guide-p guide-note">
+        ⚠ <strong>한계</strong>: 사용자가 매일 페이지를 열어야 시계열이 누적됩니다. 첫 1~3일은 점만 보이고, 일주일~한 달 후부터 의미 있는 궤적이 형성됩니다.<br>
+        ✦ <strong>서버 추가 시 개선</strong>: 맥 스튜디오 서버를 두면 사용자 방문과 무관하게 매일 자동 저장 → 즉시 풀 궤적 가능. 또한 거래대금·시총 등 추가 데이터로 strength 정확도 향상.
+      </p>
+
+      <h3 class="guide-h3">시장 분석 메시지 (Market Read)</h3>
+      <p class="guide-p">사분면 분포·평균 모멘텀·강세/약세 섹터를 분석하여 자동 생성.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">흐름 메시지</span><span class="gf-val">평균 모멘텀 +1↑ "상승 우위" / -1↓ "약세 진행" / 외 "혼조세"</span></div>
+        <div class="gf-row"><span class="gf-key">강세 섹터</span><span class="gf-val">change +0.3% 이상 상위 2개 자동 추출</span></div>
+        <div class="gf-row"><span class="gf-key">약세 섹터</span><span class="gf-val">change −0.3% 이하 하위 2개 자동 추출</span></div>
+        <div class="gf-row"><span class="gf-key">회전 신호</span><span class="gf-val">Improving 사분면 3개 이상 시 발동</span></div>
+      </div>
     </section>
 
     <section class="guide-section guide-disclaimer">
@@ -5102,6 +5122,63 @@ let CURRENT_INDEX = {};
 let currentMarket = 'kr';
 
 /* ============================================================
+   ✦ RRG 시계열 localStorage 누적
+   매일 1회 (날짜별 dedup) 각 테마의 strength·momentum 저장
+   서버 도입 시 이 함수가 서버 API 호출로 교체됨
+   ============================================================ */
+const RRG_HISTORY_KEY = 'rrgHistory_v1';
+const RRG_MAX_DAYS = 90;  // 최대 90일치 보관
+
+// 오늘 날짜 (KST 기준 YYYY-MM-DD)
+function todayKST(){
+  const now = new Date();
+  const kstOffset = 9 * 60;
+  const local = new Date(now.getTime() + (kstOffset + now.getTimezoneOffset()) * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
+// 모든 시계열 로드
+function loadRRGHistory(){
+  try {
+    const raw = localStorage.getItem(RRG_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e){ return {}; }
+}
+
+// 저장 (오늘 날짜로, 같은 날 호출되면 덮어씀)
+function saveRRGSnapshot(market, themesData){
+  try {
+    const all = loadRRGHistory();
+    const today = todayKST();
+    if(!all[market]) all[market] = {};
+    themesData.forEach(t => {
+      if(t._empty) return;
+      if(!all[market][t.name]) all[market][t.name] = [];
+      const series = all[market][t.name];
+      const last = series[series.length - 1];
+      // 오늘 이미 저장돼 있으면 덮어씀, 아니면 추가
+      const point = { d: today, s: t.strength, m: t.change };
+      if(last && last.d === today){
+        series[series.length - 1] = point;
+      } else {
+        series.push(point);
+      }
+      // 최대 일수 초과 시 오래된 것 제거
+      if(series.length > RRG_MAX_DAYS){
+        all[market][t.name] = series.slice(-RRG_MAX_DAYS);
+      }
+    });
+    localStorage.setItem(RRG_HISTORY_KEY, JSON.stringify(all));
+  } catch(e){ console.warn('RRG 시계열 저장 실패:', e); }
+}
+
+// 특정 테마의 시계열 가져오기 ({d, s, m} 배열)
+function getRRGSeries(market, themeName){
+  const all = loadRRGHistory();
+  return (all[market] && all[market][themeName]) || [];
+}
+
+/* ============================================================
    ✦ 캘린더 데이터 → 테마 분석 데이터 자동 생성
    캘린더의 산업 섹터(KR/US 12개씩)와 실시간 가격으로 모든 지표 자동 산출
    ============================================================ */
@@ -5174,22 +5251,137 @@ function generateThemesFromCalendar(market){
   return generated;
 }
 
+/* ============================================================
+   ✦ 정성 메시지 자동 생성 — 사분면 분포·Top 테마·모멘텀 기반
+   서버 도입 시 매크로 뉴스 분석으로 대체 가능
+   ============================================================ */
+function generateMarketRead(themes){
+  if(!themes || themes.length === 0 || themes.every(t => t._empty)){
+    return [{
+      tone: 'neutral', label: '준비',
+      headline: '데이터 준비 중',
+      body: '종목 분석 페이지의 실시간 가격이 모이면 자동으로 시장 분석이 산출됩니다.'
+    }];
+  }
+
+  const avgMomentum = themes.reduce((s,t) => s + t.change, 0) / themes.length;
+  const counts = { Leading: 0, Improving: 0, Weakening: 0, Lagging: 0 };
+  themes.forEach(t => {
+    if(t.strength >= 50 && t.change >= 0) counts.Leading++;
+    else if(t.strength < 50 && t.change >= 0) counts.Improving++;
+    else if(t.strength >= 50 && t.change < 0) counts.Weakening++;
+    else counts.Lagging++;
+  });
+
+  const sortedByStrength = [...themes].sort((a,b) => b.strength - a.strength);
+  const top3 = sortedByStrength.slice(0, 3).map(t => t.name);
+  const sortedByChange = [...themes].sort((a,b) => b.change - a.change);
+  const strongest = sortedByChange.slice(0, 2).filter(t => t.change > 0.3);
+  const weakest = sortedByChange.slice(-2).filter(t => t.change < -0.3);
+
+  const reads = [];
+  let toneClass, headline, body;
+
+  // 시장 흐름 톤
+  if(avgMomentum > 1){
+    toneClass = 'up';
+    headline = `상승 모멘텀 우위 · 평균 +${avgMomentum.toFixed(2)}%`;
+    body = `${counts.Leading + counts.Improving}개 섹터가 상승 사분면. ${top3.slice(0,2).join(' · ')}이 시장 주도.`;
+  } else if(avgMomentum < -1){
+    toneClass = 'down';
+    headline = `약세 진행 · 평균 ${avgMomentum.toFixed(2)}%`;
+    body = `${counts.Weakening + counts.Lagging}개 섹터가 하락 사분면. 방어 포지션 검토 시점.`;
+  } else if(avgMomentum > 0){
+    toneClass = 'up';
+    headline = `완만한 상승 · 평균 +${avgMomentum.toFixed(2)}%`;
+    body = `Leading ${counts.Leading} · Improving ${counts.Improving} · ${top3[0]} 강세 지속.`;
+  } else {
+    toneClass = 'neutral';
+    headline = `혼조세 · 평균 ${avgMomentum.toFixed(2)}%`;
+    body = `섹터별 차별화 · Leading ${counts.Leading} / Improving ${counts.Improving} / Weakening ${counts.Weakening} / Lagging ${counts.Lagging}.`;
+  }
+  reads.push({ tone: toneClass, label: '흐름', headline, body });
+
+  if(strongest.length > 0){
+    const list = strongest.map(t => `${t.name} (+${t.change.toFixed(1)}%)`).join(' · ');
+    reads.push({
+      tone: 'up', label: '강세',
+      headline: `${strongest[0].name} 등 ${strongest.length}개 섹터 강한 상승`,
+      body: `${list}. Improving·Leading 진입 가능성 주목.`
+    });
+  }
+
+  if(weakest.length > 0){
+    const list = weakest.map(t => `${t.name} (${t.change.toFixed(1)}%)`).join(' · ');
+    reads.push({
+      tone: 'down', label: '약세',
+      headline: `${weakest[0].name} 등 ${weakest.length}개 섹터 하락 압력`,
+      body: `${list}. Lagging 사분면 진입 모니터링 필요.`
+    });
+  }
+
+  if(counts.Improving >= 3){
+    reads.push({
+      tone: 'up', label: '회전',
+      headline: `${counts.Improving}개 섹터 회복 회전 중 (Improving)`,
+      body: `약세 후 모멘텀 반등 신호. 다음 주도 후보 중점 관찰.`
+    });
+  }
+
+  return reads;
+}
+
+function generateReasoningMap(themes){
+  const map = {};
+  themes.forEach(t => {
+    if(t._empty){ map[t.name] = '데이터 준비 중'; return; }
+    if(t.change > 1.5) map[t.name] = `강한 상승 모멘텀 (+${t.change.toFixed(1)}%)`;
+    else if(t.change > 0) map[t.name] = `상승 흐름 (+${t.change.toFixed(2)}%)`;
+    else if(t.change < -1.5) map[t.name] = `하락 압력 (${t.change.toFixed(1)}%)`;
+    else if(t.change < 0) map[t.name] = `약세 (${t.change.toFixed(2)}%)`;
+    else map[t.name] = '횡보 · 방향성 부재';
+  });
+  return map;
+}
+
+function pickCorrelatedThemes(themes){
+  if(!themes || themes.length === 0) return [];
+  return [...themes]
+    .filter(t => !t._empty && Math.abs(t.change) > 0.5)
+    .sort((a, b) => b.change - a.change)
+    .slice(0, 4)
+    .map(t => t.name);
+}
+
 function loadMarket(market) {
   currentMarket = market;
-  // 캘린더 데이터 + 실시간 가격으로 자동 생성
+  // 1. 캘린더 데이터 + 실시간 가격으로 자동 생성
   themes = generateThemesFromCalendar(market);
+
+  // 2. 오늘 데이터 시계열에 누적 저장 (날짜별 1회)
+  saveRRGSnapshot(market, themes);
+
+  // 3. 누적된 시계열을 각 테마에 주입 (RRG 궤적용)
   themes.forEach(t => {
+    const series = getRRGSeries(market, t.name);
+    if(series.length > 0){
+      t.rrgHistory = series.map(p => ({ strength: p.s, momentum: p.m }));
+      // tenure: 같은 rank를 며칠 유지했는지 (현재는 시계열 짧으니 0~며칠)
+      t.tenure = series.length;
+    } else {
+      t.rrgHistory = [{ strength: t.strength, momentum: t.change }];
+      t.tenure = 0;
+    }
+    t.rrgHistory180 = t.rrgHistory.slice();
     t.quadrant = quadrantOf(t);
   });
 
-  // 정성 데이터 (시장 분석 텍스트, 시장 지수) — 자동 생성 어려움, 일단 비움
-  CURRENT_REASONING = {};
-  CURRENT_CORRELATED = [];
+  // 4. 정성 데이터 — 자동 메시지 생성 (시장 분석)
+  CURRENT_REASONING = generateReasoningMap(themes);
+  CURRENT_CORRELATED = pickCorrelatedThemes(themes);
   CURRENT_RRG_60D = {};
   CURRENT_RRG_180D = {};
-  CURRENT_MARKET_READ = [
-    { tone: 'neutral', label: '자동', headline: '자동 산출 모드', body: '종목 분석 페이지의 실시간 가격에서 데이터가 자동 생성됩니다. 매크로 분석·시장 회전 텍스트는 추후 서버 도입 시 추가 예정.' }
-  ];
+  CURRENT_MARKET_READ = generateMarketRead(themes);
   CURRENT_INDEX = (market === 'us' ? US_INDEX_DATA : KR_INDEX_DATA) || null;
 }
 
