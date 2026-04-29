@@ -168,17 +168,19 @@
     padding:var(--gap-4) var(--pad-page-x) 0;
   }
   .toppick-header{
-    display:flex; align-items:baseline; gap:var(--gap-3);
+    display:flex; align-items:baseline; gap:10px;
     margin-bottom:var(--gap-3);
   }
   .toppick-title{
-    font-family:var(--font-mono); font-size:var(--text-sm);
-    color:var(--accent); letter-spacing:1.5px; font-weight:700;
-    text-transform:uppercase;
+    font-family:var(--font-sans);
+    font-size:14px; font-weight:700;
+    color:var(--text-1);
+    letter-spacing:-0.01em;
   }
-  .toppick-title::before{ content:'● '; }
   .toppick-sub{
-    font-size:var(--text-xs); color:var(--text-3);
+    font-family:var(--font-mono);
+    font-size:10px; color:var(--text-3);
+    letter-spacing:0.5px;
   }
   .toppick-grid{
     display:grid; grid-template-columns:repeat(3, 1fr);
@@ -189,36 +191,70 @@
     background:var(--surface);
     border:1px solid var(--border);
     border-radius:var(--r-md);
-    padding:var(--gap-3) var(--gap-4);
+    padding:14px 16px 14px 18px;
     cursor:pointer;
     transition:border-color .15s ease, transform .15s ease;
-    display:flex; flex-direction:column; gap:6px;
+    display:flex; flex-direction:column; gap:8px;
     overflow:hidden;
   }
   .toppick-card::before{
-    content:''; position:absolute; left:0; top:0; bottom:0; width:2px;
+    content:''; position:absolute; left:0; top:14px; bottom:14px; width:2px;
     background:var(--accent);
+    border-radius:1px;
   }
   .toppick-card:hover{
     border-color:var(--border2);
     transform:translateY(-1px);
   }
+  /* 우상단 순위 — 작고 차분 */
   .tp-rank{
-    position:absolute; top:8px; right:10px;
-    font-family:var(--font-mono); font-size:11px; font-weight:700;
+    position:absolute; top:10px; right:12px;
+    font-family:var(--font-mono); font-size:10px; font-weight:600;
     color:var(--text-3); line-height:1;
     letter-spacing:0.5px;
   }
-  .tp-score{
-    position:absolute; top:8px; right:42px;
-    font-family:var(--font-mono); font-size:10px; font-weight:700;
-    color:var(--text-2);
-    background:transparent;
-    border:none;
-    padding:0;
-    line-height:1;
+  /* 종목명 + 점수 한 줄 (head) */
+  .tp-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:8px; padding-right:32px;
+  }
+  .tp-name{
+    font-size:15px; font-weight:700; color:var(--text-1);
+    line-height:1.2;
+    display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;
+    min-width:0;
+  }
+  .tp-code{
+    font-family:var(--font-mono); font-size:10px;
+    color:var(--text-3); font-weight:500;
     letter-spacing:0.3px;
   }
+  /* 점수 — 종목명 우측, 작게 */
+  .tp-score{
+    font-family:var(--font-mono); font-size:11px; font-weight:700;
+    color:var(--accent);
+    line-height:1; flex-shrink:0;
+    background:transparent; border:none; padding:0;
+    letter-spacing:0;
+  }
+  .tp-score::after{ content:'점'; font-size:9px; opacity:0.7; margin-left:1px; }
+  .tp-theme{
+    font-size:11px; color:var(--text-3);
+    letter-spacing:0.2px;
+  }
+  .tp-reason{
+    font-size:12px; color:var(--text-2);
+    line-height:1.5;
+  }
+  .tp-meta{
+    display:flex; gap:14px; align-items:baseline;
+    margin-top:2px; padding-top:8px;
+    border-top:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px;
+  }
+  .tp-meta-item{ color:var(--text-2); font-size:11px; }
+  .tp-meta-item strong{ color:var(--text-1); font-weight:600; font-size:12px; margin-left:4px; }
+  .tp-meta-lbl{ color:var(--text-3); font-size:10px; letter-spacing:0.3px; }
 
   /* ============================================================
      ✦ Phase A4: 기술 지표 인디케이터 (RSI 배지 + 200SMA 화살표)
@@ -353,29 +389,6 @@
     .ti-skel-arrow{ width:32px; }
   }
   .ti-fade-in{ animation: fade-in-soft 0.35s ease-out; }
-  .tp-name{
-    font-size:var(--text-base); font-weight:700; color:var(--text-1);
-    display:flex; align-items:baseline; gap:8px;
-  }
-  .tp-code{
-    font-family:var(--font-mono); font-size:10px;
-    color:var(--text-3); font-weight:500;
-  }
-  .tp-theme{
-    font-size:11px; color:var(--text-2);
-  }
-  .tp-reason{
-    font-size:var(--text-xs); color:var(--text-2);
-    line-height:1.5; margin-top:2px;
-  }
-  .tp-meta{
-    display:flex; gap:var(--gap-3); align-items:baseline;
-    margin-top:4px; padding-top:6px;
-    border-top:1px dashed var(--border);
-    font-family:var(--font-mono); font-size:11px;
-  }
-  .tp-meta-item{ color:var(--text-3); }
-  .tp-meta-item strong{ color:var(--text-1); font-weight:700; }
   .tp-empty{
     grid-column:1/-1;
     padding:var(--gap-4); text-align:center;
@@ -443,20 +456,36 @@
     pointer-events:none;
   }
   .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
-  .summary-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--subtle);border-radius:6px;padding:18px 20px;cursor:pointer;transition:all .15s;}
+  .summary-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-left:2px solid var(--border);
+    border-radius:6px;
+    padding:16px 18px;
+    cursor:pointer;
+    transition:border-color .15s, transform .15s;
+  }
   .summary-card-skel{ cursor:default; pointer-events:none; }
   .summary-card-skel .summary-value{ display:flex; align-items:center; min-height:32px; }
-  .summary-card:hover{border-color:var(--muted);transform:translateY(-2px);}
-  .summary-card.active{border-color:var(--text);}
-  .summary-card.low{border-left-color:var(--green);}
-  .summary-card.mid{border-left-color:var(--accent);}
-  .summary-card.high{border-left-color:var(--red);}
-  .summary-card.fav{border-left-color:var(--blue);}
-  .summary-label{font-size:13px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+  .summary-card:hover{ border-color:var(--border2); transform:translateY(-1px); }
+  .summary-card.active{ border-color:var(--text-2); }
+  /* 매수 구간만 강조 — LOUIS 정체성 ("친구가 물리면 그게 매수") */
+  .summary-card.low{ border-left-color:var(--accent); border-left-width:2px; }
+  /* 나머지는 회색 통일 */
+  .summary-card.mid,
+  .summary-card.high,
+  .summary-card.fav{ border-left-color:var(--border); }
+  .summary-label{
+    font-size:11px; color:var(--text-3); font-weight:600;
+    letter-spacing:1px; text-transform:uppercase;
+    display:flex; align-items:center; gap:6px;
+    margin-bottom:10px;
+  }
+  .summary-card.low .summary-label{ color:var(--accent); }
   .summary-value{font-family:var(--font-mono);font-size:28px;font-weight:700;line-height:1;color:var(--text);}
-  .summary-value-unit{font-size:14px;color:var(--muted);font-weight:400;}
-  .summary-sub{font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-top:6px;}
-  .summary-sub strong{color:var(--text);font-weight:600;}
+  .summary-value-unit{font-size:13px;color:var(--text-3);font-weight:400;margin-left:2px;}
+  .summary-sub{font-family:var(--font-mono);font-size:11px;color:var(--text-3);margin-top:8px;letter-spacing:0.2px;}
+  .summary-sub strong{color:var(--text-2);font-weight:600;}
 
   .calendar-section{padding:var(--gap-5) var(--pad-page-x) 0;}
   .calendar-section.hidden{display:none;}
@@ -2890,14 +2919,14 @@
   <div class="page-header-controls">
     <div class="uni-axis">
       <div class="uni-axis-label">분류</div>
-      <div class="uni-seg" id="segGroup">
+      <div class="uni-seg full" id="segGroup">
         <button class="uni-seg-btn" data-group="season">시즌</button>
         <button class="uni-seg-btn active" data-group="industry">섹터</button>
       </div>
     </div>
     <div class="uni-axis">
       <div class="uni-axis-label">투자 스타일</div>
-      <div class="uni-seg" id="segStyle">
+      <div class="uni-seg full" id="segStyle">
         <button class="uni-seg-btn active" data-style="all">전체</button>
         <button class="uni-seg-btn" data-style="blue">안정</button>
         <button class="uni-seg-btn" data-style="aggressive">공격</button>
@@ -5120,20 +5149,24 @@ function renderTopPicks(){
     const upside = ((p.stock.peak - price) / price) * 100;
     const changeCls = change >= 0 ? 'pos' : 'neg';
     const changeStr = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+    // reason에서 "· N점" 같은 점수 부분 제거 (우상단에 별도 표시 중)
+    const cleanReason = (p.reason || '')
+      .replace(/\s*[·•]\s*\d+점\s*$/, '')
+      .replace(/\s*점수\s*\d+점?\s*(부족)?\s*$/, '')
+      .trim() || '기술 지표 양호';
     return `
       <div class="toppick-card" onclick="scrollToStock('${p.stock.code}')">
-        <span class="tp-rank">#${i + 1}</span>
-        ${p.version === 'v2' && p.score ? `<span class="tp-score" title="V2 점수 (RSI·200일선·%B·거래량·도달률 종합)">${Math.round(p.score)}점</span>` : ''}
-        <div class="tp-name">
-          ${p.stock.name}
-          <span class="tp-code">${p.stock.code}</span>
+        <div class="tp-rank">#${i + 1}</div>
+        <div class="tp-head">
+          <div class="tp-name">${p.stock.name}<span class="tp-code">${p.stock.code}</span></div>
+          ${p.version === 'v2' && p.score ? `<span class="tp-score" title="V2 점수 (RSI·200일선·%B·거래량·도달률 종합)">${Math.round(p.score)}</span>` : ''}
         </div>
         <div class="tp-theme">${p.theme.name}</div>
-        <div class="tp-reason">${p.reason}</div>
+        <div class="tp-reason">${cleanReason}</div>
         <div class="tp-meta">
-          <span class="tp-meta-item">현재 <strong>${formatPrice(price, p.theme.country)}</strong></span>
+          <span class="tp-meta-item"><span class="tp-meta-lbl">현재</span><strong>${formatPrice(price, p.theme.country)}</strong></span>
           <span class="tp-meta-item ${changeCls}" style="color:var(--${change>=0?'color-up':'color-down'})">${changeStr}</span>
-          <span class="tp-meta-item">여력 <strong>+${upside.toFixed(0)}%</strong></span>
+          <span class="tp-meta-item"><span class="tp-meta-lbl">여력</span><strong>+${upside.toFixed(0)}%</strong></span>
         </div>
       </div>
     `;
