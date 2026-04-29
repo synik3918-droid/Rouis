@@ -5187,7 +5187,9 @@ function loadMarket(market) {
   CURRENT_CORRELATED = [];
   CURRENT_RRG_60D = {};
   CURRENT_RRG_180D = {};
-  CURRENT_MARKET_READ = { headline: '자동 산출 모드', detail: '캘린더의 실시간 가격에서 자동 생성된 데이터입니다. 매크로 분석 텍스트는 추후 서버 도입 시 추가 예정.' };
+  CURRENT_MARKET_READ = [
+    { tone: 'neutral', label: '자동', headline: '자동 산출 모드', body: '종목 분석 페이지의 실시간 가격에서 데이터가 자동 생성됩니다. 매크로 분석·시장 회전 텍스트는 추후 서버 도입 시 추가 예정.' }
+  ];
   CURRENT_INDEX = (market === 'us' ? US_INDEX_DATA : KR_INDEX_DATA) || null;
 }
 
