@@ -456,6 +456,12 @@
   .page{ display:block; }
   .page[style*="display:none"]{ display:none !important; }
 
+  /* 히트맵 페이지 자체 패딩 (본문이 사이드바·우측에 붙지 않게) */
+  .page-heatmap{
+    padding:28px 32px 60px;
+    max-width:1320px;
+  }
+
   /* ===== 모바일 ===== */
   @media (max-width:1099px){
     .sidebar{
@@ -466,6 +472,7 @@
     .hamburger{ display:flex; }
     .sidebar.open ~ .sidebar-backdrop{ display:block; }
     .app-shell{ margin-left:0; padding-top:56px; }
+    .page-heatmap{ padding:20px 16px 60px; }
   }
 
   .page-heatmap {
@@ -1771,7 +1778,36 @@
 
 <!-- ========== PAGE: HEATMAP ========== -->
 <div class="page page-heatmap" id="page-heatmap" style="display:none">
-  <section class="view active" id="view-leaderboard">
+
+<nav class="market-segment" id="market-seg">
+  <button class="market-tab active" data-market="kr">
+    <span class="m-code">KR</span>
+    <span class="m-name">한국</span>
+    <span class="m-status"><span class="status-dot"></span><span class="m-status-text">--</span></span>
+  </button>
+  <button class="market-tab" data-market="us">
+    <span class="m-code">US</span>
+    <span class="m-name">미국</span>
+    <span class="m-status"><span class="status-dot"></span><span class="m-status-text">--</span></span>
+  </button>
+</nav>
+
+<header class="masthead">
+  <div>
+    <h1>Theme Strength</h1>
+    <div class="sub" id="market-status">
+      <span id="market-date">--</span>
+      <span class="dot"></span>
+      <span id="market-name">KRX</span>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-view="leaderboard">Now</button>
+    <button class="tab" data-view="forecast">Next</button>
+  </nav>
+</header>
+
+<main>
     <p class="leaderboard-intro">절대 강도 순 정렬 · 우측 사분면 뱃지는 RRG 모멘텀 흐름 표시 (강도와 모멘텀은 별개 지표)</p>
     <div class="divider"><span>Lead</span></div>
     <div id="hero"></div>
@@ -1817,6 +1853,7 @@
     <div class="divider"><span>Next Leaders · 후보</span></div>
     <div class="candidate-grid" id="candidate-grid"></div>
   </section>
+</main>
 
 </div><!-- /page-heatmap -->
 
