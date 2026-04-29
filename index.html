@@ -193,7 +193,7 @@
     border-radius:var(--r-md);
     padding:14px 16px 14px 18px;
     cursor:pointer;
-    transition:border-color .15s ease, transform .15s ease;
+    transition:border-color .15s ease, transform .15s ease, opacity .15s ease;
     display:flex; flex-direction:column; gap:8px;
     overflow:hidden;
   }
@@ -202,9 +202,32 @@
     background:var(--accent);
     border-radius:1px;
   }
+  /* ○ 대기 카드 — 살짝 흐리게, 좌측 라인도 회색 */
+  .toppick-card.tp-wait{
+    opacity:0.72;
+  }
+  .toppick-card.tp-wait::before{
+    background:var(--border2);
+  }
+  .toppick-card.tp-wait:hover{
+    opacity:1;
+  }
   .toppick-card:hover{
     border-color:var(--border2);
     transform:translateY(-1px);
+  }
+  /* 종목명 옆 인라인 신호 ●/○ */
+  .tp-sig{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:14px; height:14px; border-radius:50%;
+    font-size:9px; line-height:1; font-weight:700;
+    margin-right:6px; flex-shrink:0;
+    vertical-align:middle;
+  }
+  .tp-sig-now{ background:var(--accent); color:#000; }
+  .tp-sig-wait{
+    background:var(--surface-2); color:var(--text-3);
+    border:1px solid var(--border-2);
   }
   /* 우상단 순위 — 작고 차분 */
   .tp-rank{
@@ -1498,6 +1521,87 @@
     border-radius:6px; padding:18px 22px;
   }
   .guide-disclaimer .guide-h2{ color:var(--color-up); border-bottom:none; padding-bottom:6px; }
+
+  /* ============================================================
+     ✦ Release Note 카드 (이용안내 — "오늘 업데이트")
+     ============================================================ */
+  .release-note{
+    background:linear-gradient(180deg, rgba(255,128,0,0.04) 0%, rgba(255,128,0,0.01) 100%);
+    border:1px solid rgba(255,128,0,0.18);
+    border-radius:8px;
+    padding:20px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .release-note::before{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:2px;
+    background:var(--accent);
+  }
+  .rn-header{
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:12px;
+  }
+  .release-note .guide-h2{
+    font-size:16px; border-bottom:none; padding:0;
+  }
+  .rn-tag{
+    font-family:var(--font-mono); font-size:9px; font-weight:700;
+    color:var(--accent); letter-spacing:1.5px;
+    background:rgba(255,128,0,0.10);
+    border:1px solid rgba(255,128,0,0.30);
+    padding:3px 8px; border-radius:3px;
+    line-height:1;
+  }
+  .rn-list{
+    display:flex; flex-direction:column; gap:14px;
+    margin-top:18px;
+  }
+  .rn-item{
+    display:flex; gap:14px;
+    padding:12px 14px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:6px;
+    transition:border-color .15s ease;
+  }
+  .rn-item:hover{ border-color:var(--border2); }
+  .rn-num{
+    flex-shrink:0;
+    font-family:var(--font-mono); font-size:11px; font-weight:700;
+    color:var(--accent);
+    letter-spacing:0.5px;
+    line-height:1.4;
+    padding:3px 8px;
+    background:rgba(255,128,0,0.06);
+    border:1px solid rgba(255,128,0,0.20);
+    border-radius:3px;
+    height:fit-content;
+    min-width:32px; text-align:center;
+  }
+  .rn-body{ flex:1; min-width:0; }
+  .rn-title{
+    font-size:13.5px; font-weight:700; color:var(--text-1);
+    margin-bottom:5px;
+    letter-spacing:-0.01em;
+  }
+  .rn-desc{
+    font-size:12.5px; color:var(--text-2);
+    line-height:1.65;
+  }
+  .rn-desc code{
+    font-family:var(--font-mono); font-size:11px;
+    background:var(--surface-2);
+    padding:1px 5px; border-radius:3px;
+    color:var(--text-1);
+  }
+  @media (max-width:767px){
+    .release-note{ padding:16px 16px; }
+    .rn-item{ padding:10px 12px; gap:10px; }
+    .rn-num{ font-size:10px; min-width:28px; padding:3px 6px; }
+    .rn-title{ font-size:13px; }
+    .rn-desc{ font-size:12px; }
+  }
+  /* ===== /Release Note ===== */
 
   /* ===== 디자인 시스템 미리보기 ===== */
   .guide-h3{
@@ -3197,6 +3301,66 @@
   <!-- ========== 탭 2: 디자인 시스템 ========== -->
   <div class="guide-pane" data-guide-pane="design">
 
+    <section class="guide-section release-note">
+      <div class="rn-header">
+        <span class="rn-tag">UPDATE</span>
+        <h2 class="guide-h2" style="margin:0">2026-04 디자인 정리</h2>
+      </div>
+      <p class="guide-p">"AI가 자동으로 색칠한 느낌"을 빼고 절제된 톤으로 재정리. 색은 진짜 정보를 전달할 때만 사용, 나머지는 무채색.</p>
+
+      <div class="rn-list">
+        <div class="rn-item">
+          <div class="rn-num">01</div>
+          <div class="rn-body">
+            <div class="rn-title">표준 스켈레톤 시스템</div>
+            <div class="rn-desc">데이터 늦게 도착해도 0이나 빈 값으로 보이지 않게. <code>.skel</code> + 사이즈 변형(<code>.skel-text</code>·<code>.skel-badge</code>·<code>.skel-num-lg</code> 등)으로 어디서든 일관된 펄스 애니메이션. 도착 시 <code>.fade-in-soft</code>로 부드럽게 등장. 매수구간/고점근접/과열/즐겨찾기 카드 + RSI/200SMA 인디케이터에 적용됨.</div>
+          </div>
+        </div>
+        <div class="rn-item">
+          <div class="rn-num">02</div>
+          <div class="rn-body">
+            <div class="rn-title">성격 태그 무채색 통일</div>
+            <div class="rn-desc">주도주·모멘텀·소형주·회복기대·배당주 — 5색 → 모두 회색(<code>--text-2</code>) + 일반 보더. 텍스트 자체로 구분, 시각적 잡음 제거. 한 종목 행에 색깔이 7가지 등장하던 게 3가지(오렌지/빨강/회색)로 정리.</div>
+          </div>
+        </div>
+        <div class="rn-item">
+          <div class="rn-num">03</div>
+          <div class="rn-body">
+            <div class="rn-title">장식 절제</div>
+            <div class="rn-desc">Top Pick 카드 오렌지 그라데이션 → 단색 surface + 좌측 2px 액센트만. 신호 ● 글로우(<code>box-shadow</code>) 제거. 200일선 화살표 빨/파 → 회색. 이모지(💾🔥📅) → 라인 SVG 아이콘. 테마 헤더 앞 컬러 닷 제거.</div>
+          </div>
+        </div>
+        <div class="rn-item">
+          <div class="rn-num">04</div>
+          <div class="rn-body">
+            <div class="rn-title">요약 카드 — 매수 구간만 강조</div>
+            <div class="rn-desc">4개 카드의 좌측 색깔 보더 → 매수 구간만 오렌지(LOUIS 정체성: "친구가 물리면 그게 매수"), 나머지(고점·과열·즐겨찾기)는 회색 통일. 라벨도 11px 대문자 모노 + 자간으로 메타 라벨 위계 강화.</div>
+          </div>
+        </div>
+        <div class="rn-item">
+          <div class="rn-num">05</div>
+          <div class="rn-body">
+            <div class="rn-title">Top Pick 카드 정보 위계 재정리</div>
+            <div class="rn-desc">"71점 #1 / 200일선 위 · 71점" 점수 중복 → 종목명 우측에 점수 1번만, 우상단 #1은 작은 모노. reason에서 점수 부분 자동 제거. 헤더 "이번 주 주목"도 모노스페이스+자간 → 산세리프+타이트 자간으로 한국어에 맞게.</div>
+          </div>
+        </div>
+        <div class="rn-item">
+          <div class="rn-num">06</div>
+          <div class="rn-body">
+            <div class="rn-title">토글 너비 100%</div>
+            <div class="rn-desc">분류·투자 스타일 토글 — <code>.uni-seg.full</code> 적용. 우측 빈 공간 채워 모바일에서 시각적 안정감.</div>
+          </div>
+        </div>
+        <div class="rn-item">
+          <div class="rn-num">07</div>
+          <div class="rn-body">
+            <div class="rn-title">사이드바 메뉴 — 라인 아이콘으로</div>
+            <div class="rn-desc">📅🔥📖 이모지 → 라인 SVG (캘린더/막대그래프/노트북). 브랜드 원칙 섹션과 동일한 스펙(viewBox 24, stroke 1.5, round). <code>currentColor</code> 적용으로 한 가지 회색 톤.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="guide-section">
       <h2 class="guide-h2">디자인 시스템</h2>
       <p class="guide-p">두 페이지(캘린더·히트맵·가이드)가 공유하는 시각 토큰. 새 컴포넌트 추가 시 이 토큰을 사용해 일관성을 유지합니다.</p>
@@ -3736,6 +3900,54 @@
 
   <!-- ========== 탭 3: 종목 분석 ========== -->
   <div class="guide-pane" data-guide-pane="calendar">
+
+    <section class="guide-section release-note">
+      <div class="rn-header">
+        <span class="rn-tag">UPDATE</span>
+        <h2 class="guide-h2" style="margin:0">2026-04 로직 정교화</h2>
+      </div>
+      <p class="guide-p">기존 "도달률 + 시즌" 단일 조건 → <strong>5가지 기술 지표 종합 점수 시스템(V2)</strong>으로 재설계. 자동매매 시스템 로드맵 Phase 1 일부.</p>
+
+      <div class="rn-list">
+        <div class="rn-item">
+          <div class="rn-num">A1</div>
+          <div class="rn-body">
+            <div class="rn-title">일봉 OHLCV 인프라</div>
+            <div class="rn-desc">Yahoo Finance에서 종목별 일봉 1년치(252영업일) 자동 수신. <code>localStorage('ohlcv_v1')</code>에 캐시, KST 16시 이후 갱신. 백그라운드 동시 4개 처리. 가격 갱신과 분리되어 사용자 첫 화면 안 막음.</div>
+          </div>
+        </div>
+        <div class="rn-item">
+          <div class="rn-num">A2</div>
+          <div class="rn-body">
+            <div class="rn-title">기술 지표 8종 함수</div>
+            <div class="rn-desc">RSI(14, Wilder 스무딩 — 트레이딩뷰 표준), SMA(200/60/20), EMA, 볼린저(20일 2σ), ATR(14), MACD(12/26/9), 거래량 비율(20일 평균 대비), 표준편차. 모든 함수 데이터 부족 시 null 반환 — 안전장치.</div>
+          </div>
+        </div>
+        <div class="rn-item">
+          <div class="rn-num">A3</div>
+          <div class="rn-body">
+            <div class="rn-title">V2 점수 시스템 (100점 만점)</div>
+            <div class="rn-desc">도달률 30 + RSI 25 + 200일선 20 + 볼린저 %B 15 + 거래량 10 + 시즌 보너스 ±15. 65점 이상 ●(지금), 40~65 ○(대기), 즉시회피 룰(과열 95%+ / 하락 -3%+ / RSI 70+ AND 도달률 80+) 별도. OHLCV 부족 종목은 자동 V1 폴백.</div>
+          </div>
+        </div>
+        <div class="rn-item">
+          <div class="rn-num">A4</div>
+          <div class="rn-body">
+            <div class="rn-title">UI 시각화</div>
+            <div class="rn-desc">종목명 아래 RSI 배지(과매도 오렌지·과매수 빨강·중립 회색) + 200일선 ▲▽ 화살표(회색). Top Pick 카드 우상단에 점수 표시(예: "71"). 종목 행에서 한눈에 기술 상태 파악 가능.</div>
+          </div>
+        </div>
+        <div class="rn-item">
+          <div class="rn-num">A5</div>
+          <div class="rn-body">
+            <div class="rn-title">Top Pick 안정화</div>
+            <div class="rn-desc">● 신호 부족할 때 ○ 점수 상위로 채워 항상 3개 표시 (○는 살짝 흐리게). 5분 throttle로 가격 갱신마다 카드 들쭉날쭉하지 않게. 사용자 액션(시장·필터·스타일 변경) 시에만 즉시 재정렬. 부분 갱신 함수가 카드 안 가격·등락률만 따로 업데이트.</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="guide-p guide-note">⚠ V2는 신중한 모드입니다. 상승장 끝부분에선 ● 자주 안 나오고, 조정 시작되면 ●가 늘어납니다 ("친구가 물리면 그게 매수" 정체성과 일치). 콘솔에서 <code>window.__signal.compare()</code>로 V1 vs V2 비교 가능. <code>window.__useSignalV2 = false</code>로 V1 롤백 가능.</p>
+    </section>
 
     <section class="guide-section">
       <h2 class="guide-h2">행동 제안 신호</h2>
@@ -4820,6 +5032,7 @@ function buildFilterBar(){
       currentFilter=btn.dataset.filter;
       bar.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
+      maybeRenderTopPicks(true);  // 필터 변경 → 강제 재정렬
       buildSummary();
       renderContent();
     });
@@ -5118,21 +5331,32 @@ window.__signal = {
 };
 /* ===== /Phase A3 ===== */
 
-// 현재 필터 풀에서 Top Pick 3개 추출 (signal === 'now' 중 score 상위)
+// 현재 필터 풀에서 Top Pick 3개 추출
+// 1순위: ● 신호 점수 상위 / 2순위: ○ 대기 중 점수 상위 (3개 채울 때까지)
 function getTopPicks(){
   const themes = applyStyleFilter(getActivePool());
-  const candidates = [];
+  const nowList = [];   // ● 지금
+  const waitList = [];  // ○ 대기
   themes.forEach(theme => {
     theme.stocks.forEach(stock => {
       const entry = priceCache[stock.code];
+      if(!entry || entry.status !== 'fresh' || !entry.value?.price) return;
       const sig = calcSignalAuto(stock, theme, entry);
-      if(sig.signal === 'now'){
-        candidates.push({ stock, theme, entry, ...sig });
-      }
+      const item = { stock, theme, entry, ...sig };
+      if(sig.signal === 'now') nowList.push(item);
+      else if(sig.signal === 'wait') waitList.push(item);
     });
   });
-  candidates.sort((a, b) => b.score - a.score);
-  return candidates.slice(0, 3);
+  nowList.sort((a, b) => (b.score || 0) - (a.score || 0));
+  waitList.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+  // ● 우선, 부족하면 ○ 중 점수 상위로 3개 채움
+  const picks = nowList.slice(0, 3);
+  if(picks.length < 3){
+    const need = 3 - picks.length;
+    picks.push(...waitList.slice(0, need));
+  }
+  return picks;
 }
 
 function renderTopPicks(){
@@ -5154,11 +5378,16 @@ function renderTopPicks(){
       .replace(/\s*[·•]\s*\d+점\s*$/, '')
       .replace(/\s*점수\s*\d+점?\s*(부족)?\s*$/, '')
       .trim() || '기술 지표 양호';
+    // 신호별 카드 클래스 — ● 강조 / ○ 대기는 살짝 흐리게
+    const cardCls = p.signal === 'now' ? '' : ' tp-wait';
+    const sigBadge = p.signal === 'now'
+      ? `<span class="tp-sig tp-sig-now" title="지금 검토">●</span>`
+      : `<span class="tp-sig tp-sig-wait" title="대기 (점수 부족)">○</span>`;
     return `
-      <div class="toppick-card" onclick="scrollToStock('${p.stock.code}')">
+      <div class="toppick-card${cardCls}" onclick="scrollToStock('${p.stock.code}')">
         <div class="tp-rank">#${i + 1}</div>
         <div class="tp-head">
-          <div class="tp-name">${p.stock.name}<span class="tp-code">${p.stock.code}</span></div>
+          <div class="tp-name">${sigBadge}${p.stock.name}<span class="tp-code">${p.stock.code}</span></div>
           ${p.version === 'v2' && p.score ? `<span class="tp-score" title="V2 점수 (RSI·200일선·%B·거래량·도달률 종합)">${Math.round(p.score)}</span>` : ''}
         </div>
         <div class="tp-theme">${p.theme.name}</div>
@@ -5183,9 +5412,76 @@ function scrollToStock(code){
   }
 }
 
+/* Top Pick 갱신 throttle
+   - 가격 갱신마다 재정렬하면 카드 내용이 들쭉날쭉
+   - 5분 주기 또는 강제 갱신 시(필터·시장 변경)에만 재계산
+*/
+let _topPicksLastRender = 0;
+const TOP_PICKS_THROTTLE_MS = 5 * 60 * 1000;  // 5분
+
+function maybeRenderTopPicks(force = false){
+  const now = Date.now();
+  const grid = document.getElementById('toppickGrid');
+  // 빈 화면이면 무조건 첫 렌더
+  if(!grid || !grid.innerHTML.trim()){
+    renderTopPicks();
+    _topPicksLastRender = now;
+    return;
+  }
+  // 강제 갱신 또는 throttle 경과 시 재정렬
+  if(force || (now - _topPicksLastRender) > TOP_PICKS_THROTTLE_MS){
+    renderTopPicks();
+    _topPicksLastRender = now;
+  }
+  // 그 외에는 카드 안 가격·등락률만 부분 갱신 (재정렬 X)
+  else {
+    updateTopPickPrices();
+  }
+}
+
+/* 카드 안의 가격·등락률만 갱신 (DOM 재생성 없이) */
+function updateTopPickPrices(){
+  const grid = document.getElementById('toppickGrid');
+  if(!grid) return;
+  grid.querySelectorAll('.toppick-card').forEach(card => {
+    const onclickAttr = card.getAttribute('onclick') || '';
+    const m = onclickAttr.match(/scrollToStock\('([^']+)'\)/);
+    if(!m) return;
+    const code = m[1];
+    const entry = priceCache[code];
+    if(!entry?.value?.price) return;
+    // 모든 테마에서 종목 찾기 (country 알아내기 위함)
+    let theme = null, stock = null;
+    for(const t of ALL_THEMES){
+      const s = t.stocks.find(x => x.code === code);
+      if(s){ theme = t; stock = s; break; }
+    }
+    if(!theme || !stock) return;
+    const price = entry.value.price;
+    const change = entry.value.change || 0;
+    const upside = ((stock.peak - price) / price) * 100;
+    const meta = card.querySelector('.tp-meta');
+    if(!meta) return;
+    const items = meta.querySelectorAll('.tp-meta-item');
+    if(items[0]){
+      const strong = items[0].querySelector('strong');
+      if(strong) strong.textContent = formatPrice(price, theme.country);
+    }
+    if(items[1]){
+      items[1].textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+      items[1].style.color = `var(--${change>=0?'color-up':'color-down'})`;
+      items[1].className = `tp-meta-item ${change >= 0 ? 'pos' : 'neg'}`;
+    }
+    if(items[2]){
+      const strong = items[2].querySelector('strong');
+      if(strong) strong.textContent = `+${upside.toFixed(0)}%`;
+    }
+  });
+}
+
 function buildSummary(){
-  // Top Pick 위젯도 같이 갱신
-  renderTopPicks();
+  // Top Pick 위젯 — throttled (5분 주기 또는 강제)
+  maybeRenderTopPicks();
 
   const themes = applyStyleFilter(getActivePool());
   const allStocks = themes.flatMap(t=>t.stocks.map(s=>({...s, country:t.country})));
@@ -5241,6 +5537,7 @@ function buildSummary(){
       const key = card.dataset.summary;
       currentFilter = currentFilter===key ? 'all' : key;
       buildFilterBar();
+      maybeRenderTopPicks(true);  // 필터 변경 → 강제 재정렬
       buildSummary();
       renderContent();
     });
@@ -6682,6 +6979,7 @@ function setCurrentMarket(market, opts={}){
   if(calSection) calSection.classList.toggle('hidden', currentGroup!=='season');
   if(typeof buildCalendar === 'function') buildCalendar();
   if(typeof buildFilterBar === 'function') buildFilterBar();
+  if(typeof maybeRenderTopPicks === 'function') maybeRenderTopPicks(true);  // 시장 변경 → 강제 재정렬
   if(typeof buildSummary === 'function') buildSummary();
   if(typeof renderContent === 'function') renderContent();
   if(typeof loadPrices === 'function' && currentRoute === 'calendar') loadPrices(true);
@@ -6745,6 +7043,7 @@ document.querySelectorAll('#segGroup .uni-seg-btn').forEach(btn=>{
     syncSegControls();
     document.getElementById('calendarSection').classList.toggle('hidden', currentGroup!=='season');
     buildFilterBar();
+    maybeRenderTopPicks(true);  // 분류 변경 → 강제 재정렬
     buildSummary();
     renderContent();
     loadPrices();
@@ -6755,6 +7054,7 @@ document.querySelectorAll('#segStyle .uni-seg-btn').forEach(btn=>{
     if(currentStyle===btn.dataset.style) return;
     currentStyle = btn.dataset.style;
     syncSegControls();
+    maybeRenderTopPicks(true);  // 스타일 변경 → 강제 재정렬
     buildSummary();
     renderContent();
   });
