@@ -229,6 +229,7 @@
     display:inline-flex; align-items:center; justify-content:center;
     width:18px; height:18px; border-radius:50%;
     font-size:11px; font-weight:700; line-height:1;
+    position:relative; cursor:help;
   }
   .sig.now{
     background:var(--accent); color:#000;
@@ -241,6 +242,39 @@
   .sig.avoid{
     background:transparent; color:var(--text-4);
     border:1px solid var(--text-4);
+  }
+  /* 커스텀 툴팁 (data-tip 속성) */
+  .sig[data-tip]:hover::after,
+  .sig[data-tip]:focus::after,
+  .sig[data-tip].show-tip::after{
+    content: attr(data-tip);
+    position:absolute;
+    bottom:calc(100% + 8px); left:50%;
+    transform:translateX(-50%);
+    background:var(--surface-3);
+    color:var(--text-1);
+    border:1px solid var(--border-2);
+    padding:8px 12px;
+    border-radius:var(--r-md);
+    font-size:11px; font-weight:500;
+    font-family:var(--font-sans);
+    letter-spacing:0;
+    white-space:nowrap;
+    box-shadow:0 4px 12px rgba(0,0,0,0.4);
+    z-index:50;
+    pointer-events:none;
+  }
+  .sig[data-tip]:hover::before,
+  .sig[data-tip]:focus::before,
+  .sig[data-tip].show-tip::before{
+    content:'';
+    position:absolute;
+    bottom:calc(100% + 2px); left:50%;
+    transform:translateX(-50%);
+    border:5px solid transparent;
+    border-top-color:var(--border-2);
+    z-index:50;
+    pointer-events:none;
   }
   .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
   .summary-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--subtle);border-radius:6px;padding:18px 20px;cursor:pointer;transition:all .15s;}
@@ -303,10 +337,10 @@
 
   /* ===== TABLE ===== */
   table{width:100%;table-layout:fixed;border-collapse:collapse;}
-  col.c-sig{width:36px;}
-  col.c-name{width:18%;}
+  col.c-sig{width:32px;}
+  col.c-name{width:21%;}
   col.c-tag{width:9%;}
-  col.c-reason{width:15%;}
+  col.c-reason{width:14%;}
   col.c-price{width:11%;}
   col.c-change{width:7%;}
   col.c-peak{width:11%;}
@@ -315,8 +349,8 @@
 
   thead tr{background:var(--surface);}
   th{text-align:left;padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:1.5px;font-weight:600;border-bottom:1px solid var(--border);user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  th:first-child{padding:12px 6px;}
-  td:first-child{padding:12px 6px;text-align:center;}
+  th:first-child{padding:12px 4px;text-align:center;letter-spacing:.3px;font-size:11px;}
+  td:first-child{padding:12px 4px;text-align:center;}
   th:not(:first-child):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(4)){text-align:right;}
   th:nth-child(2),th:nth-child(3),th:nth-child(4){text-align:left;}
   th.sortable{cursor:pointer;transition:color .15s;}
@@ -4401,7 +4435,7 @@ function renderStockCardHtml(s, theme){
 
   return `<div class="stock-card entered" data-card="${s.code}" data-code="${s.code}" data-theme="${theme.id}">
     <div class="scd-top">
-      <span class="sig ${sig.signal}" title="${sig.reason}" style="margin-right:4px">${sigChar}</span>
+      <span class="sig ${sig.signal}" data-tip="${sig.reason}" tabindex="0" style="margin-right:4px">${sigChar}</span>
       <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')">★</button>
       <div class="stock-name-info" style="flex:1;min-width:0;">
         <div class="stock-name">${s.name}</div>
@@ -4490,7 +4524,7 @@ function renderStockRowHtml(s, theme){
   // 신호 계산
   const sig = calcSignal(s, theme, entry);
   const sigChar = sig.signal === 'now' ? '●' : sig.signal === 'wait' ? '○' : '✕';
-  const sigCell = `<td><span class="sig ${sig.signal}" title="${sig.reason}">${sigChar}</span></td>`;
+  const sigCell = `<td><span class="sig ${sig.signal}" data-tip="${sig.reason}" tabindex="0">${sigChar}</span></td>`;
 
   return `<tr class="stock-row entered" data-row="${s.code}" data-code="${s.code}" data-theme="${theme.id}">
     ${sigCell}
@@ -4591,7 +4625,7 @@ function renderContent(){
           <col class="c-sig"><col class="c-change"><col class="c-peak"><col class="c-pct"><col class="c-upside">
         </colgroup>
         <thead><tr>
-          <th></th>
+          <th title="● 지금 검토 / ○ 대기 / ✕ 회피">신호</th>
           <th class="${thClass(theme.id,'name')}" data-sort="name" data-theme="${theme.id}">종목명 / 코드${sortIcon(theme.id,'name')}</th>
           <th>성격</th>
           <th>특징</th>
@@ -6135,6 +6169,23 @@ const initialRoute = (location.hash || '#calendar').slice(1);
 if(ROUTES.includes(initialRoute) && initialRoute !== 'calendar'){
   navigate(initialRoute);
 }
+
+/* ===== 신호 배지 툴팁 — 터치 환경 (아이패드/모바일) ===== */
+// 탭하면 .show 클래스 추가 → 잠시 후 자동 제거 + 다른 곳 탭하면 닫힘
+document.addEventListener('click', (e) => {
+  const sig = e.target.closest('.sig[data-tip]');
+  // 다른 곳 탭 시 열린 툴팁 모두 닫기
+  document.querySelectorAll('.sig.show-tip').forEach(el => {
+    if(el !== sig) el.classList.remove('show-tip');
+  });
+  if(sig){
+    sig.classList.toggle('show-tip');
+    // 자동 닫힘 (3초)
+    if(sig.classList.contains('show-tip')){
+      setTimeout(() => sig.classList.remove('show-tip'), 3000);
+    }
+  }
+});
 
 /* ===== 스크롤 방향 감지 — 플로팅 토글 + 햄버거 hide/show ===== */
 (function(){
