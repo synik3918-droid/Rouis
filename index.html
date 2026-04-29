@@ -37,7 +37,7 @@
   .seg-btn.active{background:var(--text);color:var(--bg);box-shadow:0 1px 3px rgba(0,0,0,.4);}
 
   /* ===== Summary Dashboard ===== */
-  .summary-section{padding:24px 48px 0;}
+  .summary-section{padding:24px 32px 0;}
   .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
   .summary-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--subtle);border-radius:6px;padding:18px 20px;cursor:pointer;transition:all .15s;}
   .summary-card:hover{border-color:var(--muted);transform:translateY(-2px);}
@@ -52,7 +52,7 @@
   .summary-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-top:6px;}
   .summary-sub strong{color:var(--text);font-weight:600;}
 
-  .calendar-section{padding:28px 48px 0;}
+  .calendar-section{padding:28px 32px 0;}
   .calendar-section.hidden{display:none;}
   .cal-label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:2px;margin-bottom:16px;}
   .months-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin-bottom:8px;}
@@ -64,13 +64,13 @@
   .today-marker{display:flex;align-items:center;gap:8px;margin:14px 0 24px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);font-weight:600;}
   .today-dot{width:8px;height:8px;border-radius:50%;background:var(--text);}
 
-  .filters{padding:22px 48px 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .filters{padding:22px 32px 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
   .filter-label{color:var(--muted);font-size:13px;margin-right:6px;font-weight:600;}
   .filter-btn{border:1px solid var(--border2);background:transparent;color:var(--muted);padding:8px 16px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;}
   .filter-btn:hover{border-color:var(--text);color:var(--text);}
   .filter-btn.active{background:var(--text);border-color:var(--text);color:var(--bg);font-weight:700;}
 
-  .status-bar{padding:14px 48px;margin-top:20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .status-bar{padding:14px 32px;margin-top:20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
   .status-msg{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px;}
   .live-dot{width:7px;height:7px;border-radius:50%;background:var(--subtle);flex-shrink:0;}
   .live-dot.fetching{background:var(--accent);animation:blink 0.8s infinite;}
@@ -84,7 +84,7 @@
   .retry-failed-btn{border-color:var(--red);color:var(--red);}
   .retry-failed-btn:hover{border-color:var(--red);color:var(--text);background:rgba(242,87,103,.15);}
 
-  .main{padding:32px 48px 80px;overflow-x:auto;}
+  .main{padding:32px 32px 80px;overflow-x:auto;}
   .empty-msg{text-align:center;padding:80px 0;color:var(--muted);font-size:15px;}
 
   .category-block{margin-bottom:48px;min-width:1100px;}
@@ -190,10 +190,10 @@
   .upside.pos{color:var(--green);}
   .upside.neg{color:var(--red);}
 
-  .footer{padding:24px 48px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace;}
+  .footer{padding:24px 32px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace;}
 
   /* ===== 진단 패널 ===== */
-  .diag-bar{padding:10px 48px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .diag-bar{padding:10px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;}
   .diag-toggle{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:4px 12px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;}
   .diag-toggle:hover{border-color:var(--text);color:var(--text);}
   .diag-summary{color:var(--muted);font-size:11px;}
@@ -411,6 +411,9 @@
   .sidebar-nav{
     flex:1; display:flex; flex-direction:column; gap:4px; padding:0 12px;
   }
+
+  /* 시장 토글 컨테이너 */
+  .sidebar-market{ padding:0 16px 16px; border-bottom:1px solid var(--border); margin-bottom:14px; display:flex; flex-direction:column; gap:8px; }
   .nav-item{
     display:flex; align-items:center; gap:12px;
     padding:12px 14px; border-radius:6px;
@@ -452,15 +455,87 @@
   /* App Shell — 사이드바 만큼 들여쓰기 */
   .app-shell{ margin-left:240px; min-height:100vh; }
 
+  /* ============================================================
+     ✦ 통일 토글 시스템 (Segmented Control)
+     모든 페이지의 토글이 이 클래스를 사용
+     ============================================================ */
+  .uni-seg{
+    display:inline-flex; gap:2px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--border);
+    border-radius:8px; padding:3px;
+  }
+  .uni-seg-btn{
+    background:transparent; border:none; cursor:pointer;
+    padding:7px 14px; border-radius:5px;
+    color:var(--muted); font-size:12px; font-weight:600;
+    font-family:'Noto Sans KR', sans-serif;
+    transition:all .15s ease;
+    white-space:nowrap; line-height:1.3;
+    display:inline-flex; align-items:center; gap:5px;
+  }
+  .uni-seg-btn:hover{ color:var(--text); }
+  .uni-seg-btn.active{
+    background:rgba(255,255,255,0.08);
+    color:var(--text);
+  }
+  /* 라벨 (위에 작은 캡션) */
+  .uni-axis{ display:flex; flex-direction:column; gap:6px; }
+  .uni-axis-label{
+    font-family:'JetBrains Mono', monospace; font-size:10px;
+    letter-spacing:1.5px; color:var(--muted); font-weight:600;
+    text-transform:uppercase;
+  }
+  /* 컴팩트 변형 (페이지 헤더에 인라인 배치 시) */
+  .uni-seg.compact .uni-seg-btn{ padding:5px 10px; font-size:11px; }
+  /* 풀폭 (사이드바·모바일) */
+  .uni-seg.full{ display:flex; }
+  .uni-seg.full .uni-seg-btn{ flex:1; justify-content:center; }
+
+  /* ============================================================
+     ✦ 페이지 헤더 시스템 (제목 + 컨트롤)
+     ============================================================ */
+  .page-header{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:24px; padding:28px 32px 20px;
+    border-bottom:1px solid var(--border); margin-bottom:24px;
+    flex-wrap:wrap;
+  }
+  .page-header-title{
+    font-family:'Bebas Neue', sans-serif;
+    font-size:32px; letter-spacing:2px; color:var(--text);
+    line-height:1; margin:0;
+  }
+  .page-header-title .ph-sub{
+    display:block; font-family:'Noto Sans KR', sans-serif;
+    font-size:12px; font-weight:300; color:var(--muted);
+    letter-spacing:1px; margin-bottom:6px;
+  }
+  .page-header-controls{
+    display:flex; gap:18px; align-items:flex-end; flex-wrap:wrap;
+  }
+
+  @media (max-width:767px){
+    .page-header{ padding:20px 16px 14px; gap:14px; }
+    .page-header-title{ font-size:26px; }
+    .page-header-controls{ gap:12px; width:100%; }
+    .uni-axis{ flex:1; min-width:0; }
+    .uni-seg.full .uni-seg-btn{ font-size:11px; padding:8px 6px; }
+  }
+
   /* 페이지 전환 */
   .page{ display:block; }
   .page[style*="display:none"]{ display:none !important; }
 
-  /* 히트맵 페이지 자체 패딩 (본문이 사이드바·우측에 붙지 않게) */
+  /* 히트맵 페이지 자체 패딩 */
   .page-heatmap{
-    padding:28px 32px 60px;
+    padding:0 32px 60px;
     max-width:1320px;
   }
+  .page-heatmap main{ padding:0 0 0 0; }
+  .page-calendar{ padding:0 0 60px; }
+  /* 히트맵 자체 시장 segment는 사이드바로 이동했으므로 숨김 */
+  .page-heatmap .market-segment{ display:none !important; }
 
   /* ===== 모바일 ===== */
   @media (max-width:1099px){
@@ -1664,6 +1739,16 @@
     <span class="sb-logo-mark">▲</span>
     <span class="sb-logo-text">THEME<br>TRACKER</span>
   </div>
+
+  <!-- 시장 토글 (글로벌) -->
+  <div class="sidebar-market">
+    <div class="uni-axis-label">시장</div>
+    <div class="uni-seg full" role="group">
+      <button class="uni-seg-btn active sb-market-btn" data-market="KR">🇰🇷 한국</button>
+      <button class="uni-seg-btn sb-market-btn" data-market="US">🇺🇸 미국</button>
+    </div>
+  </div>
+
   <nav class="sidebar-nav">
     <a href="#calendar" class="nav-item active" data-route="calendar">
       <span class="nav-icon">📅</span>
@@ -1693,37 +1778,27 @@
 <div class="page page-calendar" id="page-calendar">
 
 <!-- 현재 보고 있는 뷰 -->
-<div class="current-view">
-  <span class="cv-prefix">현재 보기</span>
-  <span class="cv-item" id="cvCountry">🇰🇷 한국</span>
-  <span class="cv-divider">›</span>
-  <span class="cv-item" id="cvGroup">📅 시즌별</span>
-  <span class="cv-divider">›</span>
-  <span class="cv-item" id="cvStyle">전체 종목</span>
-</div>
-
-<!-- 3축 토글 -->
-<div class="axis-bar">
-  <div class="axis-group">
-    <div class="axis-label">국가</div>
-    <div class="seg-control" id="segCountry">
-      <button class="seg-btn active" data-country="KR">🇰🇷 한국</button>
-      <button class="seg-btn" data-country="US">🇺🇸 미국</button>
+<!-- 페이지 헤더 (제목 + 토글 인라인) -->
+<div class="page-header">
+  <h1 class="page-header-title">
+    <span class="ph-sub">SEASONAL THEME TRACKER</span>
+    선취매 캘린더
+  </h1>
+  <div class="page-header-controls">
+    <div class="uni-axis">
+      <div class="uni-axis-label">분류</div>
+      <div class="uni-seg" id="segGroup">
+        <button class="uni-seg-btn active" data-group="season">📅 시즌별</button>
+        <button class="uni-seg-btn" data-group="industry">📱 산업 섹터별</button>
+      </div>
     </div>
-  </div>
-  <div class="axis-group">
-    <div class="axis-label">분류</div>
-    <div class="seg-control" id="segGroup">
-      <button class="seg-btn active" data-group="season">📅 시즌별</button>
-      <button class="seg-btn" data-group="industry">📱 산업 섹터별</button>
-    </div>
-  </div>
-  <div class="axis-group">
-    <div class="axis-label">투자 성향</div>
-    <div class="seg-control" id="segStyle">
-      <button class="seg-btn active" data-style="all">전체</button>
-      <button class="seg-btn" data-style="blue">🏛️ 우량</button>
-      <button class="seg-btn" data-style="aggressive">🎰 공격</button>
+    <div class="uni-axis">
+      <div class="uni-axis-label">투자 성향</div>
+      <div class="uni-seg" id="segStyle">
+        <button class="uni-seg-btn active" data-style="all">전체</button>
+        <button class="uni-seg-btn" data-style="blue">🏛️ 우량</button>
+        <button class="uni-seg-btn" data-style="aggressive">🎰 공격</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1792,22 +1867,25 @@
   </button>
 </nav>
 
-<header class="masthead">
-  <div>
-    <h1>Theme Strength</h1>
-    <div class="sub" id="market-status">
+<div class="page-header">
+  <h1 class="page-header-title">
+    <span class="ph-sub" id="market-status">
       <span id="market-date">--</span>
-      <span class="dot"></span>
+      <span style="opacity:.5">·</span>
       <span id="market-name">KRX</span>
-    </div>
+    </span>
+    Theme Strength
+  </h1>
+  <div class="page-header-controls">
+    <nav class="uni-seg" id="heatmap-view-tabs">
+      <button class="uni-seg-btn tab active" data-view="leaderboard">Now</button>
+      <button class="uni-seg-btn tab" data-view="forecast">Next</button>
+    </nav>
   </div>
-  <nav class="tabs">
-    <button class="tab active" data-view="leaderboard">Now</button>
-    <button class="tab" data-view="forecast">Next</button>
-  </nav>
-</header>
+</div>
 
 <main>
+  <section class="view active" id="view-leaderboard">
     <p class="leaderboard-intro">절대 강도 순 정렬 · 우측 사분면 뱃지는 RRG 모멘텀 흐름 표시 (강도와 모멘텀은 별개 지표)</p>
     <div class="divider"><span>Lead</span></div>
     <div id="hero"></div>
@@ -1832,13 +1910,13 @@
             <h3>Relative Rotation</h3>
             <p>강도 × 모멘텀 회전 사이클 · 핵심 테마 강조 · <span style="color:var(--text-2)">전일 종가 기준 (EOD)</span></p>
           </div>
-          <nav class="period-tabs" id="rrg-period-tabs">
-            <button class="period-tab" data-period="5">5D</button>
-            <button class="period-tab active" data-period="10">10D</button>
-            <button class="period-tab" data-period="20">20D</button>
-            <button class="period-tab" data-period="60">60D</button>
-            <button class="period-tab" data-period="90">90D</button>
-            <button class="period-tab" data-period="180">180D</button>
+          <nav class="uni-seg compact period-tabs" id="rrg-period-tabs">
+            <button class="uni-seg-btn period-tab" data-period="5">5D</button>
+            <button class="uni-seg-btn period-tab active" data-period="10">10D</button>
+            <button class="uni-seg-btn period-tab" data-period="20">20D</button>
+            <button class="uni-seg-btn period-tab" data-period="60">60D</button>
+            <button class="uni-seg-btn period-tab" data-period="90">90D</button>
+            <button class="uni-seg-btn period-tab" data-period="180">180D</button>
           </nav>
         </div>
         <div class="market-index-bar" id="market-index-bar"></div>
@@ -3659,8 +3737,8 @@ function filterByTheme(themeId){
 
 function syncSegControls(){
   document.querySelectorAll('#segCountry .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.country===currentCountry));
-  document.querySelectorAll('#segGroup .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.group===currentGroup));
-  document.querySelectorAll('#segStyle .seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.style===currentStyle));
+  document.querySelectorAll('#segGroup .uni-seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.group===currentGroup));
+  document.querySelectorAll('#segStyle .uni-seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.style===currentStyle));
   updateBreadcrumb();
 }
 
@@ -3674,6 +3752,37 @@ function updateBreadcrumb(){
 }
 
 /* 3축 토글 핸들러 */
+/* ===== 글로벌 시장 상태 (사이드바 토글에서 변경) ===== */
+const MARKET_KEY = 'currentMarket_v1';
+function setCurrentMarket(market, opts={}){
+  if(market !== 'KR' && market !== 'US') return;
+  if(currentCountry === market && !opts.force) return;
+  currentCountry = market;
+  currentFilter = 'all';
+  // localStorage 저장
+  try { localStorage.setItem(MARKET_KEY, market); } catch(e){}
+  // 사이드바 active 표시
+  document.querySelectorAll('.sb-market-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.market === market));
+  // 캘린더 페이지 갱신
+  syncSegControls();
+  const calSection = document.getElementById('calendarSection');
+  if(calSection) calSection.classList.toggle('hidden', currentGroup!=='season');
+  if(typeof buildCalendar === 'function') buildCalendar();
+  if(typeof buildFilterBar === 'function') buildFilterBar();
+  if(typeof buildSummary === 'function') buildSummary();
+  if(typeof renderContent === 'function') renderContent();
+  if(typeof loadPrices === 'function' && currentRoute === 'calendar') loadPrices(true);
+  // 히트맵 페이지 갱신 (히트맵의 loadMarket이 있으면 호출)
+  if(typeof window.__heatmapLoadMarket === 'function'){
+    window.__heatmapLoadMarket(market.toLowerCase());
+  }
+}
+
+document.querySelectorAll('.sb-market-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> setCurrentMarket(btn.dataset.market));
+});
+
 document.querySelectorAll('#segCountry .seg-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     if(currentCountry===btn.dataset.country) return;
@@ -3688,7 +3797,7 @@ document.querySelectorAll('#segCountry .seg-btn').forEach(btn=>{
     loadPrices();
   });
 });
-document.querySelectorAll('#segGroup .seg-btn').forEach(btn=>{
+document.querySelectorAll('#segGroup .uni-seg-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     if(currentGroup===btn.dataset.group) return;
     currentGroup = btn.dataset.group;
@@ -3701,7 +3810,7 @@ document.querySelectorAll('#segGroup .seg-btn').forEach(btn=>{
     loadPrices();
   });
 });
-document.querySelectorAll('#segStyle .seg-btn').forEach(btn=>{
+document.querySelectorAll('#segStyle .uni-seg-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     if(currentStyle===btn.dataset.style) return;
     currentStyle = btn.dataset.style;
@@ -3713,6 +3822,17 @@ document.querySelectorAll('#segStyle .seg-btn').forEach(btn=>{
 
 loadCache();
 loadFavorites();
+
+// 저장된 시장 복원
+try {
+  const savedMarket = localStorage.getItem(MARKET_KEY);
+  if(savedMarket === 'KR' || savedMarket === 'US'){
+    currentCountry = savedMarket;
+    document.querySelectorAll('.sb-market-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.market === savedMarket));
+  }
+} catch(e){}
+
 updateBreadcrumb();
 buildCalendar();
 buildFilterBar();
@@ -4957,18 +5077,31 @@ function renderAll() {
 }
 
 /* ========== INIT ========== */
-loadMarket('kr');
+// 사이드바에서 호출 가능하도록 노출
+window.__heatmapLoadMarket = function(market){
+  loadMarket(market);
+  renderAll();
+};
+
+// 글로벌 currentCountry 따라 초기 시장 결정 (히트맵 첫 진입 시점)
+const _initialMarket = (typeof currentCountry !== 'undefined' && currentCountry === 'US') ? 'us' : 'kr';
+loadMarket(_initialMarket);
 renderAll();
 setInterval(renderMarketStatus, 60000);
 
-// Market segment click handlers
+// Market segment click handlers — 글로벌 setCurrentMarket으로 동기화
 document.querySelectorAll('.market-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.classList.contains('active')) return;
     document.querySelectorAll('.market-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    loadMarket(btn.dataset.market);
-    renderAll();
+    // 글로벌 함수 호출 → 사이드바·캘린더 모두 동기화
+    if(typeof setCurrentMarket === 'function'){
+      setCurrentMarket(btn.dataset.market.toUpperCase());
+    } else {
+      loadMarket(btn.dataset.market);
+      renderAll();
+    }
   });
 });
 
