@@ -372,8 +372,10 @@
 
   thead tr{background:var(--surface);}
   th{text-align:left;padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:1.5px;font-weight:600;border-bottom:1px solid var(--border);user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  th:first-child{padding:12px 4px;text-align:left;}
-  td:first-child{padding:12px 4px;text-align:left;}
+  th:first-child{padding:12px 0 12px 4px;text-align:left;}
+  th:nth-child(2){padding-left:6px;}
+  td:first-child{padding:14px 0 14px 4px;text-align:left;}
+  td:nth-child(2){padding-left:6px;}
   th:not(:first-child):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(4)){text-align:right;}
   th:nth-child(2),th:nth-child(3),th:nth-child(4){text-align:left;}
 
@@ -5155,6 +5157,12 @@ function renderPrice(code, country, peak){
 const updateRow = renderPrice;
 
 async function loadPrices(skipFresh=false){
+  // 프리뷰 모드: 외부 API 호출 스킵, 더미 데이터 그대로 사용
+  if(typeof PREVIEW_MODE !== 'undefined' && PREVIEW_MODE){
+    setStatus('✓ 프리뷰 모드 — 더미 데이터 표시 중', 'ok');
+    if(typeof window.__heatmapRefresh === 'function') window.__heatmapRefresh();
+    return;
+  }
   const btn=document.getElementById('refreshBtn');
   btn.disabled=true;
 
@@ -5699,6 +5707,47 @@ document.querySelectorAll('#segStyle .uni-seg-btn').forEach(btn=>{
 
 loadCache();
 loadFavorites();
+
+/* ============================================================
+   ✦ 프리뷰 모드 — 로컬에서 즉시 UI 확인용
+   조건: ?preview=1 쿼리 또는 file:// 프로토콜
+   동작: 모든 종목에 의사난수 더미 가격 주입 → 외부 API 호출 스킵
+   ============================================================ */
+const PREVIEW_MODE = location.protocol === 'file:'
+  || new URLSearchParams(location.search).get('preview') === '1';
+
+if(PREVIEW_MODE){
+  // 시드 기반 의사난수 (페이지 새로고침해도 같은 더미 값)
+  let seed = 42;
+  const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+
+  ALL_THEMES.forEach(theme => {
+    theme.stocks.forEach(s => {
+      // 도달률 30~98% 사이 분포 (매수 구간·고점 근접·과열 모두 포함)
+      const pct = 30 + rand() * 68;
+      const price = Math.round(s.peak * pct / 100);
+      // 등락률 -4 ~ +4% 분포 (지금/대기/회피 신호 모두 분포)
+      const change = +((rand() - 0.5) * 8).toFixed(2);
+      priceCache[s.code] = {
+        status: 'fresh',
+        value: { price, change },
+        updatedAt: Date.now(),
+        error: null,
+      };
+    });
+  });
+  console.log('[Preview Mode] 더미 가격 주입 완료 — ' + ALL_THEMES.reduce((a,t)=>a+t.stocks.length,0) + '개 종목');
+
+  // 화면 좌측 하단에 프리뷰 모드 라벨
+  const badge = document.createElement('div');
+  badge.textContent = 'PREVIEW MODE';
+  badge.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9999;'
+    + 'background:rgba(255,128,0,0.15);border:1px solid rgba(255,128,0,0.5);'
+    + 'color:#ff8000;font-family:var(--font-mono);font-size:10px;letter-spacing:1.5px;'
+    + 'padding:3px 10px;border-radius:3px;font-weight:700;pointer-events:none;';
+  document.body.appendChild(badge);
+}
+/* ===== /프리뷰 모드 ===== */
 
 // 저장된 시장 복원
 try {
