@@ -627,39 +627,69 @@
   .mobile-cards{display:none;}
 
   /* ========================================================
-     ✦ 모바일 카드뷰 스타일
+     ✦ 모바일 카드뷰 스타일 (컴팩트)
      ======================================================== */
-  .stock-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:opacity .35s ease, transform .35s ease;}
+  .stock-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;transition:opacity .35s ease, transform .35s ease;}
   .stock-card.entering{opacity:0;transform:translateY(-4px);}
   .stock-card.entered{opacity:1;transform:translateY(0);}
-  .stock-card-skel{padding:14px;}
+  .stock-card-skel{padding:10px 12px;}
 
-  .scd-top{display:flex;align-items:center;gap:10px;}
-  .scd-top .fav-btn{font-size:22px;min-width:28px;}
-  .scd-top .stock-name{font-size:15px;font-weight:600;}
-  .scd-top .stock-code{font-size:11px;color:var(--muted);margin-top:1px;}
+  .scd-top{display:flex;align-items:flex-start;gap:8px;}
+  .scd-top .stock-name{font-size:14px;font-weight:600;line-height:1.2;}
+  .scd-top .stock-code{font-size:10px;color:var(--muted);margin-top:1px;line-height:1.2;}
 
-  .scd-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px;}
-  .scd-tags .role-tag{font-size:10px;padding:2px 6px;}
+  /* 우측 상단 귀퉁이 — 신호 + 즐겨찾기 묶음 */
+  .scd-corner{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+    margin-top:-1px;
+  }
+  .scd-corner .fav-btn{
+    font-size:18px;
+    line-height:1;
+    padding:0;
+    min-width:auto;
+  }
+  /* 우측 상단 신호 배지 — 툴팁이 잘리지 않게 좌측으로 펼침 */
+  .scd-corner .sig[data-tip]:hover::after,
+  .scd-corner .sig[data-tip]:focus::after,
+  .scd-corner .sig[data-tip].show-tip::after{
+    left:auto;
+    right:calc(100% + 8px);
+    transform:none;
+    bottom:50%;
+    margin-bottom:-14px;
+  }
+  .scd-corner .sig[data-tip]:hover::before,
+  .scd-corner .sig[data-tip]:focus::before,
+  .scd-corner .sig[data-tip].show-tip::before{
+    left:auto;
+    right:calc(100% + 2px);
+    transform:none;
+    bottom:50%;
+    margin-bottom:-5px;
+    border:5px solid transparent;
+    border-left-color:var(--border-2);
+    border-top-color:transparent;
+  }
 
-  .scd-mid{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-  .scd-mid-left{display:flex;flex-direction:column;gap:2px;min-width:0;}
-  .scd-mid .price{font-size:22px;}
-  .scd-mid .price.fetching, .scd-mid .price.error{font-size:14px;}
-  .scd-mid .change{font-size:13px;}
-  .scd-mid-right{text-align:right;display:flex;flex-direction:column;gap:3px;}
-  .scd-mid-right .upside{font-size:18px;}
+  /* 가격·등락률·여력을 한 줄에 (컴팩트) */
+  .scd-mid{display:flex;align-items:baseline;gap:8px;padding:4px 0;border-top:1px solid var(--border);}
+  .scd-mid .price{font-size:16px;font-weight:700;}
+  .scd-mid .price.fetching, .scd-mid .price.error{font-size:12px;}
+  .scd-mid .change{font-size:13px;font-weight:600;}
+  .scd-mid .upside{font-size:12px;font-weight:600;}
+  .scd-mid .scd-spacer{flex:1;}
 
-  .scd-progress{display:flex;align-items:center;gap:10px;}
-  .scd-progress .progress-bar{flex:1;width:auto;}
-  .scd-progress .progress-pct{font-size:13px;min-width:50px;}
-  .scd-progress-meta{font-size:11px;color:var(--muted);font-family:var(--font-mono);}
-  .scd-progress-meta strong{color:var(--text);font-weight:700;}
+  /* 진행바 — 더 얇게 */
+  .scd-progress{display:flex;align-items:center;gap:8px;}
+  .scd-progress .progress-bar{flex:1;width:auto;height:4px;}
+  .scd-progress .progress-pct{font-size:11px;min-width:32px;text-align:right;font-family:var(--font-mono);color:var(--muted);}
 
-  .scd-bot{font-size:12px;color:var(--muted);line-height:1.5;}
-  .scd-bot .reason-tag{display:inline-block;background:var(--border);padding:3px 8px;border-radius:3px;color:var(--text);}
-
-  .scd-cache{display:flex;justify-content:flex-end;}
+  .scd-cache{display:flex;justify-content:flex-end;margin-top:2px;}
+  .scd-cache .cache-badge{font-size:9px;padding:1px 5px;}
 
   /* ============================================================
      ✦ APP SHELL (Sidebar + Page Routing)
@@ -4505,30 +4535,25 @@ function renderStockCardHtml(s, theme){
 
   return `<div class="stock-card entered" data-card="${s.code}" data-code="${s.code}" data-theme="${theme.id}">
     <div class="scd-top">
-      <span class="sig ${sig.signal}" data-tip="${sig.reason}" tabindex="0" style="margin-right:4px">${sigChar}</span>
-      <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')">★</button>
       <div class="stock-name-info" style="flex:1;min-width:0;">
         <div class="stock-name">${s.name}</div>
         <div class="stock-code">${s.code}</div>
-        <div class="scd-tags">${renderRoleTags(s.roles)}</div>
+      </div>
+      <div class="scd-corner">
+        <span class="sig ${sig.signal}" data-tip="${sig.reason}" tabindex="0">${sigChar}</span>
+        <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')">★</button>
       </div>
     </div>
     <div class="scd-mid">
-      <div class="scd-mid-left">
-        <span class="${pCls}">${formatPrice(v.price, theme.country)}</span>
-        <span class="${cCls}">${v.change>=0?'+':''}${(v.change??0).toFixed(2)}%</span>
-      </div>
-      <div class="scd-mid-right">
-        <span class="${uCls}">${upside>=0?'+':''}${upside.toFixed(1)}%</span>
-        <span class="scd-progress-meta">상승여력</span>
-      </div>
+      <span class="${pCls}">${formatPrice(v.price, theme.country)}</span>
+      <span class="${cCls}">${v.change>=0?'+':''}${(v.change??0).toFixed(2)}%</span>
+      <span class="scd-spacer"></span>
+      <span class="${uCls}">여력 ${upside>=0?'+':''}${upside.toFixed(1)}%</span>
     </div>
     <div class="scd-progress">
       <div class="progress-bar"><div class="progress-fill ${barCls}" style="width:${Math.min(pct,100)}%"></div></div>
-      <span class="progress-pct">${pct.toFixed(1)}%</span>
+      <span class="progress-pct">${pct.toFixed(0)}%</span>
     </div>
-    <div class="scd-progress-meta">목표가 <strong>${formatPrice(s.peak, theme.country)}</strong> · ${s.peakTime}</div>
-    <div class="scd-bot"><span class="reason-tag">${s.reason}</span></div>
     ${cacheBadge}
   </div>`;
 }
@@ -4538,10 +4563,13 @@ function renderStockCardSkel(s){
   const isFav = favorites.has(s.code);
   return `<div class="stock-card stock-card-skel" data-card-skel="${s.code}">
     <div class="scd-top">
-      <span class="fav-btn ${isFav?'on':''}" style="opacity:.4">★</span>
       <div class="stock-name-info" style="flex:1;min-width:0;">
         <div class="stock-name">${s.name}</div>
         <div class="stock-code">${s.code}</div>
+      </div>
+      <div class="scd-corner">
+        <span class="sig wait" style="opacity:.4">·</span>
+        <span class="fav-btn ${isFav?'on':''}" style="opacity:.4">★</span>
       </div>
     </div>
     <div class="scd-mid">
