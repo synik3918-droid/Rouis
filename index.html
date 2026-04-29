@@ -501,13 +501,54 @@
   .sidebar-logo{
     display:flex; align-items:center; gap:12px; padding:0 24px 24px;
     border-bottom:1px solid var(--border); margin-bottom:18px;
+    cursor:default;
   }
   .sb-logo-mark{
     font-size:22px; color:var(--accent); line-height:1;
   }
   .sb-logo-text{
-    font-family:var(--font-display); font-size:24px; letter-spacing:4px;
-    line-height:1; color:var(--text);
+    font-family:var(--font-display); font-size:26px; letter-spacing:4px;
+    line-height:1; color:var(--text-1);
+    text-shadow:
+      0 0 8px rgba(255,128,0,0.35),
+      0 0 18px rgba(255,128,0,0.18);
+    transition: text-shadow .35s ease;
+  }
+  .sidebar-logo:hover .sb-logo-text{
+    text-shadow:
+      0 0 10px rgba(255,128,0,0.6),
+      0 0 22px rgba(255,128,0,0.35),
+      0 0 38px rgba(255,128,0,0.15);
+  }
+  /* 글자별 등장 (한 글자씩 타이핑되듯) — 페이지 로드 1회 */
+  .sb-l-char{
+    display:inline-block;
+    opacity:0;
+    animation: louis-type 0.08s linear var(--d) forwards;
+  }
+  @keyframes louis-type{
+    to { opacity: 1; }
+  }
+  /* I 글자 — 등장 + 등장 후 깜빡임 */
+  .sb-logo-i{
+    color: var(--accent);
+    text-shadow:
+      0 0 10px rgba(255,128,0,0.8),
+      0 0 20px rgba(255,128,0,0.5),
+      0 0 32px rgba(255,128,0,0.25);
+    animation:
+      louis-type 0.08s linear var(--d) forwards,
+      louis-i-blink 1.1s steps(2, end) 1.6s infinite;
+  }
+  @keyframes louis-i-blink{
+    0%, 49.99% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+  .sidebar-logo:hover .sb-logo-i{
+    text-shadow:
+      0 0 14px rgba(255,128,0,1),
+      0 0 28px rgba(255,128,0,0.7),
+      0 0 44px rgba(255,128,0,0.35);
   }
   .sidebar-nav{
     flex:1; display:flex; flex-direction:column; gap:4px; padding:0 12px;
@@ -578,8 +619,8 @@
     background:transparent; border:none; cursor:pointer;
     padding:14px 28px; min-width:72px;
     color:var(--text-2);
-    font-family:var(--font-mono); font-size:18px; font-weight:800;
-    letter-spacing:1.5px;
+    font-family:var(--font-sans); font-size:17px; font-weight:800;
+    letter-spacing:.5px;
     transition:color .2s ease;
   }
   .fm-btn:hover{ color:var(--text-1); }
@@ -587,7 +628,7 @@
 
   @media (max-width:767px){
     .floating-market{ bottom:18px; right:18px; }
-    .fm-btn{ padding:12px 22px; min-width:62px; font-size:16px; letter-spacing:1.2px; }
+    .fm-btn{ padding:12px 22px; min-width:62px; font-size:15px; letter-spacing:.3px; }
   }
 
   /* ============================================================
@@ -2046,7 +2087,9 @@
 <!-- ===== Sidebar (Global Navigation) ===== -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <span class="sb-logo-text">LOUIS</span>
+    <span class="sb-logo-text">
+      <span class="sb-l-char" style="--d:0.40s">L</span><span class="sb-l-char" style="--d:0.52s">O</span><span class="sb-l-char" style="--d:0.64s">U</span><span class="sb-l-char sb-logo-i" style="--d:0.76s">I</span><span class="sb-l-char" style="--d:0.88s">S</span>
+    </span>
   </div>
 
   <!-- 시장 토글은 우측 하단 플로팅으로 이동 -->
@@ -2089,8 +2132,8 @@
 <!-- ===== 플로팅 KR/US 시장 토글 ===== -->
 <div class="floating-market" id="floatingMarket">
   <div class="fm-capsule" data-active="KR">
-    <button class="fm-btn fm-market-btn active" data-market="KR" aria-label="한국 시장">KR</button>
-    <button class="fm-btn fm-market-btn" data-market="US" aria-label="미국 시장">US</button>
+    <button class="fm-btn fm-market-btn active" data-market="KR" aria-label="한국 시장">국장</button>
+    <button class="fm-btn fm-market-btn" data-market="US" aria-label="미국 시장">미장</button>
     <span class="fm-slider"></span>
   </div>
 </div>
