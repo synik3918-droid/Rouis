@@ -2598,9 +2598,9 @@
       <p class="guide-p">종목 행 첫 컬럼에 표시되는 1글자 신호. <strong>참고용 분석 결과</strong>이며 매매 권유가 아닙니다.</p>
       <div class="guide-grid">
         <div class="guide-item"><span class="sig now" style="margin-bottom:4px">●</span>
-          <div class="guide-item-desc"><strong style="color:var(--accent)">지금 검토</strong> — 도달률 70% 미만이면서 시즌 진입월 일치, 모멘텀 양수, 또는 섹터(상시 추적) 종목.</div></div>
+          <div class="guide-item-desc"><strong style="color:var(--accent)">지금 검토</strong> — 도달률 70% 미만이면서 다음 중 하나: 시즌 진입월 일치 / <strong>진입월 1~2개월 임박 (선취매)</strong> / 피크 시즌 / 모멘텀 양수 / 섹터(상시).</div></div>
         <div class="guide-item"><span class="sig wait" style="margin-bottom:4px">○</span>
-          <div class="guide-item-desc"><strong>대기</strong> — 도달률은 양호(70% 미만)하나 시즌·모멘텀 조건이 안 맞거나, 도달률 70~95% (고점 근접).</div></div>
+          <div class="guide-item-desc"><strong>대기</strong> — 도달률 양호하나 시즌·모멘텀 조건 미충족, 또는 도달률 70~95% (고점 근접).</div></div>
         <div class="guide-item"><span class="sig avoid" style="margin-bottom:4px">✕</span>
           <div class="guide-item-desc"><strong>회피</strong> — 도달률 95% 이상 (과열) 또는 강한 하락 모멘텀(−3% 이상).</div></div>
       </div>
@@ -2613,6 +2613,7 @@
       <div class="guide-formula">
         <div class="gf-row"><span class="gf-key">우선순위 점수</span><span class="gf-eq">=</span><span class="gf-val">(70 − 도달률) × 0.7</span></div>
         <div class="gf-row"><span class="gf-key">+ 시즌 진입월</span><span class="gf-eq">=</span><span class="gf-val">+25점</span></div>
+        <div class="gf-row"><span class="gf-key">+ 진입월 임박</span><span class="gf-eq">=</span><span class="gf-val">+18점 (1~2개월 안에 시즌 시작 — 선취매)</span></div>
         <div class="gf-row"><span class="gf-key">+ 피크 시즌</span><span class="gf-eq">=</span><span class="gf-val">+12점</span></div>
         <div class="gf-row"><span class="gf-key">+ 양수 등락률</span><span class="gf-eq">=</span><span class="gf-val">+ min(등락률 × 2, 10)점</span></div>
       </div>
@@ -2689,7 +2690,7 @@
         <div class="gf-row"><span class="gf-key">Sharpe</span><span class="gf-val">위험 대비 수익 (높을수록 좋음, 1.0 이상 양호)</span></div>
         <div class="gf-row"><span class="gf-key">MDD</span><span class="gf-val">최대 낙폭 (낮을수록 좋음, -30% 이상은 주의)</span></div>
         <div class="gf-row"><span class="gf-key">승률</span><span class="gf-val">연도별 + 수익 비율</span></div>
-        <div class="gf-row"><span class="gf-key">vs 시장</span><span class="gf-val">전략 CAGR - 시장 지수 CAGR (KOSPI/SPY)</span></div>
+        <div class="gf-row"><span class="gf-key">vs 시장</span><span class="gf-val">전략 CAGR - 시장 지수 CAGR (KOSPI / QQQ)</span></div>
       </div>
       <p class="guide-p guide-note">검증 기간 2018-01-01 ~ 2025-12-31 (8년). 시즌 전략은 매수월~매도월만 보유, 섹터 전략은 균등 가중 상시 보유.</p>
     </section>
@@ -2771,7 +2772,7 @@ const BACKTEST_RESULTS = {
     start_date: "2018-01-01",
     end_date: "2025-12-31",
     generated_at: "2025-04-28T12:00:00",
-    benchmarks: { KR: "KOSPI", US: "SPY" },
+    benchmarks: { KR: "KOSPI", US: "QQQ" },
     is_sample: true   // 실제 데이터 임베드 시 false 또는 삭제
   },
   strategies: {
@@ -3620,6 +3621,13 @@ function calcSignal(stock, theme, entry){
   const inSeason = theme.entryMonths && theme.entryMonths.includes(CURRENT_MONTH);
   const inPeakSeason = theme.peakMonths && theme.peakMonths.includes(CURRENT_MONTH);
 
+  // 진입월 임박 — 1~2달 안에 entryMonths가 시작되는 시즌 테마 (선취매 의도)
+  // 예: 4월에 폭염(entry [5,6]) → preSeason → 한 달 미리 진입 검토
+  const next1 = (CURRENT_MONTH % 12) + 1;
+  const next2 = (((CURRENT_MONTH + 1) % 12)) + 1;
+  const preSeason = theme.entryMonths
+    && (theme.entryMonths.includes(next1) || theme.entryMonths.includes(next2));
+
   // 과열: 도달률 95% 이상
   if(pct >= 95){
     return { signal: 'avoid', reason: `과열 (도달률 ${pct.toFixed(0)}%)`, score: 0 };
@@ -3637,8 +3645,9 @@ function calcSignal(stock, theme, entry){
   // 도달률 — 낮을수록 좋음 (최대 50점)
   score += Math.max(0, 70 - pct) * 0.7;
 
-  // 시즌 일치 가산점
+  // 시즌 가산점 — 진입월 > 임박 > 피크 순
   if(inSeason){ score += 25; reasons.push('시즌 진입월'); }
+  else if(preSeason){ score += 18; reasons.push('진입월 임박 (선취매)'); }
   else if(inPeakSeason){ score += 12; reasons.push('피크 시즌'); }
 
   // 모멘텀 가산
@@ -3646,14 +3655,14 @@ function calcSignal(stock, theme, entry){
 
   // 산업 섹터(상시) 종목은 시즌 가산점 없음 — 도달률 위주
   if(theme.group === 'industry'){
-    reasons = reasons.filter(r => !r.includes('시즌') && !r.includes('피크'));
+    reasons = reasons.filter(r => !r.includes('시즌') && !r.includes('피크') && !r.includes('임박'));
   }
 
   // 분류:
-  // - 매수 구간 (< 70%) + 시즌 일치 또는 모멘텀 양수 → 지금
-  // - 매수 구간이지만 시즌·모멘텀 안 맞음 → 대기
+  // - 매수 구간 (< 70%) + 시즌 일치/임박/피크/모멘텀 양수/섹터 → 지금
+  // - 매수 구간이지만 위 조건 모두 안 맞음 → 대기
   // - 고점 근접 (70-95%) → 대기
-  if(pct < 70 && (inSeason || inPeakSeason || change > 0 || theme.group === 'industry')){
+  if(pct < 70 && (inSeason || preSeason || inPeakSeason || change > 0 || theme.group === 'industry')){
     const r = reasons.length
       ? `${reasons.join(' · ')} · 도달률 ${pct.toFixed(0)}%`
       : `도달률 ${pct.toFixed(0)}%`;
@@ -5097,18 +5106,18 @@ const US_MARKET_READ = [
 ];
 
 const US_INDEX_DATA = {
-  symbol: 'SPX',
-  display: 'S&P 500',
-  current: 5874.32,
-  changePct: 0.91,
-  changeAbs: 53.17,
-  ma200: 5520.45,
-  ma50: 5780.20,
-  high52w: 5920.10,
-  low52w: 4953.80,
-  trendDays: 198,
+  symbol: 'IXIC',
+  display: '나스닥 종합',
+  current: 18643.50,
+  changePct: 1.15,
+  changeAbs: 211.84,
+  ma200: 17240.30,
+  ma50: 18180.75,
+  high52w: 19100.20,
+  low52w: 15750.40,
+  trendDays: 184,
   trendDirection: 'up',
-  ytd: 22.4,
+  ytd: 20.8,
 };
 
 /* ========== ACTIVE THEMES (mutable) ========== */
