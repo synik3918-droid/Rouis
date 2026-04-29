@@ -5228,6 +5228,204 @@ window.__ohlcv = {
 };
 /* ===== /Phase A1 OHLCV 인프라 ===== */
 
+/* ============================================================
+   ✦ Phase A2: 기술 지표 계산 함수
+   - 모든 함수는 종가/거래량 배열을 받아 단일 값 또는 시리즈 반환
+   - 시간 순서: 배열 끝(index -1)이 가장 최근
+   - 데이터 부족 시 null 반환 (예외 던지지 않음)
+   ============================================================ */
+
+/* RSI (Relative Strength Index) — 14일 기본
+   해석: <30 과매도 (친구가 물림), >70 과매수
+   Wilder's smoothing 사용 (TradingView 표준)
+*/
+function calcRSI(closes, period = 14){
+  if(!closes || closes.length < period + 1) return null;
+  let gains = 0, losses = 0;
+  // 첫 period 구간: 단순 평균
+  for(let i = 1; i <= period; i++){
+    const diff = closes[i] - closes[i-1];
+    if(diff >= 0) gains += diff;
+    else losses -= diff;
+  }
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  // 이후: Wilder's smoothing
+  for(let i = period + 1; i < closes.length; i++){
+    const diff = closes[i] - closes[i-1];
+    const gain = diff > 0 ? diff : 0;
+    const loss = diff < 0 ? -diff : 0;
+    avgGain = (avgGain * (period - 1) + gain) / period;
+    avgLoss = (avgLoss * (period - 1) + loss) / period;
+  }
+  if(avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return 100 - (100 / (1 + rs));
+}
+
+/* SMA (Simple Moving Average) — 마지막 N일 평균
+   200일선이 가장 중요 (장기 추세 필터)
+*/
+function calcSMA(closes, period){
+  if(!closes || closes.length < period) return null;
+  const slice = closes.slice(-period);
+  const sum = slice.reduce((a,b) => a + b, 0);
+  return sum / period;
+}
+
+/* SMA 시리즈 — 차트용 (각 시점마다 SMA 값) */
+function calcSMASeries(closes, period){
+  if(!closes || closes.length < period) return [];
+  const series = [];
+  for(let i = period - 1; i < closes.length; i++){
+    const slice = closes.slice(i - period + 1, i + 1);
+    series.push(slice.reduce((a,b)=>a+b, 0) / period);
+  }
+  return series;
+}
+
+/* EMA (Exponential Moving Average) — 최신 가격에 가중 */
+function calcEMA(closes, period){
+  if(!closes || closes.length < period) return null;
+  const k = 2 / (period + 1);
+  let ema = closes.slice(0, period).reduce((a,b)=>a+b, 0) / period;
+  for(let i = period; i < closes.length; i++){
+    ema = closes[i] * k + ema * (1 - k);
+  }
+  return ema;
+}
+
+/* 표준편차 — 볼린저 밴드용 */
+function calcStdDev(values){
+  if(!values || values.length === 0) return 0;
+  const mean = values.reduce((a,b)=>a+b, 0) / values.length;
+  const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
+  return Math.sqrt(variance);
+}
+
+/* 볼린저 밴드 (20일, 2σ 기본)
+   해석:
+   - %B < 0.2 → 하단 근처 (반등 가능)
+   - %B > 0.8 → 상단 근처 (조정 가능)
+   - bandwidth 좁음 → 변동성 축소 (큰 움직임 임박)
+*/
+function calcBollinger(closes, period = 20, multiplier = 2){
+  if(!closes || closes.length < period) return null;
+  const slice = closes.slice(-period);
+  const middle = slice.reduce((a,b)=>a+b, 0) / period;
+  const stdDev = calcStdDev(slice);
+  const upper = middle + multiplier * stdDev;
+  const lower = middle - multiplier * stdDev;
+  const current = closes[closes.length - 1];
+  const percentB = (upper - lower) === 0 ? 0.5 : (current - lower) / (upper - lower);
+  const bandwidth = middle === 0 ? 0 : ((upper - lower) / middle) * 100;
+  return { upper, middle, lower, percentB, bandwidth, current };
+}
+
+/* 거래량 평균 대비 비율 — 마지막 거래량 / N일 평균
+   해석:
+   - >2.0: 거래량 급증 (관심 집중)
+   - 가격 하락 동반 → 패닉 셀 (역발상 매수 시점)
+   - 가격 상승 동반 → 모멘텀 시작
+*/
+function calcVolumeRatio(volumes, period = 20){
+  if(!volumes || volumes.length < period + 1) return null;
+  const recent = volumes[volumes.length - 1];
+  const prev = volumes.slice(-(period + 1), -1);
+  const avg = prev.reduce((a,b)=>a+b, 0) / period;
+  if(avg === 0) return 1;
+  return recent / avg;
+}
+
+/* ATR (Average True Range) — 변동성, 손절선 계산용 (Phase 2에서 활용 예정) */
+function calcATR(highs, lows, closes, period = 14){
+  if(!highs || highs.length < period + 1) return null;
+  const trs = [];
+  for(let i = 1; i < highs.length; i++){
+    const tr = Math.max(
+      highs[i] - lows[i],
+      Math.abs(highs[i] - closes[i-1]),
+      Math.abs(lows[i] - closes[i-1])
+    );
+    trs.push(tr);
+  }
+  if(trs.length < period) return null;
+  // Wilder's smoothing
+  let atr = trs.slice(0, period).reduce((a,b)=>a+b, 0) / period;
+  for(let i = period; i < trs.length; i++){
+    atr = (atr * (period - 1) + trs[i]) / period;
+  }
+  return atr;
+}
+
+/* MACD — 12/26/9 표준 (Phase 2에서 활용 예정) */
+function calcMACD(closes, fast = 12, slow = 26, signal = 9){
+  if(!closes || closes.length < slow + signal) return null;
+  const emaFast = calcEMA(closes, fast);
+  const emaSlow = calcEMA(closes, slow);
+  if(emaFast == null || emaSlow == null) return null;
+  const macdLine = emaFast - emaSlow;
+  // signal 라인 계산을 위해 MACD 시리즈 필요 (간소화: 현재 MACD만 반환)
+  return { macd: macdLine, fast: emaFast, slow: emaSlow };
+}
+
+/* ===== 통합 인터페이스 =====
+   종목 ticker 받아 모든 지표 한 번에 반환
+   캐시된 OHLCV가 있으면 사용, 없으면 null
+*/
+function getIndicators(ticker){
+  const data = ohlcvCache[ticker];
+  if(!data || !data.closes || data.closes.length < 30){
+    return null;
+  }
+  const { closes, highs, lows, volumes } = data;
+  const last = closes[closes.length - 1];
+
+  const sma200 = calcSMA(closes, 200);
+  const sma60 = calcSMA(closes, 60);
+  const sma20 = calcSMA(closes, 20);
+
+  return {
+    ticker,
+    price: last,
+    rsi14: calcRSI(closes, 14),
+    sma200,
+    sma60,
+    sma20,
+    aboveSMA200: sma200 != null ? last > sma200 : null,
+    aboveSMA60: sma60 != null ? last > sma60 : null,
+    bb: calcBollinger(closes, 20, 2),
+    volRatio: calcVolumeRatio(volumes, 20),
+    atr14: calcATR(highs, lows, closes, 14),
+    dataPoints: closes.length,
+  };
+}
+
+// 디버그: 콘솔에서 window.__indicators 로 접근
+window.__indicators = {
+  calcRSI, calcSMA, calcSMASeries, calcEMA, calcBollinger,
+  calcVolumeRatio, calcATR, calcMACD,
+  get: getIndicators,
+  // 단위 검증: 알려진 입력으로 출력 확인
+  test(){
+    // 단조 상승: RSI는 100에 수렴, SMA는 마지막 평균
+    const rising = Array.from({length: 30}, (_, i) => 100 + i);
+    console.log('[Test] 단조상승 RSI(14):', calcRSI(rising, 14)?.toFixed(2), '(예상 ~100)');
+    console.log('[Test] 단조상승 SMA(20):', calcSMA(rising, 20)?.toFixed(2), '(예상 19.5)');
+    // 단조 하락
+    const falling = Array.from({length: 30}, (_, i) => 130 - i);
+    console.log('[Test] 단조하락 RSI(14):', calcRSI(falling, 14)?.toFixed(2), '(예상 ~0)');
+    // 횡보
+    const flat = Array.from({length: 30}, () => 100);
+    console.log('[Test] 횡보 RSI(14):', calcRSI(flat, 14)?.toFixed(2), '(예상 50 또는 100)');
+    // 볼린저
+    const bb = calcBollinger(rising.slice(-20), 20, 2);
+    console.log('[Test] 볼린저:', bb);
+    return '✓ 콘솔 위 결과 확인';
+  }
+};
+/* ===== /Phase A2 지표 계산 ===== */
+
 /* 살아있는 프록시 목록 (영구 차단 적용) */
 function getActiveProxies(){
   return PROXIES.map((_,i)=>i).filter(i => proxyHealth[i] > -3);
