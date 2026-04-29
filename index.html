@@ -2717,6 +2717,19 @@
       </div>
     </section>
 
+    <section class="guide-section">
+      <h2 class="guide-h2">테마 분석 데이터</h2>
+      <p class="guide-p">테마 분석 페이지의 모든 지표는 <strong>종목 분석 페이지의 실시간 가격에서 자동 산출</strong>됩니다 (캘린더의 12개 산업 섹터 기준).</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">strength</span><span class="gf-eq">=</span><span class="gf-val">(100 − 평균도달률) × 0.7 + 평균등락률 × 5 + 30</span></div>
+        <div class="gf-row"><span class="gf-key">change</span><span class="gf-eq">=</span><span class="gf-val">테마 종목들의 평균 등락률</span></div>
+        <div class="gf-row"><span class="gf-key">leaders</span><span class="gf-eq">=</span><span class="gf-val">등락률 상위 7개 종목</span></div>
+        <div class="gf-row"><span class="gf-key">rank</span><span class="gf-eq">=</span><span class="gf-val">strength 내림차순 자동 부여</span></div>
+        <div class="gf-row"><span class="gf-key">RRG 좌표</span><span class="gf-eq">=</span><span class="gf-val">(strength, change) 현재점만</span></div>
+      </div>
+      <p class="guide-p guide-note">5분마다 자동 갱신. <strong>시계열 데이터(rankHistory, RRG 궤적)는 비어있음</strong> — 브라우저는 시계열을 누적할 수 없어 추후 서버 도입 시 추가 예정. 시장 분석 텍스트, 거래대금, 시총 등도 동일.</p>
+    </section>
+
     <section class="guide-section guide-disclaimer">
       <h2 class="guide-h2">면책 (Disclaimer)</h2>
       <p class="guide-p">이 도구는 <strong>투자 참고용</strong>입니다. 수익을 보장하지 않으며 모든 결정과 결과는 본인 책임입니다. 데이터는 무료 외부 API에서 가져오며 정확성을 보증하지 않습니다.</p>
@@ -4340,6 +4353,11 @@ async function loadPrices(skipFresh=false){
   else if(ok===0) setStatus(`⚠ 일괄 조회 실패 — 캐시 표시 + 개별 재시도 진행${skipMsg}`,'error');
   else setStatus(`✓ 일괄 ${ok}건 ${elapsed}초${skipMsg} · 누락 ${fail}건 개별 재시도 중`,'ok');
   btn.disabled=false;
+
+  // 가격 갱신 → 히트맵 데이터 자동 재생성·재렌더
+  if(typeof window.__heatmapRefresh === 'function'){
+    window.__heatmapRefresh();
+  }
 }
 
 /* 일괄에서 빠진 종목만 개별 호출로 폴백 (백그라운드) */
@@ -5083,26 +5101,94 @@ let CURRENT_MARKET_READ = [];
 let CURRENT_INDEX = {};
 let currentMarket = 'kr';
 
+/* ============================================================
+   ✦ 캘린더 데이터 → 테마 분석 데이터 자동 생성
+   캘린더의 산업 섹터(KR/US 12개씩)와 실시간 가격으로 모든 지표 자동 산출
+   ============================================================ */
+function generateThemesFromCalendar(market){
+  const country = market === 'us' ? 'US' : 'KR';
+  // 캘린더의 산업 섹터 테마만 (시즌은 제외 — Q4=b)
+  const sourceThemes = (typeof ALL_THEMES !== 'undefined' ? ALL_THEMES : [])
+    .filter(t => t.country === country && t.group === 'industry');
+
+  const cache = (typeof priceCache !== 'undefined') ? priceCache : {};
+
+  const generated = sourceThemes.map(theme => {
+    // 각 종목의 가격·도달률·등락률
+    const stockData = theme.stocks.map(s => {
+      const entry = cache[s.code];
+      if(!entry || !entry.value?.price) return null;
+      const price = entry.value.price;
+      const pct = (price / s.peak) * 100;
+      const change = entry.value.change || 0;
+      return { name: s.name, code: s.code, price, change, pct };
+    }).filter(Boolean);
+
+    // 데이터 없음 — 기본값
+    if(stockData.length === 0){
+      return {
+        name: theme.name, desc: theme.desc,
+        strength: 0, change: 0,
+        leaders: [], leader: theme.stocks[0]?.name || '—',
+        stocks: theme.stocks.length, volume: '—',
+        _empty: true,
+      };
+    }
+
+    const avgPct = stockData.reduce((a,x)=>a+x.pct, 0) / stockData.length;
+    const avgChange = stockData.reduce((a,x)=>a+x.change, 0) / stockData.length;
+
+    // strength: 도달률 낮을수록 + 모멘텀 양수일수록 강함 (0~100)
+    // (살 만함 = 강함이라는 정의)
+    const strengthRaw = (100 - avgPct) * 0.7 + avgChange * 5 + 30;
+    const strength = Math.max(0, Math.min(100, Math.round(strengthRaw)));
+
+    // leaders — 등락률 상위 7개
+    const sortedByChange = [...stockData].sort((a,b) => b.change - a.change);
+    const leaders = sortedByChange.slice(0, 7).map(s => ({ n: s.name, p: +s.change.toFixed(2) }));
+
+    return {
+      name: theme.name, desc: theme.desc,
+      strength,
+      change: +avgChange.toFixed(2),
+      leaders,
+      leader: leaders[0]?.n || theme.stocks[0]?.name || '—',
+      stocks: theme.stocks.length,
+      volume: '—',
+      _empty: false,
+    };
+  });
+
+  // strength 순 정렬, rank 자동 부여
+  generated.sort((a, b) => b.strength - a.strength);
+  generated.forEach((t, i) => {
+    t.rank = i + 1;
+    t.prev = i + 1;  // 시계열 없으니 변동 없음
+    t.rankHistory = Array(40).fill(t.rank);
+    // RRG 현재점만 (시계열 X) — 사분면 산출용
+    t.rrgHistory = [{ strength: t.strength, momentum: t.change }];
+    t.rrgHistory180 = [];
+    t.tenure = 0;
+  });
+
+  return generated;
+}
+
 function loadMarket(market) {
   currentMarket = market;
-  const isUS = market === 'us';
-  const src = isUS ? US_THEMES_DATA : KR_THEMES_DATA;
-  const rrg = isUS ? US_RRG_HISTORIES : KR_RRG_HISTORIES;
-  CURRENT_REASONING = isUS ? US_REASONING : KR_REASONING;
-  CURRENT_CORRELATED = isUS ? US_CORRELATED : KR_CORRELATED;
-  CURRENT_RRG_60D = isUS ? US_60D_ORIGIN : KR_60D_ORIGIN;
-  CURRENT_RRG_180D = isUS ? US_180D_ORIGIN : KR_180D_ORIGIN;
-  CURRENT_MARKET_READ = isUS ? US_MARKET_READ : KR_MARKET_READ;
-  CURRENT_INDEX = isUS ? US_INDEX_DATA : KR_INDEX_DATA;
-
-  themes = src.map(t => ({ ...t }));
+  // 캘린더 데이터 + 실시간 가격으로 자동 생성
+  themes = generateThemesFromCalendar(market);
   themes.forEach(t => {
-    t.tenure = calcTenure(t.rankHistory, t.rank);
-    const arr = rrg[t.name] || [];
-    t.rrgHistory = arr.map(p => ({ strength: p[0], momentum: p[1] }));
-    t.rrgHistory180 = build180DayHistory(t);
     t.quadrant = quadrantOf(t);
   });
+
+  // 정성 데이터 (시장 분석 텍스트, 시장 지수) — 자동 생성 어려움, 일단 비움
+  CURRENT_REASONING = {};
+  CURRENT_CORRELATED = [];
+  CURRENT_RRG_60D = {};
+  CURRENT_RRG_180D = {};
+  CURRENT_MARKET_READ = { headline: '자동 산출 모드', detail: '캘린더의 실시간 가격에서 자동 생성된 데이터입니다. 매크로 분석 텍스트는 추후 서버 도입 시 추가 예정.' };
+  CURRENT_INDEX = (market === 'us' ? US_INDEX_DATA : KR_INDEX_DATA) || null;
 }
 
 function quadrantOf(t) {
@@ -6063,6 +6149,27 @@ function renderMarketStatus() {
 }
 
 function renderAll() {
+  // 모든 테마가 빈 데이터(_empty)이면 가격 로딩 안내
+  const allEmpty = themes.length === 0 || themes.every(t => t._empty);
+  if(allEmpty){
+    const heroEl = document.getElementById('hero');
+    if(heroEl){
+      heroEl.innerHTML = `
+        <div style="padding:48px 24px;text-align:center;background:var(--surface-1);border:1px dashed var(--border);border-radius:8px;">
+          <div style="color:var(--text-2);font-size:14px;margin-bottom:8px;">테마 분석 데이터 준비 중</div>
+          <div style="color:var(--text-3);font-size:12px;line-height:1.6;">
+            종목 분석 페이지의 실시간 가격을 자동 집계합니다.<br>
+            가격 데이터가 모이면 자동으로 표시됩니다 (보통 5~10초).
+          </div>
+        </div>`;
+    }
+    ['podium','grid-mid','table-bottom','market-read','candidate-grid'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = '';
+    });
+    renderMarketStatus();
+    return;
+  }
   renderLeaderboard();
   renderForecast();
   renderMarketStatus();
@@ -6076,6 +6183,11 @@ window.__heatmapLoadMarket = function(market){
 };
 // 캘린더에서도 시장 상태 갱신 호출 가능하도록 노출
 window.__renderMarketStatus = renderMarketStatus;
+// 가격 갱신 시 히트맵 데이터 자동 재생성·재렌더
+window.__heatmapRefresh = function(){
+  loadMarket(currentMarket);
+  renderAll();
+};
 
 // 글로벌 currentCountry 따라 초기 시장 결정 (히트맵 첫 진입 시점)
 const _initialMarket = (typeof currentCountry !== 'undefined' && currentCountry === 'US') ? 'us' : 'kr';
