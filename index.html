@@ -360,20 +360,20 @@
 
   /* ===== TABLE ===== */
   table{width:100%;table-layout:fixed;border-collapse:collapse;}
-  col.c-sig{width:18px;}
-  col.c-name{width:28%;}
+  col.c-sig{width:44px;}
+  col.c-name{width:23%;}
   col.c-tag{width:9%;}
-  col.c-reason{width:11%;}
+  col.c-reason{width:13%;}
   col.c-price{width:11%;}
   col.c-change{width:7%;}
   col.c-peak{width:11%;}
-  col.c-pct{width:15%;}
+  col.c-pct{width:18%;}
   col.c-upside{width:8%;}
 
   thead tr{background:var(--surface);}
   th{text-align:left;padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:1.5px;font-weight:600;border-bottom:1px solid var(--border);user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  th:first-child{padding:12px 0;text-align:center;}
-  td:first-child{padding:12px 0;text-align:center;}
+  th:first-child{padding:12px 4px;text-align:center;}
+  td:first-child{padding:12px 4px;text-align:center;}
   th:not(:first-child):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(4)){text-align:right;}
   th:nth-child(2),th:nth-child(3),th:nth-child(4){text-align:left;}
 
@@ -385,6 +385,18 @@
     background:var(--text-4);
     text-indent:-9999px;
     overflow:hidden;
+  }
+
+  /* 신호 + 즐겨찾기 묶음 셀 */
+  .sig-cell{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .sig-cell .fav-btn{
+    font-size:16px;
+    line-height:1;
+    padding:0;
   }
   th.sortable{cursor:pointer;transition:color .15s;}
   th.sortable:hover{color:var(--text);}
@@ -5422,13 +5434,15 @@ function renderStockRowHtml(s, theme){
   // 신호 계산
   const sig = calcSignal(s, theme, entry);
   const sigChar = sig.signal === 'now' ? '●' : sig.signal === 'wait' ? '○' : '✕';
-  const sigCell = `<td><span class="sig ${sig.signal}" data-tip="${sig.reason}" tabindex="0">${sigChar}</span></td>`;
+  const sigCell = `<td><div class="sig-cell">
+    <span class="sig ${sig.signal}" data-tip="${sig.reason}" tabindex="0">${sigChar}</span>
+    <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')" title="즐겨찾기">★</button>
+  </div></td>`;
 
   return `<tr class="stock-row entered" data-row="${s.code}" data-code="${s.code}" data-theme="${theme.id}">
     ${sigCell}
     <td>
       <div class="stock-name-row">
-        <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')" title="즐겨찾기">★</button>
         <div class="stock-name-info">
           <div class="stock-name">${s.name}</div>
           <div class="stock-code">${s.code}</div>
@@ -5454,10 +5468,12 @@ function renderStockRowHtml(s, theme){
 /* 스켈레톤 행 (가격 조회 중) */
 function renderSkeletonRow(s){
   return `<tr class="stock-row skeleton-row" data-skeleton="${s.code}">
-    <td><span class="sig wait" style="opacity:.4">·</span></td>
+    <td><div class="sig-cell">
+      <span class="sig wait" style="opacity:.4">·</span>
+      <span class="fav-btn" style="opacity:.3">★</span>
+    </div></td>
     <td>
       <div class="stock-name-row">
-        <span class="fav-btn" style="opacity:.3">★</span>
         <div class="stock-name-info">
           <div class="stock-name">${s.name}</div>
           <div class="stock-code">${s.code}</div>
