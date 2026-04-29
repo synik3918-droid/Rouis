@@ -6748,7 +6748,7 @@ function smoothPath(pts) {
   return d;
 }
 
-function renderThemeGroup(t, xScale, yScale, isHighlighted, isAccented) {
+function renderThemeGroup(t, xScale, yScale, isHighlighted, isAccented, isMobile = false) {
   const fullHist = t.rrgHistory180 || t.rrgHistory;
   if (!fullHist || fullHist.length === 0) return '';
   // Slice to active period (last N points)
@@ -6759,7 +6759,10 @@ function renderThemeGroup(t, xScale, yScale, isHighlighted, isAccented) {
   const first = points[0];
   const themeColor = col(t.change);
   const accent = isAccented ? '#ff8000' : 'rgba(255,255,255,0.4)';
-  const headR = isAccented ? 8 : 6.5;
+  // 모바일에선 점·라벨 외곽선 키움
+  const headR = isMobile
+    ? (isAccented ? 11 : 9)
+    : (isAccented ? 8 : 6.5);
 
   const cls = `rrg-theme${isHighlighted ? ' is-highlighted' : ''}${isAccented ? ' is-accent' : ''}`;
   let html = `<g class="${cls}" data-theme="${t.name}">`;
@@ -6767,14 +6770,17 @@ function renderThemeGroup(t, xScale, yScale, isHighlighted, isAccented) {
   // Trail group: shown only when highlighted or hovered
   html += '<g class="trail-group">';
 
-  // Two-layer halo for accented themes (soft glow)
+  // Two-layer halo for accented themes (soft glow) — 모바일은 더 크게
   if (isAccented) {
-    html += `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="18" fill="${accent}" opacity="0.10"/>`;
-    html += `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="11" fill="${accent}" opacity="0.18"/>`;
+    const halo1 = isMobile ? 24 : 18;
+    const halo2 = isMobile ? 15 : 11;
+    html += `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="${halo1}" fill="${accent}" opacity="0.10"/>`;
+    html += `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="${halo2}" fill="${accent}" opacity="0.18"/>`;
   }
 
-  // Smooth curve — thicker, more opaque
-  html += `<path class="trail" d="${smoothPath(points)}" fill="none" stroke="${themeColor}" stroke-width="${isAccented ? 3 : 2.5}" opacity="0.88" stroke-linecap="round" stroke-linejoin="round"/>`;
+  // Smooth curve — 모바일에선 두께 키움
+  const trailW = isMobile ? (isAccented ? 4 : 3.2) : (isAccented ? 3 : 2.5);
+  html += `<path class="trail" d="${smoothPath(points)}" fill="none" stroke="${themeColor}" stroke-width="${trailW}" opacity="0.88" stroke-linecap="round" stroke-linejoin="round"/>`;
 
   // Time-progression dots — adaptive to N. Up to 4 mid markers, distributed evenly.
   const midCount = Math.min(4, Math.max(0, N - 2));
@@ -6786,39 +6792,52 @@ function renderThemeGroup(t, xScale, yScale, isHighlighted, isAccented) {
   midIndices.forEach((idx, i) => {
     const p = points[idx];
     const progress = (i + 1) / (midIndices.length + 1);
-    const r = 2.5 + progress * 2;
+    const r = isMobile ? (3.5 + progress * 2.5) : (2.5 + progress * 2);
     const opacity = 0.45 + progress * 0.4;
     html += `<circle class="kp" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r.toFixed(1)}" fill="${themeColor}" opacity="${opacity.toFixed(2)}"/>`;
   });
 
   // Start marker (T-(N-1)): hollow circle, larger
-  html += `<circle class="kp-start" cx="${first[0].toFixed(1)}" cy="${first[1].toFixed(1)}" r="5" fill="#181b1f" stroke="${themeColor}" stroke-width="2" opacity="0.9"/>`;
+  const startR = isMobile ? 7 : 5;
+  const startStrokeW = isMobile ? 2.5 : 2;
+  html += `<circle class="kp-start" cx="${first[0].toFixed(1)}" cy="${first[1].toFixed(1)}" r="${startR}" fill="#181b1f" stroke="${themeColor}" stroke-width="${startStrokeW}" opacity="0.9"/>`;
 
   // End head (T): largest filled circle
-  html += `<circle class="head" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="${headR}" fill="${themeColor}" stroke="${accent}" stroke-width="${isAccented ? 2.5 : 1.8}"/>`;
+  const headStrokeW = isMobile ? (isAccented ? 3.5 : 2.5) : (isAccented ? 2.5 : 1.8);
+  html += `<circle class="head" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="${headR}" fill="${themeColor}" stroke="${accent}" stroke-width="${headStrokeW}"/>`;
 
   // Inner shine on head for depth
   html += `<circle cx="${(last[0] - headR * 0.3).toFixed(1)}" cy="${(last[1] - headR * 0.3).toFixed(1)}" r="${(headR * 0.32).toFixed(1)}" fill="rgba(255,255,255,0.28)" pointer-events="none"/>`;
 
-  // Time label "T-N" near start
-  html += `<text class="time-start" x="${first[0].toFixed(1)}" y="${(first[1] - 11).toFixed(1)}" fill="#5c6470" font-size="10" font-weight="700" text-anchor="middle" style="font-family:var(--font-mono); letter-spacing:0.05em; paint-order: stroke; stroke: #0a0b0d; stroke-width: 3px; stroke-linejoin: round;">T-${N - 1}</text>`;
+  // Time label "T-N" near start — 모바일에선 폰트 키움
+  const timeFontSize = isMobile ? 13 : 10;
+  const timeStrokeW = isMobile ? 4 : 3;
+  html += `<text class="time-start" x="${first[0].toFixed(1)}" y="${(first[1] - 11).toFixed(1)}" fill="#5c6470" font-size="${timeFontSize}" font-weight="700" text-anchor="middle" style="font-family:var(--font-mono); letter-spacing:0.05em; paint-order: stroke; stroke: #0a0b0d; stroke-width: ${timeStrokeW}px; stroke-linejoin: round;">T-${N - 1}</text>`;
 
-  // Theme label + rank near head — bigger + dark stroke for readability
-  const labelOffset = headR + 9;
+  // Theme label + rank near head — 모바일은 18px / 데스크톱 14px
+  const labelFontSize = isMobile ? 18 : 14;
+  const rankFontSize = isMobile ? 14 : 11;
+  const labelStrokeW = isMobile ? 5 : 3.5;
+  const labelOffset = headR + (isMobile ? 12 : 9);
   const labelX = last[0] > xScale(50) - 30 ? last[0] - labelOffset : last[0] + labelOffset;
   const labelAnchor = last[0] > xScale(50) - 30 ? 'end' : 'start';
   const labelColor = isAccented ? '#ff8000' : '#e8eaed';
-  const labelStroke = `paint-order: stroke; stroke: #0a0b0d; stroke-width: 3.5px; stroke-linejoin: round;`;
-  html += `<text class="theme-label" x="${labelX.toFixed(1)}" y="${(last[1] - 4).toFixed(1)}" fill="${labelColor}" font-size="14" font-weight="${isAccented ? 700 : 600}" text-anchor="${labelAnchor}" style="font-family:'Pretendard Variable', sans-serif; letter-spacing:-0.01em; ${labelStroke}">${t.name}</text>`;
-  html += `<text class="rank-label" x="${labelX.toFixed(1)}" y="${(last[1] + 12).toFixed(1)}" fill="${labelColor}" font-size="11" font-weight="700" text-anchor="${labelAnchor}" opacity="0.8" style="font-family:var(--font-mono); ${labelStroke}">${rnk(t.rank)}</text>`;
+  const labelStroke = `paint-order: stroke; stroke: #0a0b0d; stroke-width: ${labelStrokeW}px; stroke-linejoin: round;`;
+  const labelDy = isMobile ? -6 : -4;
+  const rankDy = isMobile ? 16 : 12;
+  html += `<text class="theme-label" x="${labelX.toFixed(1)}" y="${(last[1] + labelDy).toFixed(1)}" fill="${labelColor}" font-size="${labelFontSize}" font-weight="${isAccented ? 700 : 600}" text-anchor="${labelAnchor}" style="font-family:'Pretendard Variable', sans-serif; letter-spacing:-0.01em; ${labelStroke}">${t.name}</text>`;
+  html += `<text class="rank-label" x="${labelX.toFixed(1)}" y="${(last[1] + rankDy).toFixed(1)}" fill="${labelColor}" font-size="${rankFontSize}" font-weight="700" text-anchor="${labelAnchor}" opacity="0.8" style="font-family:var(--font-mono); ${labelStroke}">${rnk(t.rank)}</text>`;
 
   html += '</g>'; // /trail-group
 
-  // Dim dot: shown when not highlighted/hovered
-  html += `<circle class="dim-dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="4.5" fill="${themeColor}" opacity="0.6" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>`;
+  // Dim dot: 모바일은 더 큰 점
+  const dimR = isMobile ? 6.5 : 4.5;
+  const dimStrokeW = isMobile ? 1.2 : 0.8;
+  html += `<circle class="dim-dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="${dimR}" fill="${themeColor}" opacity="0.6" stroke="rgba(255,255,255,0.15)" stroke-width="${dimStrokeW}"/>`;
 
-  // Hit area for hover
-  html += `<circle class="hit-area" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="22" fill="transparent" pointer-events="all"/>`;
+  // Hit area for hover/tap — 모바일에선 더 크게 (탭 친화)
+  const hitR = isMobile ? 28 : 22;
+  html += `<circle class="hit-area" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="${hitR}" fill="transparent" pointer-events="all"/>`;
 
   html += '</g>';
   return html;
@@ -6826,8 +6845,13 @@ function renderThemeGroup(t, xScale, yScale, isHighlighted, isAccented) {
 
 function renderRRG() {
   const svg = document.getElementById('rrg-svg');
-  const W = 720, H = 540;
-  const pad = { l: 64, r: 36, t: 32, b: 50 };
+  const isMobile = window.innerWidth <= 768;
+  // 모바일: 세로 비율(3:4), 데스크톱: 4:3
+  const W = isMobile ? 480 : 720;
+  const H = isMobile ? 640 : 540;
+  const pad = isMobile
+    ? { l: 56, r: 28, t: 38, b: 56 }
+    : { l: 64, r: 36, t: 32, b: 50 };
   const plotW = W - pad.l - pad.r;
   const plotH = H - pad.t - pad.b;
   const xScale = s => pad.l + (s / 100) * plotW;
@@ -6854,17 +6878,21 @@ function renderRRG() {
   html += `<line x1="${pad.l}" y1="${cy}" x2="${pad.l + plotW}" y2="${cy}" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="2 4"/>`;
   html += `<rect x="${pad.l}" y="${pad.t}" width="${plotW}" height="${plotH}" fill="none" stroke="rgba(255,255,255,0.06)"/>`;
 
-  // Quadrant labels — Improving emphasized via short underline
-  const ql = `font-family:var(--font-mono); font-size:10px; letter-spacing:0.14em; font-weight:700;`;
-  const qlStroke = `paint-order: stroke; stroke: #0a0b0d; stroke-width: 3px; stroke-linejoin: round;`;
+  // Quadrant labels — 모바일에선 폰트 키우고 외곽선 두껍게
+  const qFontSize = isMobile ? 14 : 10;
+  const qFontSize2 = isMobile ? 15 : 11;
+  const qStrokeW = isMobile ? 5 : 3;
+  const ql = `font-family:var(--font-mono); font-size:${qFontSize}px; letter-spacing:0.14em; font-weight:700;`;
+  const qlStroke = `paint-order: stroke; stroke: #0a0b0d; stroke-width: ${qStrokeW}px; stroke-linejoin: round;`;
   html += `<text x="${xScale(75)}" y="${pad.t + 20}" fill="#5c6470" style="${ql} ${qlStroke}" text-anchor="middle">LEADING</text>`;
-  html += `<text x="${xScale(25)}" y="${pad.t + 22}" fill="#ff8000" style="${ql} font-weight:800; font-size:11px; ${qlStroke}" text-anchor="middle">★ IMPROVING</text>`;
+  html += `<text x="${xScale(25)}" y="${pad.t + 22}" fill="#ff8000" style="${ql} font-weight:800; font-size:${qFontSize2}px; ${qlStroke}" text-anchor="middle">★ IMPROVING</text>`;
   html += `<line x1="${xScale(25) - 38}" y1="${pad.t + 30}" x2="${xScale(25) + 38}" y2="${pad.t + 30}" stroke="#ff8000" stroke-width="1" opacity="0.55" stroke-linecap="round"/>`;
   html += `<text x="${xScale(75)}" y="${pad.t + plotH - 10}" fill="#5c6470" style="${ql} ${qlStroke}" text-anchor="middle">WEAKENING</text>`;
   html += `<text x="${xScale(25)}" y="${pad.t + plotH - 10}" fill="#5c6470" style="${ql} ${qlStroke}" text-anchor="middle">LAGGING</text>`;
 
   // Axis ticks
-  const tick = `font-family:var(--font-mono); font-size:10px;`;
+  const tickFontSize = isMobile ? 12 : 10;
+  const tick = `font-family:var(--font-mono); font-size:${tickFontSize}px;`;
   html += `<text x="${pad.l - 8}" y="${pad.t + 5}" fill="#3d434b" style="${tick}" text-anchor="end">+15</text>`;
   html += `<text x="${pad.l - 8}" y="${cy + 4}" fill="#3d434b" style="${tick}" text-anchor="end">0</text>`;
   html += `<text x="${pad.l - 8}" y="${pad.t + plotH + 1}" fill="#3d434b" style="${tick}" text-anchor="end">-15</text>`;
@@ -6873,23 +6901,24 @@ function renderRRG() {
   html += `<text x="${pad.l + plotW}" y="${pad.t + plotH + 18}" fill="#3d434b" style="${tick}" text-anchor="middle">100</text>`;
 
   // Axis titles
-  html += `<text x="${cx}" y="${H - 8}" fill="#5c6470" font-size="11" text-anchor="middle">강도 (Strength) →</text>`;
-  html += `<text x="${pad.l - 46}" y="${pad.t + plotH/2}" fill="#5c6470" font-size="11" text-anchor="middle" transform="rotate(-90 ${pad.l - 46} ${pad.t + plotH/2})">↑ 모멘텀 (Momentum)</text>`;
+  const axisFontSize = isMobile ? 13 : 11;
+  html += `<text x="${cx}" y="${H - 8}" fill="#5c6470" font-size="${axisFontSize}" text-anchor="middle">강도 (Strength) →</text>`;
+  html += `<text x="${pad.l - 46}" y="${pad.t + plotH/2}" fill="#5c6470" font-size="${axisFontSize}" text-anchor="middle" transform="rotate(-90 ${pad.l - 46} ${pad.t + plotH/2})">↑ 모멘텀 (Momentum)</text>`;
 
   // === Themes ===
   html += '<g class="rrg-themes">';
 
-  // Dim themes first (rendered below)
+  // Dim themes first (rendered below) — 모바일에선 점만, 라벨/외곽 단순화
   themes.forEach(t => {
     if (highlighted.has(t.name)) return;
-    html += renderThemeGroup(t, xScale, yScale, false, false);
+    html += renderThemeGroup(t, xScale, yScale, false, false, isMobile);
   });
 
   // Highlighted themes on top
   themes.forEach(t => {
     if (!highlighted.has(t.name)) return;
     const isAccented = t.rank === 1 || !!t.candidateRank;
-    html += renderThemeGroup(t, xScale, yScale, true, isAccented);
+    html += renderThemeGroup(t, xScale, yScale, true, isAccented, isMobile);
   });
 
   html += '</g>';
@@ -7139,6 +7168,20 @@ function renderForecast() {
       renderRRG();
     });
   });
+
+  // 화면 회전·리사이즈 시 RRG 재렌더 (모바일/데스크톱 viewBox 자동 전환)
+  if (!window.__rrgResizeBound) {
+    window.__rrgResizeBound = true;
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (document.getElementById('rrg-svg') && typeof themes !== 'undefined' && themes.length) {
+          renderRRG();
+        }
+      }, 200);
+    });
+  }
 }
 
 /* ========== TABS ========== */
