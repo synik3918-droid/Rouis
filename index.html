@@ -4,35 +4,134 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>선취매 테마 캘린더</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg:#0a0b0e; --surface:#111318; --border:#1e2028; --border2:#2a2d38;
-    --text:#e8eaf0; --muted:#8a8f9e; --subtle:#5e6373;
-    --accent:#f0c040; --green:#3dd68c; --red:#f25767; --blue:#5b9bd5;
+    /* ============================================================
+       ✦ DESIGN TOKENS — 두 페이지 공통 디자인 시스템
+       ============================================================ */
+
+    /* — 색상: 표면 (bg → surface 1~3 → border) */
+    --bg:               #0a0b0d;
+    --surface-1:        #121417;
+    --surface-2:        #181b1f;
+    --surface-3:        #20242a;
+    --border:           rgba(255,255,255,0.06);
+    --border-2:         rgba(255,255,255,0.10);
+
+    /* — 색상: 텍스트 위계 */
+    --text-1:           #e8eaed;     /* 주요 */
+    --text-2:           #8a92a0;     /* 보조 */
+    --text-3:           #5c6470;     /* 캡션 */
+    --text-4:           #3d434b;     /* 비활성 */
+
+    /* — 색상: 시그널 (한국식 — 빨 상승, 파 하락) */
+    --color-up:         #e8485e;
+    --color-up-soft:    rgba(232,72,94,0.12);
+    --color-up-text:    #ff6b80;
+    --color-down:       #4f8fe8;
+    --color-down-soft:  rgba(79,143,232,0.12);
+    --color-down-text:  #6fa3ee;
+
+    /* — 색상: 상태 (양호/경고/위험 — 가격 등락과 무관) */
+    --color-ok:         #3dd68c;     /* 정상 작동 (시스템) */
+    --color-warn:       #ffc83d;     /* 경고 */
+    --color-danger:     #ef5b5b;     /* 위험 */
+
+    /* — 색상: 액센트 (블룸버그 오렌지) */
+    --accent:           #ff8000;
+    --accent-soft:      rgba(255,128,0,0.10);
+    --accent-strong:    #ffa040;
+    --accent-border:    rgba(255,128,0,0.35);
+
+    /* — 폰트 패밀리 */
+    --font-sans:        'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono:        'JetBrains Mono', ui-monospace, monospace;
+    --font-display:     var(--font-display);
+
+    /* — 폰트 크기 */
+    --text-xs:          11px;
+    --text-sm:          12px;
+    --text-base:        13.5px;
+    --text-md:          15px;
+    --text-lg:          16px;
+    --text-xl:          18px;
+    --text-2xl:         22px;
+    --text-display:     32px;
+
+    /* — 간격 (8px 그리드) */
+    --gap-1:            4px;
+    --gap-2:            8px;
+    --gap-3:            12px;
+    --gap-4:            16px;
+    --gap-5:            24px;
+    --gap-6:            32px;
+    --gap-7:            48px;
+
+    /* — 반경 */
+    --r-sm:             4px;
+    --r-md:             6px;
+    --r-lg:             8px;
+
+    /* — 페이지 패딩 */
+    --pad-page-x:       32px;
+
+    /* === Legacy alias (기존 코드 호환용) ===
+       의미별 매핑:
+       - --green: 등락률 양수 (.pos), 진입 추천 (low) → 한국식 빨강
+       - --red:   등락률 음수 (.neg), 과열 경고 (high) → 한국식 파랑
+       - --blue:  즐겨찾기 (fav) — 중성 → 파랑
+
+       단, 시스템 상태(.ok/.error/.live-dot)는 별도 --color-ok / --color-danger 사용
+    */
+    --surface:          var(--surface-1);
+    --border2:          var(--border-2);
+    --text:             var(--text-1);
+    --muted:            var(--text-2);
+    --subtle:           var(--text-3);
+    --green:            var(--color-up);
+    --red:              var(--color-down);
+    --blue:             var(--color-down);
+  }
+
+  /* 히트맵 페이지에 토큰 alias 노출 (히트맵 CSS가 --up, --down 등을 사용) */
+  .page-heatmap{
+    --up:               var(--color-up);
+    --up-soft:          var(--color-up-soft);
+    --up-text:          var(--color-up-text);
+    --down:             var(--color-down);
+    --down-soft:        var(--color-down-soft);
+    --down-text:        var(--color-down-text);
+  }
+
+  @media (max-width:767px){
+    :root{ --pad-page-x: 16px; }
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:15px;min-height:100vh;}
+  body{background:var(--bg);color:var(--text-1);font-family:var(--font-sans);font-size:var(--text-md);min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1.45;font-feature-settings:'cv11','ss01';}
 
   .header{padding:36px 48px 24px;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:24px;}
-  .logo{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:3px;color:var(--text);line-height:1;}
-  .logo span{color:var(--muted);font-size:15px;letter-spacing:1px;display:block;font-family:'Noto Sans KR',sans-serif;font-weight:300;margin-bottom:6px;}
+  .logo{font-family:var(--font-display);font-size:48px;letter-spacing:3px;color:var(--text);line-height:1;}
+  .logo span{color:var(--muted);font-size:15px;letter-spacing:1px;display:block;font-family:var(--font-sans);font-weight:300;margin-bottom:6px;}
   .disclaimer{color:var(--muted);font-size:13px;max-width:380px;text-align:right;line-height:1.7;}
   .disclaimer strong{color:var(--text);}
 
   /* ===== 현재 상태 Breadcrumb ===== */
   .current-view{padding:28px 48px 0;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
-  .cv-prefix{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;font-weight:600;text-transform:uppercase;}
+  .cv-prefix{font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:2px;font-weight:600;text-transform:uppercase;}
   .cv-item{font-size:22px;font-weight:700;color:var(--text);transition:color .2s;}
   .cv-divider{font-size:18px;color:var(--border2);font-weight:300;}
 
   /* ===== 3축 토글 (Segmented Control) — 옵션 D ===== */
   .axis-bar{padding:18px 48px 0;display:flex;flex-wrap:wrap;gap:32px;align-items:flex-end;}
   .axis-group{display:flex;flex-direction:column;gap:8px;}
-  .axis-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;font-weight:600;text-transform:uppercase;padding-left:6px;}
+  .axis-label{font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:2px;font-weight:600;text-transform:uppercase;padding-left:6px;}
   .seg-control{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;}
-  .seg-btn{padding:10px 22px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:600;border-radius:5px;transition:all .15s;}
+  .seg-btn{padding:10px 22px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:600;border-radius:5px;transition:all .15s;}
   .seg-btn:hover{color:var(--text);}
   .seg-btn.active{background:var(--text);color:var(--bg);box-shadow:0 1px 3px rgba(0,0,0,.4);}
 
@@ -47,21 +146,21 @@
   .summary-card.high{border-left-color:var(--red);}
   .summary-card.fav{border-left-color:var(--blue);}
   .summary-label{font-size:13px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:6px;margin-bottom:8px;}
-  .summary-value{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;line-height:1;color:var(--text);}
+  .summary-value{font-family:var(--font-mono);font-size:28px;font-weight:700;line-height:1;color:var(--text);}
   .summary-value-unit{font-size:14px;color:var(--muted);font-weight:400;}
-  .summary-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-top:6px;}
+  .summary-sub{font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-top:6px;}
   .summary-sub strong{color:var(--text);font-weight:600;}
 
   .calendar-section{padding:28px 32px 0;}
   .calendar-section.hidden{display:none;}
-  .cal-label{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:2px;margin-bottom:16px;}
+  .cal-label{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:2px;margin-bottom:16px;}
   .months-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin-bottom:8px;}
   .month-col{display:flex;flex-direction:column;gap:4px;}
-  .month-header{text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);padding:6px 0;border-top:1px solid var(--border2);font-weight:600;}
+  .month-header{text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--muted);padding:6px 0;border-top:1px solid var(--border2);font-weight:600;}
   .month-header.today{color:var(--text);border-top-color:var(--text);}
   .theme-pill{border-radius:4px;padding:5px 6px;font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:opacity .15s;}
   .theme-pill:hover{opacity:1!important;}
-  .today-marker{display:flex;align-items:center;gap:8px;margin:14px 0 24px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);font-weight:600;}
+  .today-marker{display:flex;align-items:center;gap:8px;margin:14px 0 24px;font-family:var(--font-mono);font-size:12px;color:var(--text);font-weight:600;}
   .today-dot{width:8px;height:8px;border-radius:50%;background:var(--text);}
 
   .filters{padding:22px 32px 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
@@ -71,18 +170,18 @@
   .filter-btn.active{background:var(--text);border-color:var(--text);color:var(--bg);font-weight:700;}
 
   .status-bar{padding:14px 32px;margin-top:20px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
-  .status-msg{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px;}
+  .status-msg{font-family:var(--font-mono);font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px;}
   .live-dot{width:7px;height:7px;border-radius:50%;background:var(--subtle);flex-shrink:0;}
   .live-dot.fetching{background:var(--accent);animation:blink 0.8s infinite;}
-  .live-dot.error{background:var(--red);}
-  .live-dot.ok{background:var(--green);}
+  .live-dot.error{background:var(--color-danger);}
+  .live-dot.ok{background:var(--color-ok);}
   @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
   .status-actions{display:flex;gap:8px;}
-  .refresh-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:7px 16px;border-radius:3px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;transition:all .15s;}
+  .refresh-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:7px 16px;border-radius:3px;cursor:pointer;font-family:var(--font-mono);font-size:13px;font-weight:600;transition:all .15s;}
   .refresh-btn:hover{border-color:var(--text);color:var(--text);}
   .refresh-btn:disabled{opacity:.4;cursor:not-allowed;}
   .retry-failed-btn{border-color:var(--red);color:var(--red);}
-  .retry-failed-btn:hover{border-color:var(--red);color:var(--text);background:rgba(242,87,103,.15);}
+  .retry-failed-btn:hover{border-color:var(--red);color:var(--text);background:var(--color-up-soft);}
 
   .main{padding:32px 32px 80px;overflow-x:auto;}
   .empty-msg{text-align:center;padding:80px 0;color:var(--muted);font-size:15px;}
@@ -91,10 +190,10 @@
   .cat-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
   .cat-icon{font-size:24px;}
   .cat-color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-  .cat-name-ko{font-family:'Noto Sans KR',sans-serif;font-size:24px;font-weight:700;color:var(--text);}
+  .cat-name-ko{font-family:var(--font-sans);font-size:24px;font-weight:700;color:var(--text);}
   .cat-stars{font-size:13px;color:var(--accent);letter-spacing:1px;}
   .cat-stars-empty{color:var(--border2);}
-  .cat-timing{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);background:var(--surface);padding:5px 10px;border-radius:3px;border:1px solid var(--border2);}
+  .cat-timing{font-family:var(--font-mono);font-size:12px;color:var(--muted);background:var(--surface);padding:5px 10px;border-radius:3px;border:1px solid var(--border2);}
   .cat-desc{color:var(--muted);font-size:13px;margin-left:auto;}
 
   /* ===== TABLE ===== */
@@ -109,7 +208,7 @@
   col.c-upside{width:8%;}
 
   thead tr{background:var(--surface);}
-  th{text-align:left;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1.5px;font-weight:600;border-bottom:1px solid var(--border);user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  th{text-align:left;padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:1.5px;font-weight:600;border-bottom:1px solid var(--border);user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   th:not(:first-child):not(:nth-child(2)):not(:nth-child(3)){text-align:right;}
   th:nth-child(2),th:nth-child(3){text-align:left;}
   th.sortable{cursor:pointer;transition:color .15s;}
@@ -128,7 +227,7 @@
   .fav-btn.on{color:var(--accent);}
   .stock-name-info{min-width:0;overflow:hidden;}
   .stock-name{font-weight:600;font-size:16px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .stock-code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-top:3px;}
+  .stock-code{font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-top:3px;}
 
   /* 성격 태그 */
   .role-tags{display:flex;flex-wrap:wrap;gap:4px;}
@@ -142,7 +241,7 @@
   .reason-tag{display:inline-block;background:var(--border);border-radius:3px;padding:4px 10px;font-size:12px;color:var(--text);font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
   .price-cell{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
-  .price{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--text);}
+  .price{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--text);}
   .price.fetching{color:var(--subtle);font-size:14px;font-weight:500;animation:pulse 1.4s ease-in-out infinite;}
   .price.error{color:var(--subtle);font-size:14px;font-weight:500;border-bottom:1px dotted var(--border2);}
   .price.cached{color:var(--muted);}
@@ -166,15 +265,15 @@
   .category-block{opacity:1; transition: opacity .3s ease;}
   .category-block.empty-fade{opacity:0; pointer-events:none; height:0; margin:0; overflow:hidden;}
   .price-meta{display:flex;align-items:center;gap:6px;font-size:11px;}
-  .cache-badge{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:10px;font-weight:600;background:var(--border);padding:2px 6px;border-radius:2px;border:1px solid var(--border2);}
-  .retry-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:2px 8px;border-radius:2px;font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;}
+  .cache-badge{font-family:var(--font-mono);color:var(--muted);font-size:10px;font-weight:600;background:var(--border);padding:2px 6px;border-radius:2px;border:1px solid var(--border2);}
+  .retry-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:2px 8px;border-radius:2px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font-mono);}
   .retry-btn:hover{border-color:var(--text);color:var(--text);}
 
-  .change{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);}
+  .change{font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--muted);}
   .change.pos{color:var(--green);}
   .change.neg{color:var(--red);}
 
-  .peak-price{font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--text);font-weight:700;}
+  .peak-price{font-family:var(--font-mono);font-size:16px;color:var(--text);font-weight:700;}
   .peak-timing{font-size:12px;color:var(--muted);margin-top:3px;}
 
   .progress-row{display:flex;align-items:center;gap:10px;justify-content:flex-end;}
@@ -183,35 +282,37 @@
   .progress-fill.low{background:var(--green);}
   .progress-fill.mid{background:var(--accent);}
   .progress-fill.high{background:var(--red);}
-  .progress-pct{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;min-width:58px;text-align:right;color:var(--text);flex-shrink:0;}
+  .progress-pct{font-family:var(--font-mono);font-size:14px;font-weight:700;min-width:58px;text-align:right;color:var(--text);flex-shrink:0;}
   .progress-pct.empty{color:var(--muted);}
 
-  .upside{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--muted);}
+  .upside{font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--muted);}
   .upside.pos{color:var(--green);}
   .upside.neg{color:var(--red);}
 
-  .footer{padding:24px 32px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace;}
+  .footer{padding:24px 32px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;font-family:var(--font-mono);}
 
   /* ===== 진단 패널 ===== */
-  .diag-bar{padding:10px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .diag-bar{padding:10px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:var(--font-mono);font-size:11px;}
   .diag-toggle{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:4px 12px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;}
   .diag-toggle:hover{border-color:var(--text);color:var(--text);}
   .diag-summary{color:var(--muted);font-size:11px;}
   .diag-summary strong{color:var(--text);}
-  .diag-panel{display:none;padding:14px 48px;background:var(--surface);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .diag-panel{display:none;padding:14px 48px;background:var(--surface);border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:11px;}
   .diag-panel.open{display:block;}
   .diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
   @media (max-width:1099px){ .diag-grid{grid-template-columns:1fr;} .diag-bar, .diag-panel{padding-left:16px;padding-right:16px;} }
   .diag-section h5{font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-bottom:10px;font-weight:600;}
   .diag-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dotted var(--border);}
   .diag-row:last-child{border-bottom:none;}
-  .diag-icon{font-size:14px;width:18px;text-align:center;}
+  .diag-icon{font-size:13px;width:18px;text-align:center;font-weight:700;}
+  .diag-row.ok .diag-icon{color:var(--color-ok);}
+  .diag-row.fail .diag-icon{color:var(--color-danger);}
   .diag-name{flex:1;color:var(--text);}
   .diag-detail{color:var(--muted);font-size:10px;}
   .diag-time{color:var(--muted);font-size:10px;font-weight:600;}
-  .diag-time.fast{color:var(--green);}
+  .diag-time.fast{color:var(--color-ok);}
   .diag-time.slow{color:var(--accent);}
-  .diag-time.dead{color:var(--red);}
+  .diag-time.dead{color:var(--color-danger);}
   .diag-run-btn{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:6px 14px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;margin-top:12px;}
   .diag-run-btn:hover{background:var(--accent);color:var(--bg);}
   .diag-run-btn:disabled{opacity:.5;cursor:not-allowed;}
@@ -219,7 +320,7 @@
   .diag-recommendation strong{color:var(--accent);}
 
   /* ===== 백테스트 배지 ===== */
-  .bt-badge{display:inline-flex;gap:8px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface);border:1px solid var(--border2);border-radius:4px;padding:5px 10px;cursor:pointer;transition:all .15s;user-select:none;}
+  .bt-badge{display:inline-flex;gap:8px;align-items:center;font-family:var(--font-mono);font-size:11px;background:var(--surface);border:1px solid var(--border2);border-radius:4px;padding:5px 10px;cursor:pointer;transition:all .15s;user-select:none;}
   .bt-badge:hover{border-color:var(--text);}
   .bt-badge .bt-item{display:flex;gap:4px;align-items:baseline;}
   .bt-badge .bt-k{color:var(--muted);font-size:10px;}
@@ -237,23 +338,23 @@
   .bt-panel-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:24px;margin-bottom:20px;}
   @media (max-width:1100px){ .bt-panel-grid{grid-template-columns:1fr;} }
   .bt-section{}
-  .bt-section h4{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1.5px;font-weight:600;margin-bottom:10px;}
+  .bt-section h4{font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:1.5px;font-weight:600;margin-bottom:10px;}
   .bt-chart-wrap{position:relative;height:240px;background:var(--bg);border-radius:4px;padding:12px;}
   .bt-yearly{display:grid;grid-template-columns:repeat(auto-fit,minmax(60px,1fr));gap:6px;}
   .bt-yearly-cell{background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:6px 8px;text-align:center;}
-  .bt-yearly-yr{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
-  .bt-yearly-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;margin-top:2px;}
+  .bt-yearly-yr{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
+  .bt-yearly-val{font-family:var(--font-mono);font-size:13px;font-weight:700;margin-top:2px;}
   .bt-yearly-val.pos{color:var(--green);}
   .bt-yearly-val.neg{color:var(--red);}
   .bt-tickers{margin-top:16px;border-top:1px solid var(--border);padding-top:16px;}
   .bt-ticker-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:10px;}
-  .bt-ticker-row{display:flex;justify-content:space-between;align-items:center;background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .bt-ticker-row{display:flex;justify-content:space-between;align-items:center;background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;}
   .bt-ticker-name{color:var(--muted);}
   .bt-ticker-vals{display:flex;gap:10px;}
   .bt-ticker-vals .v{color:var(--text);font-weight:700;}
   .bt-ticker-vals .v.pos{color:var(--green);}
   .bt-ticker-vals .v.neg{color:var(--red);}
-  .bt-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:12px;}
+  .bt-meta{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:12px;}
 
   @media (max-width:1100px){
     .summary-grid{grid-template-columns:repeat(2,1fr);}
@@ -380,7 +481,7 @@
   .scd-progress{display:flex;align-items:center;gap:10px;}
   .scd-progress .progress-bar{flex:1;width:auto;}
   .scd-progress .progress-pct{font-size:13px;min-width:50px;}
-  .scd-progress-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+  .scd-progress-meta{font-size:11px;color:var(--muted);font-family:var(--font-mono);}
   .scd-progress-meta strong{color:var(--text);font-weight:700;}
 
   .scd-bot{font-size:12px;color:var(--muted);line-height:1.5;}
@@ -393,7 +494,7 @@
      ============================================================ */
   .sidebar{
     position:fixed; top:0; left:0; bottom:0; width:240px;
-    background:#0d0e12; border-right:1px solid var(--border);
+    background:var(--surface-1); border-right:1px solid var(--border);
     display:flex; flex-direction:column; z-index:100;
     padding:24px 0;
   }
@@ -402,10 +503,10 @@
     border-bottom:1px solid var(--border); margin-bottom:18px;
   }
   .sb-logo-mark{
-    font-size:22px; color:#d4a574; line-height:1;
+    font-size:22px; color:var(--accent); line-height:1;
   }
   .sb-logo-text{
-    font-family:'Bebas Neue', sans-serif; font-size:15px; letter-spacing:2px;
+    font-family:var(--font-display); font-size:var(--text-md); letter-spacing:2px;
     line-height:1.1; color:var(--text);
   }
   .sidebar-nav{
@@ -423,8 +524,8 @@
   }
   .nav-item:hover{ background:var(--surface); color:var(--text); }
   .nav-item.active{
-    background:rgba(212,165,116,0.10);
-    color:#d4a574;
+    background:var(--accent-soft);
+    color:var(--accent);
   }
   .nav-icon{ font-size:18px; width:22px; text-align:center; }
   .nav-label{ flex:1; }
@@ -463,31 +564,32 @@
     display:inline-flex; gap:2px;
     background:rgba(255,255,255,0.03);
     border:1px solid var(--border);
-    border-radius:8px; padding:3px;
+    border-radius:var(--r-lg); padding:3px;
   }
   .uni-seg-btn{
     background:transparent; border:none; cursor:pointer;
-    padding:7px 14px; border-radius:5px;
-    color:var(--muted); font-size:12px; font-weight:600;
-    font-family:'Noto Sans KR', sans-serif;
+    padding:7px var(--gap-3); border-radius:5px;
+    color:var(--text-2); font-size:var(--text-sm); font-weight:600;
+    font-family:var(--font-sans);
     transition:all .15s ease;
     white-space:nowrap; line-height:1.3;
     display:inline-flex; align-items:center; gap:5px;
   }
-  .uni-seg-btn:hover{ color:var(--text); }
+  .uni-seg-btn:hover{ color:var(--text-1); }
   .uni-seg-btn.active{
-    background:rgba(255,255,255,0.08);
-    color:var(--text);
+    background:var(--accent-soft);
+    color:var(--accent);
+    box-shadow:inset 0 0 0 1px var(--accent-border);
   }
   /* 라벨 (위에 작은 캡션) */
   .uni-axis{ display:flex; flex-direction:column; gap:6px; }
   .uni-axis-label{
-    font-family:'JetBrains Mono', monospace; font-size:10px;
-    letter-spacing:1.5px; color:var(--muted); font-weight:600;
+    font-family:var(--font-mono); font-size:var(--text-xs);
+    letter-spacing:1.5px; color:var(--text-2); font-weight:600;
     text-transform:uppercase;
   }
   /* 컴팩트 변형 (페이지 헤더에 인라인 배치 시) */
-  .uni-seg.compact .uni-seg-btn{ padding:5px 10px; font-size:11px; }
+  .uni-seg.compact .uni-seg-btn{ padding:5px 10px; font-size:var(--text-xs); }
   /* 풀폭 (사이드바·모바일) */
   .uni-seg.full{ display:flex; }
   .uni-seg.full .uni-seg-btn{ flex:1; justify-content:center; }
@@ -497,22 +599,22 @@
      ============================================================ */
   .page-header{
     display:flex; align-items:flex-end; justify-content:space-between;
-    gap:24px; padding:28px 32px 20px;
-    border-bottom:1px solid var(--border); margin-bottom:24px;
+    gap:var(--gap-5); padding:var(--gap-6) var(--pad-page-x) var(--gap-4);
+    border-bottom:1px solid var(--border); margin-bottom:var(--gap-5);
     flex-wrap:wrap;
   }
   .page-header-title{
-    font-family:'Bebas Neue', sans-serif;
-    font-size:32px; letter-spacing:2px; color:var(--text);
+    font-family:var(--font-display);
+    font-size:var(--text-display); letter-spacing:2px; color:var(--text-1);
     line-height:1; margin:0;
   }
   .page-header-title .ph-sub{
-    display:block; font-family:'Noto Sans KR', sans-serif;
-    font-size:12px; font-weight:300; color:var(--muted);
+    display:block; font-family:var(--font-sans);
+    font-size:var(--text-sm); font-weight:300; color:var(--text-2);
     letter-spacing:1px; margin-bottom:6px;
   }
   .page-header-controls{
-    display:flex; gap:18px; align-items:flex-end; flex-wrap:wrap;
+    display:flex; gap:var(--gap-4); align-items:flex-end; flex-wrap:wrap;
   }
 
   @media (max-width:767px){
@@ -534,6 +636,148 @@
   }
   .page-heatmap main{ padding:0 0 0 0; }
   .page-calendar{ padding:0 0 60px; }
+
+  /* ============================================================
+     ✦ Guide Page
+     ============================================================ */
+  .page-guide{ padding:0 32px 60px; max-width:980px; }
+  .guide-body{ display:flex; flex-direction:column; gap:36px; }
+  .guide-section{ }
+  .guide-h2{
+    font-family:var(--font-sans); font-size:18px; font-weight:700;
+    color:var(--text); margin-bottom:12px; padding-bottom:10px;
+    border-bottom:1px solid var(--border);
+  }
+  .guide-p{
+    color:var(--muted); font-size:13.5px; line-height:1.7; margin-bottom:14px;
+  }
+  .guide-p.guide-note{
+    font-size:12px; color:var(--subtle); padding:10px 14px;
+    background:var(--surface); border-left:2px solid var(--border2);
+    border-radius:0 4px 4px 0;
+  }
+  .guide-p.guide-note strong{ color:var(--text); }
+  .guide-grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:12px;
+  }
+  .guide-item{
+    background:var(--surface); border:1px solid var(--border); border-radius:6px;
+    padding:14px 16px; display:flex; flex-direction:column; gap:8px;
+  }
+  .guide-item .role-tag{ align-self:flex-start; }
+  .guide-pill{
+    align-self:flex-start;
+    background:rgba(255,255,255,0.05); border:1px solid var(--border2);
+    color:var(--text); font-size:11px; font-weight:700;
+    padding:3px 10px; border-radius:3px;
+  }
+  .guide-item-desc{ font-size:12.5px; color:var(--muted); line-height:1.6; }
+  .guide-formula{
+    background:var(--surface); border:1px solid var(--border); border-radius:6px;
+    padding:14px 18px; display:flex; flex-direction:column; gap:10px;
+    font-family:var(--font-mono); font-size:12.5px;
+    margin-bottom:12px;
+  }
+  .gf-row{ display:flex; align-items:baseline; gap:12px; }
+  .gf-key{
+    color:var(--text); font-weight:700; min-width:110px;
+  }
+  .gf-key.low-dot::before{ content:'●'; color:var(--green); margin-right:6px; }
+  .gf-key.mid-dot::before{ content:'●'; color:#ff8000; margin-right:6px; }
+  .gf-key.high-dot::before{ content:'●'; color:var(--red); margin-right:6px; }
+  .gf-eq{ color:var(--subtle); }
+  .gf-val{ color:var(--muted); flex:1; }
+  .guide-code{
+    font-family:var(--font-mono); font-size:11px;
+    background:var(--bg); border:1px solid var(--border2);
+    padding:1px 6px; border-radius:3px; color:var(--text);
+  }
+  .guide-disclaimer{
+    background:rgba(232,72,94,0.04); border:1px solid rgba(232,72,94,0.15);
+    border-radius:6px; padding:18px 22px;
+  }
+  .guide-disclaimer .guide-h2{ color:var(--color-up); border-bottom:none; padding-bottom:6px; }
+
+  /* ===== 디자인 시스템 미리보기 ===== */
+  .guide-h3{
+    font-size:var(--text-base); font-weight:700; color:var(--text-1);
+    margin-top:var(--gap-5); margin-bottom:var(--gap-3);
+    font-family:var(--font-mono); letter-spacing:.5px;
+  }
+  .ds-swatch-grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+    gap:var(--gap-2); margin-bottom:var(--gap-3);
+  }
+  .ds-swatch{
+    background:var(--surface-1); border:1px solid var(--border);
+    border-radius:var(--r-md); padding:var(--gap-3);
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .ds-sw{
+    width:100%; height:36px; border-radius:var(--r-sm);
+    border:1px solid var(--border-2);
+  }
+  .ds-sw-name{
+    font-family:var(--font-mono); font-size:var(--text-xs);
+    color:var(--text-1); font-weight:700;
+  }
+  .ds-sw-val{
+    font-family:var(--font-mono); font-size:10px;
+    color:var(--text-2); line-height:1.4;
+  }
+  .ds-type-grid{
+    display:flex; flex-direction:column; gap:var(--gap-2);
+    background:var(--surface-1); border:1px solid var(--border);
+    border-radius:var(--r-md); padding:var(--gap-4);
+  }
+  .ds-type-row{
+    display:grid; grid-template-columns:120px 1fr 200px;
+    gap:var(--gap-3); align-items:baseline;
+    padding:var(--gap-2) 0; border-bottom:1px dotted var(--border);
+  }
+  .ds-type-row:last-child{ border-bottom:none; }
+  .ds-type-label{ font-family:var(--font-mono); font-size:var(--text-xs); color:var(--text-2); }
+  .ds-type-sample{ color:var(--text-1); }
+  .ds-type-token{ font-family:var(--font-mono); font-size:10px; color:var(--text-3); }
+  @media (max-width:767px){ .ds-type-row{ grid-template-columns:1fr; gap:4px; } }
+
+  .ds-spacing-grid{
+    display:flex; flex-direction:column; gap:var(--gap-2);
+    background:var(--surface-1); border:1px solid var(--border);
+    border-radius:var(--r-md); padding:var(--gap-4);
+    font-family:var(--font-mono); font-size:var(--text-xs);
+  }
+  .ds-spacing-row{ display:flex; align-items:center; gap:var(--gap-3); }
+  .ds-spacing-label{ width:80px; color:var(--text-2); }
+  .ds-spacing-bar{ height:14px; background:var(--accent); border-radius:2px; flex-shrink:0; }
+  .ds-spacing-val{ color:var(--text-1); font-weight:700; }
+
+  .ds-radius-grid{ display:flex; gap:var(--gap-4); flex-wrap:wrap; }
+  .ds-radius-row{
+    display:flex; flex-direction:column; gap:6px; align-items:center;
+    font-family:var(--font-mono); font-size:var(--text-xs); color:var(--text-2);
+  }
+  .ds-radius-box{ width:60px; height:60px; background:var(--surface-3); border:1px solid var(--border-2); }
+
+  .ds-comp-grid{ display:flex; flex-direction:column; gap:var(--gap-3); }
+  .ds-comp{
+    background:var(--surface-1); border:1px solid var(--border);
+    border-radius:var(--r-md); padding:var(--gap-4);
+  }
+  .ds-comp-label{
+    font-family:var(--font-mono); font-size:var(--text-xs);
+    color:var(--text-2); margin-bottom:var(--gap-3);
+    letter-spacing:1px; text-transform:uppercase;
+  }
+
+  @media (max-width:767px){
+    .page-guide{ padding:0 16px 60px; }
+    .guide-h2{ font-size:16px; }
+    .guide-p{ font-size:13px; }
+    .gf-row{ flex-direction:column; gap:2px; }
+    .gf-key{ min-width:0; }
+  }
   /* 히트맵 자체 시장 segment는 사이드바로 이동했으므로 숨김 */
   .page-heatmap .market-segment{ display:none !important; }
 
@@ -557,7 +801,7 @@
     --surface-3: #20242a;
     --border: rgba(255,255,255,0.06);
     --border-strong: rgba(255,255,255,0.10);
-    --border-accent: rgba(212,165,116,0.35);
+    --border-accent: rgba(255,128,0,0.35);
     --text-1: #e8eaed;
     --text-2: #8a92a0;
     --text-3: #5c6470;
@@ -568,8 +812,8 @@
     --down: #4f8fe8;
     --down-soft: rgba(79,143,232,0.12);
     --down-text: #6fa3ee;
-    --accent: #d4a574;
-    --accent-soft: rgba(212,165,116,0.08);
+    --accent: #ff8000;
+    --accent-soft: rgba(255,128,0,0.08);
 
     font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
     font-feature-settings: 'cv11', 'ss01';
@@ -583,7 +827,7 @@
 
 
   .num {
-    font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
   }
@@ -615,7 +859,7 @@
     color: var(--text-1);
   }
   .market-tab .m-code {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -632,7 +876,7 @@
     font-size: 11px;
     margin-left: auto;
     color: var(--text-3);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     letter-spacing: 0.02em;
     font-weight: 600;
   }
@@ -645,8 +889,8 @@
     background: #ff8a9a;
     animation: statusPulse 1.6s ease-in-out infinite;
   }
-  .market-tab .m-status.eod { color: #d4a574; }
-  .market-tab .m-status.eod .status-dot { background: #d4a574; }
+  .market-tab .m-status.eod { color: #ff8000; }
+  .market-tab .m-status.eod .status-dot { background: #ff8000; }
   .market-tab .m-status.closed .status-dot { background: var(--text-4); }
 
   @media (max-width: 640px) {
@@ -707,9 +951,9 @@
     50% { opacity: 0.45; transform: scale(0.65); }
   }
   .status-pill.eod {
-    background: rgba(212,165,116,0.08);
-    color: #d4a574;
-    border-color: rgba(212,165,116,0.22);
+    background: rgba(255,128,0,0.08);
+    color: #ff8000;
+    border-color: rgba(255,128,0,0.22);
   }
   .status-pill.settling {
     background: rgba(255,255,255,0.05);
@@ -721,7 +965,7 @@
     color: var(--text-3);
   }
   .status-time {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     color: var(--text-3);
     font-size: 11px;
@@ -777,10 +1021,10 @@
     line-height: 1;
     font-weight: 600;
     letter-spacing: -0.01em;
-    border: 1px solid rgba(212,165,116,0.14);
+    border: 1px solid rgba(255,128,0,0.14);
   }
   .tenure-badge .at {
-    color: rgba(212,165,116,0.65);
+    color: rgba(255,128,0,0.65);
     font-size: 11px;
     font-weight: 500;
   }
@@ -798,26 +1042,26 @@
 
   /* Tier: Sustained (7-13d) — slightly richer fill + small dot */
   .tenure-badge.tier-sustained {
-    background: rgba(212,165,116,0.13);
-    border-color: rgba(212,165,116,0.22);
+    background: rgba(255,128,0,0.13);
+    border-color: rgba(255,128,0,0.22);
     color: #e0b886;
   }
   .tenure-badge.tier-sustained .at { color: rgba(224,184,134,0.7); }
   .tenure-badge.tier-sustained .t-mark {
-    color: #d4a574; font-size: 7px;
+    color: #ff8000; font-size: 7px;
     transform: translateY(-1px);
   }
   .tenure-badge.tier-sustained.lg .t-mark { font-size: 8px; }
 
   /* Tier: Dominant (14d+) — strong border + star prefix */
   .tenure-badge.tier-dominant {
-    background: rgba(212,165,116,0.16);
-    border-color: rgba(212,165,116,0.42);
+    background: rgba(255,128,0,0.16);
+    border-color: rgba(255,128,0,0.42);
     color: #f0c89d;
   }
   .tenure-badge.tier-dominant .at { color: rgba(240,200,157,0.72); }
   .tenure-badge.tier-dominant .t-mark {
-    color: #d4a574; font-size: 11px;
+    color: #ff8000; font-size: 11px;
   }
   .tenure-badge.tier-dominant.lg .t-mark { font-size: 14px; }
 
@@ -829,7 +1073,7 @@
     margin-right: 1px;
   }
   .tier-mark.sustained {
-    color: rgba(212,165,116,0.85);
+    color: rgba(255,128,0,0.85);
     font-size: 7px;
     transform: translateY(-2px);
   }
@@ -856,7 +1100,7 @@
   /* Dominant tier: thicker, brighter accent — extra signal weight */
   .hero.tier-dominant::before {
     width: 4px;
-    background: linear-gradient(180deg, #f0c89d 0%, #d4a574 50%, #b08456 100%);
+    background: linear-gradient(180deg, #f0c89d 0%, #ff8000 50%, #b08456 100%);
   }
   .hero-grid {
     display: grid;
@@ -1121,14 +1365,14 @@
   .bubble-rank-text {
     pointer-events: none; user-select: none;
     fill: rgba(255,255,255,0.7); text-anchor: middle;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     letter-spacing: 0.05em;
   }
   .bubble-pct {
     pointer-events: none; user-select: none;
     fill: rgba(255,255,255,0.95); text-anchor: middle;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
@@ -1180,7 +1424,7 @@
     border-radius: 999px;
     letter-spacing: 0.04em;
     border: 1px solid;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     line-height: 1.5;
     white-space: nowrap;
   }
@@ -1206,8 +1450,8 @@
   }
   .q-badge.improving {
     color: var(--accent);
-    background: rgba(212,165,116,0.08);
-    border-color: rgba(212,165,116,0.28);
+    background: rgba(255,128,0,0.08);
+    border-color: rgba(255,128,0,0.28);
   }
   .q-badge.weakening {
     color: var(--text-3);
@@ -1379,7 +1623,7 @@
   .period-tab {
     background: transparent; border: none; color: var(--text-3);
     padding: 6px 10px; border-radius: 5px; cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 12px; font-weight: 600;
     letter-spacing: -0.01em;
     transition: color 0.15s, background 0.15s;
@@ -1412,11 +1656,11 @@
     font-size: 12px; font-weight: 700;
     letter-spacing: 0.05em;
     color: var(--text-3);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
   }
   .idx-price {
     font-size: 22px; font-weight: 700;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     letter-spacing: -0.02em;
     color: var(--text-1);
     font-variant-numeric: tabular-nums;
@@ -1424,7 +1668,7 @@
   .idx-change {
     font-size: 13px;
     font-weight: 600;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
   }
   .idx-change.up { color: var(--up); }
   .idx-change.down { color: var(--down); }
@@ -1444,7 +1688,7 @@
     letter-spacing: 0.02em;
   }
   .idx-metric .value {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
@@ -1492,7 +1736,7 @@
 
   /* Cycle stepper */
   .cycle-position {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 600;
     color: var(--text-4);
@@ -1524,7 +1768,7 @@
     width: 11px; height: 11px;
     background: var(--accent);
     border-color: var(--accent);
-    box-shadow: 0 0 0 4px rgba(212,165,116,0.18);
+    box-shadow: 0 0 0 4px rgba(255,128,0,0.18);
   }
   .cycle-line {
     flex: 1;
@@ -1590,7 +1834,7 @@
   .cand-rank {
     font-size: 13px;
     display: flex; align-items: baseline; gap: 6px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.01em;
   }
@@ -1602,7 +1846,7 @@
   .cand-rank .vel.same { color: var(--text-4); }
   .cand-score-wrap { text-align: right; }
   .cand-score {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 32px; font-weight: 700;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.03em;
@@ -1636,7 +1880,7 @@
   .sig-fill { height: 100%; background: var(--text-2); border-radius: 2px; }
   .candidate-card.top .sig-fill { background: var(--accent); }
   .sig-val {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 11px; color: var(--text-2);
     font-variant-numeric: tabular-nums;
     text-align: right;
@@ -1678,7 +1922,7 @@
     font-weight: 500;
   }
   .cand-stock-row .pct {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 600;
     font-size: 11px;
     font-variant-numeric: tabular-nums;
@@ -1744,8 +1988,8 @@
   <div class="sidebar-market">
     <div class="uni-axis-label">시장</div>
     <div class="uni-seg full" role="group">
-      <button class="uni-seg-btn active sb-market-btn" data-market="KR">🇰🇷 한국</button>
-      <button class="uni-seg-btn sb-market-btn" data-market="US">🇺🇸 미국</button>
+      <button class="uni-seg-btn active sb-market-btn" data-market="KR">KR 한국</button>
+      <button class="uni-seg-btn sb-market-btn" data-market="US">US 미국</button>
     </div>
   </div>
 
@@ -1757,6 +2001,10 @@
     <a href="#heatmap" class="nav-item" data-route="heatmap">
       <span class="nav-icon">🔥</span>
       <span class="nav-label">테마 히트맵</span>
+    </a>
+    <a href="#guide" class="nav-item" data-route="guide">
+      <span class="nav-icon">📖</span>
+      <span class="nav-label">기준 / 로직</span>
     </a>
   </nav>
   <div class="sidebar-disclaimer">
@@ -1788,16 +2036,16 @@
     <div class="uni-axis">
       <div class="uni-axis-label">분류</div>
       <div class="uni-seg" id="segGroup">
-        <button class="uni-seg-btn active" data-group="season">📅 시즌별</button>
-        <button class="uni-seg-btn" data-group="industry">📱 산업 섹터별</button>
+        <button class="uni-seg-btn" data-group="season">시즌별</button>
+        <button class="uni-seg-btn active" data-group="industry">산업 섹터별</button>
       </div>
     </div>
     <div class="uni-axis">
       <div class="uni-axis-label">투자 성향</div>
       <div class="uni-seg" id="segStyle">
         <button class="uni-seg-btn active" data-style="all">전체</button>
-        <button class="uni-seg-btn" data-style="blue">🏛️ 우량</button>
-        <button class="uni-seg-btn" data-style="aggressive">🎰 공격</button>
+        <button class="uni-seg-btn" data-style="blue">우량</button>
+        <button class="uni-seg-btn" data-style="aggressive">공격</button>
       </div>
     </div>
   </div>
@@ -1816,7 +2064,7 @@
 <div class="filters" id="filterBar"></div>
 
 <div class="diag-bar">
-  <button class="diag-toggle" onclick="toggleDiag()">🔍 진단</button>
+  <button class="diag-toggle" onclick="toggleDiag()">진단</button>
   <span class="diag-summary" id="diagSummary">진단 버튼을 누르면 프록시·API 상태를 확인합니다</span>
 </div>
 <div class="diag-panel" id="diagPanel">
@@ -1934,6 +2182,241 @@
 </main>
 
 </div><!-- /page-heatmap -->
+
+<!-- ========== PAGE: GUIDE ========== -->
+<div class="page page-guide" id="page-guide" style="display:none">
+  <div class="page-header">
+    <h1 class="page-header-title">
+      <span class="ph-sub">REFERENCE</span>
+      기준 / 로직
+    </h1>
+  </div>
+
+  <div class="guide-body">
+
+    <section class="guide-section">
+      <h2 class="guide-h2">디자인 시스템</h2>
+      <p class="guide-p">두 페이지(캘린더·히트맵·가이드)가 공유하는 시각 토큰. 새 컴포넌트 추가 시 이 토큰을 사용해 일관성을 유지합니다.</p>
+
+      <h3 class="guide-h3">색상 — 표면 (배경 위계)</h3>
+      <div class="ds-swatch-grid">
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--bg)"></div><div class="ds-sw-name">--bg</div><div class="ds-sw-val">#0a0b0d</div></div>
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--surface-1)"></div><div class="ds-sw-name">--surface-1</div><div class="ds-sw-val">#121417</div></div>
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--surface-2)"></div><div class="ds-sw-name">--surface-2</div><div class="ds-sw-val">#181b1f</div></div>
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--surface-3)"></div><div class="ds-sw-name">--surface-3</div><div class="ds-sw-val">#20242a</div></div>
+      </div>
+
+      <h3 class="guide-h3">색상 — 텍스트 위계</h3>
+      <div class="ds-swatch-grid">
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--text-1)"></div><div class="ds-sw-name">--text-1</div><div class="ds-sw-val">주요 #e8eaed</div></div>
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--text-2)"></div><div class="ds-sw-name">--text-2</div><div class="ds-sw-val">보조 #8a92a0</div></div>
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--text-3)"></div><div class="ds-sw-name">--text-3</div><div class="ds-sw-val">캡션 #5c6470</div></div>
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--text-4)"></div><div class="ds-sw-name">--text-4</div><div class="ds-sw-val">비활성 #3d434b</div></div>
+      </div>
+
+      <h3 class="guide-h3">색상 — 시그널 (한국식: 빨 상승 / 파 하락)</h3>
+      <div class="ds-swatch-grid">
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--color-up)"></div><div class="ds-sw-name">--color-up</div><div class="ds-sw-val">상승 #e8485e</div></div>
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--color-down)"></div><div class="ds-sw-name">--color-down</div><div class="ds-sw-val">하락 #4f8fe8</div></div>
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--accent)"></div><div class="ds-sw-name">--accent</div><div class="ds-sw-val">액센트 #ff8000<br><span style="color:var(--text-3)">블룸버그 오렌지</span></div></div>
+      </div>
+
+      <h3 class="guide-h3">색상 — 시스템 상태 (가격과 무관)</h3>
+      <div class="ds-swatch-grid">
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--color-ok)"></div><div class="ds-sw-name">--color-ok</div><div class="ds-sw-val">양호 #3dd68c</div></div>
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--color-warn)"></div><div class="ds-sw-name">--color-warn</div><div class="ds-sw-val">경고 #ffc83d</div></div>
+        <div class="ds-swatch"><div class="ds-sw" style="background:var(--color-danger)"></div><div class="ds-sw-name">--color-danger</div><div class="ds-sw-val">위험 #ef5b5b</div></div>
+      </div>
+
+      <h3 class="guide-h3">타이포그래피</h3>
+      <div class="ds-type-grid">
+        <div class="ds-type-row">
+          <span class="ds-type-label">Display · 32px</span>
+          <span class="ds-type-sample" style="font-family:var(--font-display);font-size:32px;letter-spacing:2px">SEASONAL TRACKER</span>
+          <span class="ds-type-token">var(--font-display) · var(--text-display)</span>
+        </div>
+        <div class="ds-type-row">
+          <span class="ds-type-label">Title · 22px</span>
+          <span class="ds-type-sample" style="font-size:22px;font-weight:700">큰 제목 / 카테고리</span>
+          <span class="ds-type-token">var(--text-2xl)</span>
+        </div>
+        <div class="ds-type-row">
+          <span class="ds-type-label">H2 · 18px</span>
+          <span class="ds-type-sample" style="font-size:18px;font-weight:700">섹션 제목</span>
+          <span class="ds-type-token">var(--text-xl)</span>
+        </div>
+        <div class="ds-type-row">
+          <span class="ds-type-label">Body · 13.5px</span>
+          <span class="ds-type-sample" style="font-size:13.5px">본문 텍스트 — 한국어 가독성 최적화 Pretendard</span>
+          <span class="ds-type-token">var(--text-base)</span>
+        </div>
+        <div class="ds-type-row">
+          <span class="ds-type-label">Caption · 11px</span>
+          <span class="ds-type-sample" style="font-size:11px;color:var(--text-2)">작은 라벨, 메타데이터, 캡션</span>
+          <span class="ds-type-token">var(--text-xs)</span>
+        </div>
+        <div class="ds-type-row">
+          <span class="ds-type-label">Mono · 12px</span>
+          <span class="ds-type-sample" style="font-family:var(--font-mono);font-size:12px">+12.34% / 005930.KS / 78,400</span>
+          <span class="ds-type-token">var(--font-mono)</span>
+        </div>
+      </div>
+
+      <h3 class="guide-h3">간격 — 8px 그리드</h3>
+      <p class="guide-p">모든 padding·margin·gap은 4의 배수(주로 8px 단위). 시각적 리듬 일관성 확보.</p>
+      <div class="ds-spacing-grid">
+        <div class="ds-spacing-row"><span class="ds-spacing-label">--gap-1</span><span class="ds-spacing-bar" style="width:4px"></span><span class="ds-spacing-val">4px</span></div>
+        <div class="ds-spacing-row"><span class="ds-spacing-label">--gap-2</span><span class="ds-spacing-bar" style="width:8px"></span><span class="ds-spacing-val">8px</span></div>
+        <div class="ds-spacing-row"><span class="ds-spacing-label">--gap-3</span><span class="ds-spacing-bar" style="width:12px"></span><span class="ds-spacing-val">12px</span></div>
+        <div class="ds-spacing-row"><span class="ds-spacing-label">--gap-4</span><span class="ds-spacing-bar" style="width:16px"></span><span class="ds-spacing-val">16px</span></div>
+        <div class="ds-spacing-row"><span class="ds-spacing-label">--gap-5</span><span class="ds-spacing-bar" style="width:24px"></span><span class="ds-spacing-val">24px</span></div>
+        <div class="ds-spacing-row"><span class="ds-spacing-label">--gap-6</span><span class="ds-spacing-bar" style="width:32px"></span><span class="ds-spacing-val">32px</span></div>
+        <div class="ds-spacing-row"><span class="ds-spacing-label">--gap-7</span><span class="ds-spacing-bar" style="width:48px"></span><span class="ds-spacing-val">48px</span></div>
+      </div>
+
+      <h3 class="guide-h3">반경 (Radius)</h3>
+      <div class="ds-radius-grid">
+        <div class="ds-radius-row"><div class="ds-radius-box" style="border-radius:4px"></div><span>--r-sm · 4px</span></div>
+        <div class="ds-radius-row"><div class="ds-radius-box" style="border-radius:6px"></div><span>--r-md · 6px</span></div>
+        <div class="ds-radius-row"><div class="ds-radius-box" style="border-radius:8px"></div><span>--r-lg · 8px</span></div>
+      </div>
+
+      <h3 class="guide-h3">컴포넌트 미리보기</h3>
+      <div class="ds-comp-grid">
+        <div class="ds-comp">
+          <div class="ds-comp-label">통일 토글 (Segmented Control)</div>
+          <div class="uni-seg">
+            <button class="uni-seg-btn active">옵션 A</button>
+            <button class="uni-seg-btn">옵션 B</button>
+            <button class="uni-seg-btn">옵션 C</button>
+          </div>
+        </div>
+        <div class="ds-comp">
+          <div class="ds-comp-label">성격 태그</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span class="role-tag lead">대장주</span>
+            <span class="role-tag momentum">모멘텀</span>
+            <span class="role-tag smallcap">스몰캡</span>
+            <span class="role-tag turn">턴어라운드</span>
+            <span class="role-tag value">배당/밸류</span>
+          </div>
+        </div>
+        <div class="ds-comp">
+          <div class="ds-comp-label">시그널 텍스트</div>
+          <div style="display:flex;gap:16px;font-family:var(--font-mono);font-weight:700">
+            <span style="color:var(--color-up)">+12.34%</span>
+            <span style="color:var(--color-down)">−5.67%</span>
+            <span style="color:var(--accent)">★ 2.1배</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">성격 태그</h2>
+      <p class="guide-p">종목별로 부여하는 5가지 분류. 같은 테마 안에서 종목 성격을 다양화해 포트폴리오 균형을 잡습니다.</p>
+      <div class="guide-grid">
+        <div class="guide-item"><span class="role-tag lead">대장주</span>
+          <div class="guide-item-desc">테마 내 시총 최상위, 안정 매출, 시장 주도. 첫 진입 후보로 적합.</div></div>
+        <div class="guide-item"><span class="role-tag momentum">모멘텀</span>
+          <div class="guide-item-desc">시즌·이벤트 임박 시 탄력 큼. 단기 변동성 활용. 진입·청산 타이밍 중요.</div></div>
+        <div class="guide-item"><span class="role-tag smallcap">스몰캡</span>
+          <div class="guide-item-desc">시총 작아 폭발력·낙폭 모두 큼. 비중 작게, 분산 필수.</div></div>
+        <div class="guide-item"><span class="role-tag turn">턴어라운드</span>
+          <div class="guide-item-desc">실적 변곡점, 구조조정·신사업 모멘텀. 변동성 큼, 펀더멘털 확인 필요.</div></div>
+        <div class="guide-item"><span class="role-tag value">배당/밸류</span>
+          <div class="guide-item-desc">고배당, 저PER, 안정적 현금흐름. 방어주 성격, 하락장 대응.</div></div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">투자 성향</h2>
+      <p class="guide-p">종목 필터로 사용. 한 종목이 동시에 여러 성향에 속할 수 있음 (예: 삼성전자는 우량+공격 모두 해당).</p>
+      <div class="guide-grid">
+        <div class="guide-item"><span class="guide-pill">우량</span>
+          <div class="guide-item-desc">대형주 중심. 시총 상위, 변동성 낮고 배당 안정. 장기 보유·방어형 포지션.</div></div>
+        <div class="guide-item"><span class="guide-pill">공격</span>
+          <div class="guide-item-desc">중소형·고변동 중심. 모멘텀·스몰캡·턴어라운드 다수. 단기 트레이딩·고위험 고수익.</div></div>
+        <div class="guide-item"><span class="guide-pill">전체</span>
+          <div class="guide-item-desc">필터 해제. 모든 종목 표시.</div></div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">달성률 · 여력 계산식</h2>
+      <p class="guide-p">현재가와 사전 설정한 목표가(<span class="guide-code">peak</span>) 간 비율로 산출.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">달성률</span><span class="gf-eq">=</span><span class="gf-val">현재가 / 목표가 × 100%</span></div>
+        <div class="gf-row"><span class="gf-key">여력</span><span class="gf-eq">=</span><span class="gf-val">(목표가 - 현재가) / 현재가 × 100%</span></div>
+      </div>
+      <p class="guide-p guide-note">목표가는 과거 고점 또는 시즌 평균 피크가 기준 (정성 평가). 백테스트와는 별개 지표입니다.</p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">요약 카드 임계값</h2>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key low-dot">진입 추천</span><span class="gf-eq"></span><span class="gf-val">달성률 &lt; 70%</span></div>
+        <div class="gf-row"><span class="gf-key mid-dot">피크 임박</span><span class="gf-eq"></span><span class="gf-val">달성률 70 ~ 95%</span></div>
+        <div class="gf-row"><span class="gf-key high-dot">과열 경고</span><span class="gf-eq"></span><span class="gf-val">달성률 ≥ 95%</span></div>
+      </div>
+      <p class="guide-p guide-note">통계는 <strong>fresh 캐시(5분 이내 갱신)</strong> 종목만 포함. 정확한 신호 보장을 위해 stale 데이터는 제외.</p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">테마 신뢰도 (별점)</h2>
+      <p class="guide-p">테마 헤더의 ★ 1~5개. 정성 평가 — 시즌 패턴의 반복성·예측 가능성·과거 검증을 종합.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">★★★★★</span><span class="gf-val">매우 강함 — 매년 거의 확실히 반복 (예: 애플 신제품, 블프)</span></div>
+        <div class="gf-row"><span class="gf-key">★★★★</span><span class="gf-val">강함 — 대부분의 해 작동 (예: 독감, 한파)</span></div>
+        <div class="gf-row"><span class="gf-key">★★★</span><span class="gf-val">보통 — 시즌성 있지만 변수 많음 (예: 황사, 폭염)</span></div>
+        <div class="gf-row"><span class="gf-key">★★</span><span class="gf-val">약함 — 사이클 변수 큼 (예: 세금환급)</span></div>
+        <div class="gf-row"><span class="gf-key">★</span><span class="gf-val">참고용 — 예측 불확실 (예: 정치 이벤트)</span></div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">백테스트 (Phase 3)</h2>
+      <p class="guide-p">정성 별점과 별개로, 과거 데이터 기반 정량 검증. 테마 헤더 옆 배지로 표시.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">CAGR</span><span class="gf-val">연평균 복리 수익률</span></div>
+        <div class="gf-row"><span class="gf-key">Sharpe</span><span class="gf-val">위험 대비 수익 (높을수록 좋음, 1.0 이상 양호)</span></div>
+        <div class="gf-row"><span class="gf-key">MDD</span><span class="gf-val">최대 낙폭 (낮을수록 좋음, -30% 이상은 주의)</span></div>
+        <div class="gf-row"><span class="gf-key">승률</span><span class="gf-val">연도별 + 수익 비율</span></div>
+        <div class="gf-row"><span class="gf-key">vs 벤치마크</span><span class="gf-val">전략 CAGR - 시장(KOSPI/SPY) CAGR</span></div>
+      </div>
+      <p class="guide-p guide-note">기간 2018-01-01 ~ 2025-12-31 (8년). 시즌 전략은 매수월~매도월만 보유, 산업 전략은 동일가중 상시 보유.</p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">현재가 데이터</h2>
+      <p class="guide-p">한국·미국 주가는 외부 API에서 실시간 조회 (CORS 프록시 경유).</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">한국</span><span class="gf-val">네이버 금융 일괄 API</span></div>
+        <div class="gf-row"><span class="gf-key">미국</span><span class="gf-val">Yahoo Finance v7 quote 일괄 API</span></div>
+        <div class="gf-row"><span class="gf-key">폴백</span><span class="gf-val">Yahoo v8 chart 단일 호출</span></div>
+        <div class="gf-row"><span class="gf-key">갱신 주기</span><span class="gf-val">5분 자동 (탭 활성 시)</span></div>
+        <div class="gf-row"><span class="gf-key">캐시</span><span class="gf-val">5분 이내 = fresh / 초과 = stale (회색 표시)</span></div>
+      </div>
+      <p class="guide-p guide-note">무료 데이터 소스로 정확도·실시간성 보장 안 됨. <strong>투자 판단 시 증권사 정식 데이터 별도 확인 필수.</strong></p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">데이터 공유</h2>
+      <p class="guide-p">두 페이지(캘린더·히트맵)는 다음 데이터를 공유합니다.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">시장 (KR/US)</span><span class="gf-val">사이드바 토글 · localStorage <span class="guide-code">currentMarket_v1</span></span></div>
+        <div class="gf-row"><span class="gf-key">즐겨찾기</span><span class="gf-val">★ 별 · localStorage <span class="guide-code">favorites_v1</span></span></div>
+        <div class="gf-row"><span class="gf-key">가격 캐시</span><span class="gf-val">localStorage <span class="guide-code">priceCache_v4</span></span></div>
+      </div>
+    </section>
+
+    <section class="guide-section guide-disclaimer">
+      <h2 class="guide-h2">면책 (Disclaimer)</h2>
+      <p class="guide-p">이 도구는 <strong>투자 참고용 아이디어</strong>이며, 실제 수익을 보장하지 않습니다. 모든 투자 결정과 그 결과는 사용자 본인의 책임입니다. 데이터는 무료 외부 API에서 가져오며 정확성·완전성을 보증하지 않습니다.</p>
+    </section>
+
+  </div>
+</div><!-- /page-guide -->
 
 </div><!-- /app-shell -->
 
@@ -2111,7 +2594,7 @@ function renderBacktestPanel(themeId){
   return `<div class="bt-panel" id="bt-panel-${themeId}">
     <div class="bt-panel-grid">
       <div class="bt-section">
-        <h4>📈 EQUITY CURVE — 전략 vs ${benchName}</h4>
+        <h4>EQUITY CURVE — 전략 vs ${benchName}</h4>
         <div class="bt-chart-wrap"><canvas id="bt-chart-${themeId}"></canvas></div>
         <div class="bt-meta">
           전략: CAGR ${(m.cagr*100).toFixed(1)}% · Sharpe ${m.sharpe.toFixed(2)} · MDD ${(m.mdd*100).toFixed(1)}%
@@ -2120,12 +2603,12 @@ function renderBacktestPanel(themeId){
         </div>
       </div>
       <div class="bt-section">
-        <h4>📊 연도별 수익률</h4>
+        <h4>연도별 수익률</h4>
         <div class="bt-yearly">${yearlyHtml}</div>
       </div>
     </div>
     <div class="bt-tickers">
-      <h4>🎯 종목별 5년 성과</h4>
+      <h4>종목별 5년 성과</h4>
       <div class="bt-ticker-list">${tickerHtml}</div>
     </div>
   </div>`;
@@ -2536,7 +3019,7 @@ const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10
 const today=new Date(), currentMonth=today.getMonth()+1;
 const priceCache={};
 let currentCountry='KR';
-let currentGroup='season';
+let currentGroup='industry';
 let currentStyle='all';
 let currentFilter='all';
 const sortState = {};
@@ -2755,7 +3238,7 @@ function buildCalendar(){
 function buildFilterBar(){
   const bar=document.getElementById('filterBar');
   const pool = getActivePool();
-  const cats = [['all','전체'],['fav','⭐ 즐겨찾기']];
+  const cats = [['all','전체'],['fav','★ 즐겨찾기']];
   // 동적으로 카테고리 추출
   const seen = new Set();
   pool.forEach(t=>{
@@ -2799,10 +3282,10 @@ function buildSummary(){
 
   const grid = document.getElementById('summaryGrid');
   const cards = [
-    { key:'low', cls:'low', label:'🟢 진입 추천', count:lowCount, sub: lowCount? `평균 여력 <strong>+${lowAvg.toFixed(1)}%</strong>`:'분석 가능 종목 없음' },
-    { key:'mid', cls:'mid', label:'🟡 피크 임박', count:midCount, sub: '달성률 70~95%' },
-    { key:'high', cls:'high', label:'🔴 과열 경고', count:highCount, sub: highCount? `평균 <strong>+${highAvg.toFixed(1)}%</strong> 초과`:'없음' },
-    { key:'fav', cls:'fav', label:'⭐ 즐겨찾기', count:favCount, sub:`전체 ${allStocks.length}종목 중 (분석가능 ${freshCount})` },
+    { key:'low', cls:'low', label:'진입 추천', count:lowCount, sub: lowCount? `평균 여력 <strong>+${lowAvg.toFixed(1)}%</strong>`:'분석 가능 종목 없음' },
+    { key:'mid', cls:'mid', label:'피크 임박', count:midCount, sub: '달성률 70~95%' },
+    { key:'high', cls:'high', label:'과열 경고', count:highCount, sub: highCount? `평균 <strong>+${highAvg.toFixed(1)}%</strong> 초과`:'없음' },
+    { key:'fav', cls:'fav', label:'★ 즐겨찾기', count:favCount, sub:`전체 ${allStocks.length}종목 중 (분석가능 ${freshCount})` },
   ];
   grid.innerHTML = cards.map(c=>{
     const isActive = currentFilter===c.key;
@@ -3002,7 +3485,7 @@ function diagTimeClass(ms){
 
 function renderDiagRow(icon, name, detail, ms, isOk){
   const cls = isOk ? diagTimeClass(ms) : 'dead';
-  return `<div class="diag-row">
+  return `<div class="diag-row ${isOk?'ok':'fail'}">
     <span class="diag-icon">${icon}</span>
     <span class="diag-name">${name}</span>
     <span class="diag-detail">${detail}</span>
@@ -3021,24 +3504,24 @@ async function runDiagnostics(){
 
   // 초기 표시: 모두 testing
   proxiesDiv.innerHTML = PROXY_NAMES.map(n =>
-    `<div class="diag-row"><span class="diag-icon">⏳</span><span class="diag-name">${n}</span><span class="diag-detail">테스트 중...</span><span class="diag-time">-</span></div>`
+    `<div class="diag-row"><span class="diag-icon">…</span><span class="diag-name">${n}</span><span class="diag-detail">테스트 중...</span><span class="diag-time">-</span></div>`
   ).join('');
   apisDiv.innerHTML = DIAG_APIS.map(a =>
-    `<div class="diag-row"><span class="diag-icon">⏳</span><span class="diag-name">${a.name}</span><span class="diag-detail">테스트 중...</span><span class="diag-time">-</span></div>`
+    `<div class="diag-row"><span class="diag-icon">…</span><span class="diag-name">${a.name}</span><span class="diag-detail">테스트 중...</span><span class="diag-time">-</span></div>`
   ).join('');
 
   // 프록시 테스트 (병렬)
   const proxyResults = await Promise.all(PROXY_NAMES.map((_, i) => testProxyOnly(i)));
   diagState.proxies = proxyResults;
   proxiesDiv.innerHTML = proxyResults.map((r, i) =>
-    renderDiagRow(r.ok ? '✅' : '❌', PROXY_NAMES[i], r.detail, r.ms, r.ok)
+    renderDiagRow(r.ok ? '✓' : '✕', PROXY_NAMES[i], r.detail, r.ms, r.ok)
   ).join('');
 
   // API 테스트 (병렬)
   const apiResults = await Promise.all(DIAG_APIS.map(a => testApiViaAnyProxy(a)));
   diagState.apis = apiResults;
   apisDiv.innerHTML = apiResults.map((r, i) =>
-    renderDiagRow(r.ok ? '✅' : '❌', DIAG_APIS[i].name, r.detail, r.ms, r.ok)
+    renderDiagRow(r.ok ? '✓' : '✕', DIAG_APIS[i].name, r.detail, r.ms, r.ok)
   ).join('');
 
   // 요약·추천
@@ -3651,11 +4134,11 @@ function renderContent(){
   if(themes.length===0){
     let msg = '해당 필터에 종목이 없습니다.';
     if(getActivePool().length===0){
-      msg = `📦 ${currentCountry==='KR'?'한국':'미국'} ${currentGroup==='season'?'시즌별':'산업 섹터별'} 데이터 없음`;
-    } else if(currentFilter==='fav') msg = '⭐ 아직 즐겨찾기에 추가된 종목이 없습니다.';
-    else if(currentFilter==='low') msg = '🟢 진입 추천 구간 종목이 없습니다.';
-    else if(currentFilter==='mid') msg = '🟡 피크 임박 구간 종목이 없습니다.';
-    else if(currentFilter==='high') msg = '🔴 과열 구간 종목이 없습니다.';
+      msg = `${currentCountry==='KR'?'한국':'미국'} ${currentGroup==='season'?'시즌별':'산업 섹터별'} 데이터 없음`;
+    } else if(currentFilter==='fav') msg = '아직 즐겨찾기에 추가된 종목이 없습니다.';
+    else if(currentFilter==='low') msg = '진입 추천 구간 종목이 없습니다.';
+    else if(currentFilter==='mid') msg = '피크 임박 구간 종목이 없습니다.';
+    else if(currentFilter==='high') msg = '과열 구간 종목이 없습니다.';
     else if(currentStyle!=='all') msg = `현재 성향(${currentStyle==='blue'?'우량':'공격'})에 맞는 종목이 없습니다.`;
     main.innerHTML = `<div class="empty-msg">${msg}</div>`;
     return;
@@ -3746,9 +4229,9 @@ function updateBreadcrumb(){
   const cvC = document.getElementById('cvCountry');
   const cvG = document.getElementById('cvGroup');
   const cvS = document.getElementById('cvStyle');
-  if(cvC) cvC.textContent = currentCountry==='KR' ? '🇰🇷 한국' : '🇺🇸 미국';
-  if(cvG) cvG.textContent = currentGroup==='season' ? '📅 시즌별' : '📱 산업 섹터별';
-  if(cvS) cvS.textContent = currentStyle==='all' ? '전체 종목' : currentStyle==='blue' ? '🏛️ 우량' : '🎰 공격';
+  if(cvC) cvC.textContent = currentCountry==='KR' ? '한국' : '미국';
+  if(cvG) cvG.textContent = currentGroup==='season' ? '시즌별' : '산업 섹터별';
+  if(cvS) cvS.textContent = currentStyle==='all' ? '전체 종목' : currentStyle==='blue' ? '우량' : '공격';
 }
 
 /* 3축 토글 핸들러 */
@@ -3838,6 +4321,8 @@ buildCalendar();
 buildFilterBar();
 buildSummary();
 renderContent();
+// 산업 섹터 모드면 시즌 캘린더 영역 숨김
+document.getElementById('calendarSection').classList.toggle('hidden', currentGroup!=='season');
 loadPrices(true);  // 초기 로드: fresh 캐시는 스킵 (즉시 화면 표시)
 
 /* ===== 자동 갱신 (5분 주기, 비활성 탭 일시정지) ===== */
@@ -4388,7 +4873,7 @@ function renderLeaderboard() {
           </div>
           <div class="hero-ribbon-wrap">
             <div class="ribbon-label">최근 ${t1.rankHistory.length}거래일 순위 추이</div>
-            ${rankRibbon(t1.rankHistory, '#d4a574', 320, 80)}
+            ${rankRibbon(t1.rankHistory, '#ff8000', 320, 80)}
           </div>
           <div class="strength-block">
             <div class="top">
@@ -4569,7 +5054,7 @@ function renderThemeGroup(t, xScale, yScale, isHighlighted, isAccented) {
   const last = points[N - 1];
   const first = points[0];
   const themeColor = col(t.change);
-  const accent = isAccented ? '#d4a574' : 'rgba(255,255,255,0.4)';
+  const accent = isAccented ? '#ff8000' : 'rgba(255,255,255,0.4)';
   const headR = isAccented ? 8 : 6.5;
 
   const cls = `rrg-theme${isHighlighted ? ' is-highlighted' : ''}${isAccented ? ' is-accent' : ''}`;
@@ -4612,16 +5097,16 @@ function renderThemeGroup(t, xScale, yScale, isHighlighted, isAccented) {
   html += `<circle cx="${(last[0] - headR * 0.3).toFixed(1)}" cy="${(last[1] - headR * 0.3).toFixed(1)}" r="${(headR * 0.32).toFixed(1)}" fill="rgba(255,255,255,0.28)" pointer-events="none"/>`;
 
   // Time label "T-N" near start
-  html += `<text class="time-start" x="${first[0].toFixed(1)}" y="${(first[1] - 11).toFixed(1)}" fill="#5c6470" font-size="10" font-weight="700" text-anchor="middle" style="font-family:'JetBrains Mono', monospace; letter-spacing:0.05em; paint-order: stroke; stroke: #0a0b0d; stroke-width: 3px; stroke-linejoin: round;">T-${N - 1}</text>`;
+  html += `<text class="time-start" x="${first[0].toFixed(1)}" y="${(first[1] - 11).toFixed(1)}" fill="#5c6470" font-size="10" font-weight="700" text-anchor="middle" style="font-family:var(--font-mono); letter-spacing:0.05em; paint-order: stroke; stroke: #0a0b0d; stroke-width: 3px; stroke-linejoin: round;">T-${N - 1}</text>`;
 
   // Theme label + rank near head — bigger + dark stroke for readability
   const labelOffset = headR + 9;
   const labelX = last[0] > xScale(50) - 30 ? last[0] - labelOffset : last[0] + labelOffset;
   const labelAnchor = last[0] > xScale(50) - 30 ? 'end' : 'start';
-  const labelColor = isAccented ? '#d4a574' : '#e8eaed';
+  const labelColor = isAccented ? '#ff8000' : '#e8eaed';
   const labelStroke = `paint-order: stroke; stroke: #0a0b0d; stroke-width: 3.5px; stroke-linejoin: round;`;
   html += `<text class="theme-label" x="${labelX.toFixed(1)}" y="${(last[1] - 4).toFixed(1)}" fill="${labelColor}" font-size="14" font-weight="${isAccented ? 700 : 600}" text-anchor="${labelAnchor}" style="font-family:'Pretendard Variable', sans-serif; letter-spacing:-0.01em; ${labelStroke}">${t.name}</text>`;
-  html += `<text class="rank-label" x="${labelX.toFixed(1)}" y="${(last[1] + 12).toFixed(1)}" fill="${labelColor}" font-size="11" font-weight="700" text-anchor="${labelAnchor}" opacity="0.8" style="font-family:'JetBrains Mono', monospace; ${labelStroke}">${rnk(t.rank)}</text>`;
+  html += `<text class="rank-label" x="${labelX.toFixed(1)}" y="${(last[1] + 12).toFixed(1)}" fill="${labelColor}" font-size="11" font-weight="700" text-anchor="${labelAnchor}" opacity="0.8" style="font-family:var(--font-mono); ${labelStroke}">${rnk(t.rank)}</text>`;
 
   html += '</g>'; // /trail-group
 
@@ -4655,7 +5140,7 @@ function renderRRG() {
   let html = '';
 
   // Quadrant tints — flat, subtle. Improving slightly more present than others.
-  html += `<rect x="${pad.l}" y="${pad.t}" width="${cx - pad.l}" height="${cy - pad.t}" fill="rgba(212,165,116,0.07)"/>`;
+  html += `<rect x="${pad.l}" y="${pad.t}" width="${cx - pad.l}" height="${cy - pad.t}" fill="rgba(255,128,0,0.07)"/>`;
   html += `<rect x="${cx}" y="${pad.t}" width="${pad.l + plotW - cx}" height="${cy - pad.t}" fill="rgba(232,72,94,0.022)"/>`;
   html += `<rect x="${cx}" y="${cy}" width="${pad.l + plotW - cx}" height="${pad.t + plotH - cy}" fill="rgba(255,255,255,0.012)"/>`;
   html += `<rect x="${pad.l}" y="${cy}" width="${cx - pad.l}" height="${pad.t + plotH - cy}" fill="rgba(79,143,232,0.022)"/>`;
@@ -4666,16 +5151,16 @@ function renderRRG() {
   html += `<rect x="${pad.l}" y="${pad.t}" width="${plotW}" height="${plotH}" fill="none" stroke="rgba(255,255,255,0.06)"/>`;
 
   // Quadrant labels — Improving emphasized via short underline
-  const ql = `font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.14em; font-weight:700;`;
+  const ql = `font-family:var(--font-mono); font-size:10px; letter-spacing:0.14em; font-weight:700;`;
   const qlStroke = `paint-order: stroke; stroke: #0a0b0d; stroke-width: 3px; stroke-linejoin: round;`;
   html += `<text x="${xScale(75)}" y="${pad.t + 20}" fill="#5c6470" style="${ql} ${qlStroke}" text-anchor="middle">LEADING</text>`;
-  html += `<text x="${xScale(25)}" y="${pad.t + 22}" fill="#d4a574" style="${ql} font-weight:800; font-size:11px; ${qlStroke}" text-anchor="middle">★ IMPROVING</text>`;
-  html += `<line x1="${xScale(25) - 38}" y1="${pad.t + 30}" x2="${xScale(25) + 38}" y2="${pad.t + 30}" stroke="#d4a574" stroke-width="1" opacity="0.55" stroke-linecap="round"/>`;
+  html += `<text x="${xScale(25)}" y="${pad.t + 22}" fill="#ff8000" style="${ql} font-weight:800; font-size:11px; ${qlStroke}" text-anchor="middle">★ IMPROVING</text>`;
+  html += `<line x1="${xScale(25) - 38}" y1="${pad.t + 30}" x2="${xScale(25) + 38}" y2="${pad.t + 30}" stroke="#ff8000" stroke-width="1" opacity="0.55" stroke-linecap="round"/>`;
   html += `<text x="${xScale(75)}" y="${pad.t + plotH - 10}" fill="#5c6470" style="${ql} ${qlStroke}" text-anchor="middle">WEAKENING</text>`;
   html += `<text x="${xScale(25)}" y="${pad.t + plotH - 10}" fill="#5c6470" style="${ql} ${qlStroke}" text-anchor="middle">LAGGING</text>`;
 
   // Axis ticks
-  const tick = `font-family:'JetBrains Mono', monospace; font-size:10px;`;
+  const tick = `font-family:var(--font-mono); font-size:10px;`;
   html += `<text x="${pad.l - 8}" y="${pad.t + 5}" fill="#3d434b" style="${tick}" text-anchor="end">+15</text>`;
   html += `<text x="${pad.l - 8}" y="${cy + 4}" fill="#3d434b" style="${tick}" text-anchor="end">0</text>`;
   html += `<text x="${pad.l - 8}" y="${pad.t + plotH + 1}" fill="#3d434b" style="${tick}" text-anchor="end">-15</text>`;
@@ -5111,7 +5596,7 @@ document.querySelectorAll('.market-tab').forEach(btn => {
 /* ============================================================
    ✦ APP ROUTER + SIDEBAR
    ============================================================ */
-const ROUTES = ['calendar', 'heatmap'];
+const ROUTES = ['calendar', 'heatmap', 'guide'];
 let currentRoute = 'calendar';
 let heatmapInited = false;
 
