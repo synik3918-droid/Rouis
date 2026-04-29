@@ -137,6 +137,111 @@
 
   /* ===== Summary Dashboard ===== */
   .summary-section{padding:var(--gap-5) var(--pad-page-x) 0;}
+
+  /* ============================================================
+     ✦ Top Pick (이번 주 주목) — 페이지 상단
+     ============================================================ */
+  .toppick-section{
+    padding:var(--gap-4) var(--pad-page-x) 0;
+  }
+  .toppick-header{
+    display:flex; align-items:baseline; gap:var(--gap-3);
+    margin-bottom:var(--gap-3);
+  }
+  .toppick-title{
+    font-family:var(--font-mono); font-size:var(--text-sm);
+    color:var(--accent); letter-spacing:1.5px; font-weight:700;
+    text-transform:uppercase;
+  }
+  .toppick-title::before{ content:'● '; }
+  .toppick-sub{
+    font-size:var(--text-xs); color:var(--text-3);
+  }
+  .toppick-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr);
+    gap:var(--gap-3);
+  }
+  .toppick-card{
+    position:relative;
+    background:linear-gradient(180deg, rgba(255,128,0,0.06), rgba(255,128,0,0.02));
+    border:1px solid rgba(255,128,0,0.20);
+    border-radius:var(--r-md);
+    padding:var(--gap-3) var(--gap-4);
+    cursor:pointer;
+    transition:all .15s ease;
+    display:flex; flex-direction:column; gap:6px;
+    overflow:hidden;
+  }
+  .toppick-card::before{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+    background:var(--accent);
+  }
+  .toppick-card:hover{
+    background:linear-gradient(180deg, rgba(255,128,0,0.10), rgba(255,128,0,0.04));
+    border-color:rgba(255,128,0,0.40);
+    transform:translateY(-1px);
+  }
+  .tp-rank{
+    position:absolute; top:8px; right:10px;
+    font-family:var(--font-display); font-size:18px;
+    color:rgba(255,128,0,0.35); line-height:1;
+  }
+  .tp-name{
+    font-size:var(--text-base); font-weight:700; color:var(--text-1);
+    display:flex; align-items:baseline; gap:8px;
+  }
+  .tp-code{
+    font-family:var(--font-mono); font-size:10px;
+    color:var(--text-3); font-weight:500;
+  }
+  .tp-theme{
+    font-size:11px; color:var(--text-2);
+  }
+  .tp-reason{
+    font-size:var(--text-xs); color:var(--text-2);
+    line-height:1.5; margin-top:2px;
+  }
+  .tp-meta{
+    display:flex; gap:var(--gap-3); align-items:baseline;
+    margin-top:4px; padding-top:6px;
+    border-top:1px dashed var(--border);
+    font-family:var(--font-mono); font-size:11px;
+  }
+  .tp-meta-item{ color:var(--text-3); }
+  .tp-meta-item strong{ color:var(--text-1); font-weight:700; }
+  .tp-empty{
+    grid-column:1/-1;
+    padding:var(--gap-4); text-align:center;
+    background:var(--surface-1); border:1px dashed var(--border);
+    border-radius:var(--r-md);
+    font-size:var(--text-sm); color:var(--text-3);
+  }
+  @media (max-width:1099px){
+    .toppick-grid{ grid-template-columns:1fr; }
+  }
+  @media (max-width:767px){
+    .toppick-section{ padding-top:var(--gap-3); }
+    .tp-rank{ font-size:16px; }
+  }
+
+  /* 신호 1글자 배지 (테이블·카드용) */
+  .sig{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:18px; height:18px; border-radius:50%;
+    font-size:11px; font-weight:700; line-height:1;
+  }
+  .sig.now{
+    background:var(--accent); color:#000;
+    box-shadow:0 0 8px rgba(255,128,0,0.4);
+  }
+  .sig.wait{
+    background:var(--surface-3); color:var(--text-3);
+    border:1px solid var(--border-2);
+  }
+  .sig.avoid{
+    background:transparent; color:var(--text-4);
+    border:1px solid var(--text-4);
+  }
   .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
   .summary-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--subtle);border-radius:6px;padding:18px 20px;cursor:pointer;transition:all .15s;}
   .summary-card:hover{border-color:var(--muted);transform:translateY(-2px);}
@@ -198,19 +303,22 @@
 
   /* ===== TABLE ===== */
   table{width:100%;table-layout:fixed;border-collapse:collapse;}
-  col.c-name{width:20%;}
+  col.c-sig{width:36px;}
+  col.c-name{width:18%;}
   col.c-tag{width:9%;}
-  col.c-reason{width:16%;}
+  col.c-reason{width:15%;}
   col.c-price{width:11%;}
   col.c-change{width:7%;}
   col.c-peak{width:11%;}
-  col.c-pct{width:18%;}
+  col.c-pct{width:17%;}
   col.c-upside{width:8%;}
 
   thead tr{background:var(--surface);}
   th{text-align:left;padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:1.5px;font-weight:600;border-bottom:1px solid var(--border);user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  th:not(:first-child):not(:nth-child(2)):not(:nth-child(3)){text-align:right;}
-  th:nth-child(2),th:nth-child(3){text-align:left;}
+  th:first-child{padding:12px 6px;}
+  td:first-child{padding:12px 6px;text-align:center;}
+  th:not(:first-child):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(4)){text-align:right;}
+  th:nth-child(2),th:nth-child(3),th:nth-child(4){text-align:left;}
   th.sortable{cursor:pointer;transition:color .15s;}
   th.sortable:hover{color:var(--text);}
   th.sorted{color:var(--text);}
@@ -219,9 +327,16 @@
   tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
   tbody tr:hover{background:var(--surface);}
   td{padding:14px 16px;vertical-align:middle;overflow:hidden;}
-  td:not(:first-child):not(:nth-child(2)):not(:nth-child(3)){text-align:right;}
+  td:not(:first-child):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(4)){text-align:right;}
 
   .stock-name-row{display:flex;align-items:center;gap:10px;min-width:0;}
+  .stock-row.flash, .stock-card.flash{
+    animation: flash-highlight 1.5s ease;
+  }
+  @keyframes flash-highlight{
+    0%, 100% { background: transparent; }
+    20% { background: rgba(255,128,0,0.18); }
+  }
   .fav-btn{background:transparent;border:none;cursor:pointer;font-size:20px;color:var(--border2);padding:0;line-height:1;transition:all .15s;flex-shrink:0;}
   .fav-btn:hover{color:var(--accent);transform:scale(1.15);}
   .fav-btn.on{color:var(--accent);}
@@ -2174,6 +2289,15 @@
   </div>
 </div>
 
+<!-- Top Pick 위젯 (지금 봐야 할 종목 3개) -->
+<div class="toppick-section">
+  <div class="toppick-header">
+    <span class="toppick-title">이번 주 주목</span>
+    <span class="toppick-sub">지금 진입 검토 신호 상위 3</span>
+  </div>
+  <div class="toppick-grid" id="toppickGrid"></div>
+</div>
+
 <div class="summary-section">
   <div class="summary-grid" id="summaryGrid"></div>
 </div>
@@ -2433,6 +2557,32 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">행동 제안 신호</h2>
+      <p class="guide-p">종목 행 첫 컬럼에 표시되는 1글자 신호. <strong>참고용 분석 결과</strong>이며 매매 권유가 아닙니다.</p>
+      <div class="guide-grid">
+        <div class="guide-item"><span class="sig now" style="margin-bottom:4px">●</span>
+          <div class="guide-item-desc"><strong style="color:var(--accent)">지금 검토</strong> — 도달률 70% 미만이면서 시즌 진입월 일치, 모멘텀 양수, 또는 섹터(상시 추적) 종목.</div></div>
+        <div class="guide-item"><span class="sig wait" style="margin-bottom:4px">○</span>
+          <div class="guide-item-desc"><strong>대기</strong> — 도달률은 양호(70% 미만)하나 시즌·모멘텀 조건이 안 맞거나, 도달률 70~95% (고점 근접).</div></div>
+        <div class="guide-item"><span class="sig avoid" style="margin-bottom:4px">✕</span>
+          <div class="guide-item-desc"><strong>회피</strong> — 도달률 95% 이상 (과열) 또는 강한 하락 모멘텀(−3% 이상).</div></div>
+      </div>
+      <p class="guide-p guide-note">신호는 <strong>5분 이내 갱신된 가격</strong>에서만 산출. 데이터 없는 종목은 자동 "대기"로 표시.</p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">이번 주 주목 (Top Pick)</h2>
+      <p class="guide-p">현재 시장·필터 풀에서 <strong>● 지금 검토</strong> 신호 종목 중 우선순위 상위 3개를 페이지 상단에 표시.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">우선순위 점수</span><span class="gf-eq">=</span><span class="gf-val">(70 − 도달률) × 0.7</span></div>
+        <div class="gf-row"><span class="gf-key">+ 시즌 진입월</span><span class="gf-eq">=</span><span class="gf-val">+25점</span></div>
+        <div class="gf-row"><span class="gf-key">+ 피크 시즌</span><span class="gf-eq">=</span><span class="gf-val">+12점</span></div>
+        <div class="gf-row"><span class="gf-key">+ 양수 등락률</span><span class="gf-eq">=</span><span class="gf-val">+ min(등락률 × 2, 10)점</span></div>
+      </div>
+      <p class="guide-p guide-note">시장(국장/미장)·투자 스타일·필터를 바꾸면 Top Pick도 자동 갱신됩니다. 카드 클릭 시 해당 종목 행으로 스크롤.</p>
     </section>
 
     <section class="guide-section">
@@ -3383,7 +3533,137 @@ function buildFilterBar(){
   });
 }
 
+/* ============================================================
+   ✦ 신호 시스템 (행동 제안)
+   3단계: ● 지금 / ○ 대기 / ✕ 피함
+   ============================================================ */
+const CURRENT_MONTH = new Date().getMonth() + 1;  // 1~12
+
+// 종목·테마·가격 entry 받아 신호 결정
+// 반환: { signal:'now'|'wait'|'avoid', reason:string, score:number }
+function calcSignal(stock, theme, entry){
+  // 가격 데이터 없으면 분석 불가
+  if(!entry || entry.status !== 'fresh' || !entry.value?.price){
+    return { signal: 'wait', reason: '가격 분석 대기', score: 0 };
+  }
+  const price = entry.value.price;
+  const peak = stock.peak;
+  const pct = (price / peak) * 100;        // 도달률
+  const change = entry.value.change || 0;   // 등락률
+  const inSeason = theme.entryMonths && theme.entryMonths.includes(CURRENT_MONTH);
+  const inPeakSeason = theme.peakMonths && theme.peakMonths.includes(CURRENT_MONTH);
+
+  // 과열: 도달률 95% 이상
+  if(pct >= 95){
+    return { signal: 'avoid', reason: `과열 (도달률 ${pct.toFixed(0)}%)`, score: 0 };
+  }
+
+  // 강한 하락 모멘텀: -3% 이상 하락
+  if(change <= -3){
+    return { signal: 'avoid', reason: `하락 모멘텀 ${change.toFixed(1)}%`, score: 0 };
+  }
+
+  // 우선순위 점수 (Top Pick 정렬용)
+  let score = 0;
+  let reasons = [];
+
+  // 도달률 — 낮을수록 좋음 (최대 50점)
+  score += Math.max(0, 70 - pct) * 0.7;
+
+  // 시즌 일치 가산점
+  if(inSeason){ score += 25; reasons.push('시즌 진입월'); }
+  else if(inPeakSeason){ score += 12; reasons.push('피크 시즌'); }
+
+  // 모멘텀 가산
+  if(change > 0){ score += Math.min(change * 2, 10); reasons.push(`+${change.toFixed(1)}%`); }
+
+  // 산업 섹터(상시) 종목은 시즌 가산점 없음 — 도달률 위주
+  if(theme.group === 'industry'){
+    reasons = reasons.filter(r => !r.includes('시즌') && !r.includes('피크'));
+  }
+
+  // 분류:
+  // - 매수 구간 (< 70%) + 시즌 일치 또는 모멘텀 양수 → 지금
+  // - 매수 구간이지만 시즌·모멘텀 안 맞음 → 대기
+  // - 고점 근접 (70-95%) → 대기
+  if(pct < 70 && (inSeason || inPeakSeason || change > 0 || theme.group === 'industry')){
+    const r = reasons.length
+      ? `${reasons.join(' · ')} · 도달률 ${pct.toFixed(0)}%`
+      : `도달률 ${pct.toFixed(0)}%`;
+    return { signal: 'now', reason: r, score };
+  }
+
+  if(pct < 70){
+    return { signal: 'wait', reason: `도달률 ${pct.toFixed(0)}% · 시즌 아님`, score: score * 0.5 };
+  }
+
+  return { signal: 'wait', reason: `고점 근접 ${pct.toFixed(0)}%`, score: 0 };
+}
+
+// 현재 필터 풀에서 Top Pick 3개 추출 (signal === 'now' 중 score 상위)
+function getTopPicks(){
+  const themes = applyStyleFilter(getActivePool());
+  const candidates = [];
+  themes.forEach(theme => {
+    theme.stocks.forEach(stock => {
+      const entry = priceCache[stock.code];
+      const sig = calcSignal(stock, theme, entry);
+      if(sig.signal === 'now'){
+        candidates.push({ stock, theme, entry, ...sig });
+      }
+    });
+  });
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates.slice(0, 3);
+}
+
+function renderTopPicks(){
+  const grid = document.getElementById('toppickGrid');
+  if(!grid) return;
+  const picks = getTopPicks();
+  if(picks.length === 0){
+    grid.innerHTML = `<div class="tp-empty">현재 필터에 진입 검토 신호 종목이 없습니다. 시장·필터를 바꿔 보세요.</div>`;
+    return;
+  }
+  grid.innerHTML = picks.map((p, i) => {
+    const price = p.entry.value.price;
+    const change = p.entry.value.change || 0;
+    const upside = ((p.stock.peak - price) / price) * 100;
+    const changeCls = change >= 0 ? 'pos' : 'neg';
+    const changeStr = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+    return `
+      <div class="toppick-card" onclick="scrollToStock('${p.stock.code}')">
+        <span class="tp-rank">#${i + 1}</span>
+        <div class="tp-name">
+          ${p.stock.name}
+          <span class="tp-code">${p.stock.code}</span>
+        </div>
+        <div class="tp-theme">${p.theme.icon} ${p.theme.name}</div>
+        <div class="tp-reason">${p.reason}</div>
+        <div class="tp-meta">
+          <span class="tp-meta-item">현재 <strong>${formatPrice(price, p.theme.country)}</strong></span>
+          <span class="tp-meta-item ${changeCls}" style="color:var(--${change>=0?'color-up':'color-down'})">${changeStr}</span>
+          <span class="tp-meta-item">여력 <strong>+${upside.toFixed(0)}%</strong></span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 종목 행으로 스크롤 (Top Pick 클릭 시)
+function scrollToStock(code){
+  const row = document.querySelector(`tr[data-code="${code}"], .stock-card[data-code="${code}"]`);
+  if(row){
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    row.classList.add('flash');
+    setTimeout(() => row.classList.remove('flash'), 1500);
+  }
+}
+
 function buildSummary(){
+  // Top Pick 위젯도 같이 갱신
+  renderTopPicks();
+
   const themes = applyStyleFilter(getActivePool());
   const allStocks = themes.flatMap(t=>t.stocks.map(s=>({...s, country:t.country})));
   let lowCount=0, midCount=0, highCount=0, freshCount=0;
@@ -4116,8 +4396,12 @@ function renderStockCardHtml(s, theme){
   const cacheBadge = (st==='stale' && entry.updatedAt)
     ? `<div class="scd-cache"><span class="cache-badge">캐시 · ${timeSince(entry.updatedAt)}</span></div>` : '';
 
-  return `<div class="stock-card entered" data-card="${s.code}" data-theme="${theme.id}">
+  const sig = calcSignal(s, theme, entry);
+  const sigChar = sig.signal === 'now' ? '●' : sig.signal === 'wait' ? '○' : '✕';
+
+  return `<div class="stock-card entered" data-card="${s.code}" data-code="${s.code}" data-theme="${theme.id}">
     <div class="scd-top">
+      <span class="sig ${sig.signal}" title="${sig.reason}" style="margin-right:4px">${sigChar}</span>
       <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')">★</button>
       <div class="stock-name-info" style="flex:1;min-width:0;">
         <div class="stock-name">${s.name}</div>
@@ -4203,7 +4487,13 @@ function renderStockRowHtml(s, theme){
     pctTxt=pct.toFixed(1)+'%'; pctCls='progress-pct';
   }
 
-  return `<tr class="stock-row entered" data-row="${s.code}" data-theme="${theme.id}">
+  // 신호 계산
+  const sig = calcSignal(s, theme, entry);
+  const sigChar = sig.signal === 'now' ? '●' : sig.signal === 'wait' ? '○' : '✕';
+  const sigCell = `<td><span class="sig ${sig.signal}" title="${sig.reason}">${sigChar}</span></td>`;
+
+  return `<tr class="stock-row entered" data-row="${s.code}" data-code="${s.code}" data-theme="${theme.id}">
+    ${sigCell}
     <td>
       <div class="stock-name-row">
         <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')" title="즐겨찾기">★</button>
@@ -4232,6 +4522,7 @@ function renderStockRowHtml(s, theme){
 /* 스켈레톤 행 (가격 조회 중) */
 function renderSkeletonRow(s){
   return `<tr class="stock-row skeleton-row" data-skeleton="${s.code}">
+    <td><span class="sig wait" style="opacity:.4">·</span></td>
     <td>
       <div class="stock-name-row">
         <span class="fav-btn" style="opacity:.3">★</span>
@@ -4297,9 +4588,10 @@ function renderContent(){
       <table>
         <colgroup>
           <col class="c-name"><col class="c-tag"><col class="c-reason"><col class="c-price">
-          <col class="c-change"><col class="c-peak"><col class="c-pct"><col class="c-upside">
+          <col class="c-sig"><col class="c-change"><col class="c-peak"><col class="c-pct"><col class="c-upside">
         </colgroup>
         <thead><tr>
+          <th></th>
           <th class="${thClass(theme.id,'name')}" data-sort="name" data-theme="${theme.id}">종목명 / 코드${sortIcon(theme.id,'name')}</th>
           <th>성격</th>
           <th>특징</th>
