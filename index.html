@@ -360,22 +360,32 @@
 
   /* ===== TABLE ===== */
   table{width:100%;table-layout:fixed;border-collapse:collapse;}
-  col.c-sig{width:24px;}
-  col.c-name{width:26%;}
+  col.c-sig{width:18px;}
+  col.c-name{width:28%;}
   col.c-tag{width:9%;}
   col.c-reason{width:11%;}
   col.c-price{width:11%;}
   col.c-change{width:7%;}
   col.c-peak{width:11%;}
-  col.c-pct{width:16%;}
+  col.c-pct{width:15%;}
   col.c-upside{width:8%;}
 
   thead tr{background:var(--surface);}
   th{text-align:left;padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:1.5px;font-weight:600;border-bottom:1px solid var(--border);user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  th:first-child{padding:12px 0;text-align:center;letter-spacing:0;font-size:9px;color:var(--text-3);}
+  th:first-child{padding:12px 0;text-align:center;}
   td:first-child{padding:12px 0;text-align:center;}
   th:not(:first-child):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(4)){text-align:right;}
   th:nth-child(2),th:nth-child(3),th:nth-child(4){text-align:left;}
+
+  /* 신호 컬럼 헤더 마크 (● 작은 점) */
+  .th-sig-mark{
+    display:inline-block;
+    width:6px; height:6px;
+    border-radius:50%;
+    background:var(--text-4);
+    text-indent:-9999px;
+    overflow:hidden;
+  }
   th.sortable{cursor:pointer;transition:color .15s;}
   th.sortable:hover{color:var(--text);}
   th.sorted{color:var(--text);}
@@ -1187,6 +1197,45 @@
     .p-desc{ font-size:12px; }
   }
   /* ===== /브랜드 선언 ===== */
+
+  /* ============================================================
+     ✦ 개발용 섹션 (DEV ONLY) — 기본 숨김
+     URL ?dev=1 또는 localStorage.devMode='1' 일 때만 body.dev-mode 부여
+     ============================================================ */
+  .ds-dev-section{ display:none; }
+  body.dev-mode .ds-dev-section{ display:flex; flex-direction:column; gap:var(--gap-3); }
+
+  .ds-dev-badge{
+    display:inline-block;
+    margin-left:8px;
+    padding:2px 8px;
+    background:var(--accent);
+    color:#000;
+    font-family:var(--font-mono);
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:1px;
+    border-radius:3px;
+    vertical-align:3px;
+  }
+  .ds-dev-table{
+    overflow-x:auto;
+    background:var(--surface-1);
+    border:1px solid var(--border);
+    border-radius:var(--r-md);
+  }
+  .ds-dev-table table{ min-width:800px; }
+
+  /* 모바일 카드 — 데스크톱에서도 강제 표시 (개발용 미리보기) */
+  .ds-dev-cards{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    max-width:380px;
+  }
+  .ds-dev-cards .stock-card{
+    display:flex !important;  /* mobile-cards 영역 미디어쿼리 회피 */
+  }
   .guide-section{ }
   .guide-h2{
     font-family:var(--font-sans); font-size:18px; font-weight:700;
@@ -3167,6 +3216,199 @@
             <div class="ds-card-b">accent 그라디언트 + 좌측 3px 보더</div>
           </div>
           <div class="ds-comp-note">호버: <code>translateY(-1px)</code> + 보더 진해짐</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         ✦ 개발용 더미 종목 카드 미리보기 (DEV ONLY)
+         URL에 ?dev=1 또는 localStorage.devMode='1' 일 때만 표시
+         일반 사용자에게는 보이지 않음
+         ============================================================ -->
+    <section class="guide-section ds-dev-section">
+      <h2 class="guide-h2">종목 카드 미리보기 <span class="ds-dev-badge">DEV</span></h2>
+      <p class="guide-p">로컬에서 UI 테스트용. 3가지 신호 시나리오 (● 지금 · ○ 대기 · ✕ 회피)를 정적 더미 데이터로 표시합니다.</p>
+      <p class="guide-p guide-note">표시 방법: URL에 <code>?dev=1</code> 추가 (예: <code>https://...github.io/Rouis/?dev=1#guide</code>) 또는 콘솔에서 <code>localStorage.devMode='1'</code> 실행 후 새로고침. 끄려면 <code>localStorage.removeItem('devMode')</code>.</p>
+
+      <h3 class="guide-h3">데스크톱 (테이블 행)</h3>
+      <div class="ds-dev-table">
+        <table>
+          <colgroup>
+            <col class="c-sig"><col class="c-name"><col class="c-tag"><col class="c-reason">
+            <col class="c-price"><col class="c-change"><col class="c-peak"><col class="c-pct"><col class="c-upside">
+          </colgroup>
+          <thead><tr>
+            <th>신호</th>
+            <th>종목명 / 코드</th>
+            <th>성격</th>
+            <th>특징</th>
+            <th>현재가</th>
+            <th>등락률</th>
+            <th>목표가</th>
+            <th>도달률</th>
+            <th>상승여력</th>
+          </tr></thead>
+          <tbody>
+            <!-- 시나리오 1: ● 지금 진입 검토 -->
+            <tr class="stock-row entered">
+              <td><span class="sig now" data-tip="시즌 진입월 · +1.5% · 도달률 60%" tabindex="0">●</span></td>
+              <td>
+                <div class="stock-name-row">
+                  <button class="fav-btn">★</button>
+                  <div class="stock-name-info">
+                    <div class="stock-name">삼성전자</div>
+                    <div class="stock-code">005930.KS</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;gap:4px;flex-wrap:wrap">
+                  <span class="role-tag lead">주도주</span>
+                </div>
+              </td>
+              <td><span class="reason-tag">반도체 업황 회복 + AI 수혜</span></td>
+              <td><div class="price-cell"><span class="price">75,000</span></div></td>
+              <td><span class="change pos">+1.50%</span></td>
+              <td><span class="peak-price">125,000</span><div class="peak-timing">3월 피크</div></td>
+              <td><div class="progress-row">
+                <div class="progress-bar"><div class="progress-fill bar-low" style="width:60%"></div></div>
+                <span class="progress-pct">60%</span>
+              </div></td>
+              <td><span class="upside pos">+66.7%</span></td>
+            </tr>
+
+            <!-- 시나리오 2: ○ 대기 -->
+            <tr class="stock-row entered">
+              <td><span class="sig wait" data-tip="고점 근접 79%" tabindex="0">○</span></td>
+              <td>
+                <div class="stock-name-row">
+                  <button class="fav-btn">★</button>
+                  <div class="stock-name-info">
+                    <div class="stock-name">LG전자</div>
+                    <div class="stock-code">066570.KS</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;gap:4px;flex-wrap:wrap">
+                  <span class="role-tag value">배당주</span>
+                </div>
+              </td>
+              <td><span class="reason-tag">에어컨 시즌 상승 한계</span></td>
+              <td><div class="price-cell"><span class="price">95,000</span></div></td>
+              <td><span class="change pos">+0.30%</span></td>
+              <td><span class="peak-price">120,000</span><div class="peak-timing">7~8월</div></td>
+              <td><div class="progress-row">
+                <div class="progress-bar"><div class="progress-fill bar-mid" style="width:79%"></div></div>
+                <span class="progress-pct">79%</span>
+              </div></td>
+              <td><span class="upside pos">+26.3%</span></td>
+            </tr>
+
+            <!-- 시나리오 3: ✕ 회피 -->
+            <tr class="stock-row entered">
+              <td><span class="sig avoid" data-tip="과열 (도달률 97%)" tabindex="0">✕</span></td>
+              <td>
+                <div class="stock-name-row">
+                  <button class="fav-btn">★</button>
+                  <div class="stock-name-info">
+                    <div class="stock-name">카카오</div>
+                    <div class="stock-code">035720.KS</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;gap:4px;flex-wrap:wrap">
+                  <span class="role-tag momentum">모멘텀</span>
+                  <span class="role-tag smallcap">소형주</span>
+                </div>
+              </td>
+              <td><span class="reason-tag">단기 급등 후 과열</span></td>
+              <td><div class="price-cell"><span class="price">65,000</span></div></td>
+              <td><span class="change neg">−2.10%</span></td>
+              <td><span class="peak-price">67,000</span><div class="peak-timing">연중</div></td>
+              <td><div class="progress-row">
+                <div class="progress-bar"><div class="progress-fill bar-high" style="width:97%"></div></div>
+                <span class="progress-pct">97%</span>
+              </div></td>
+              <td><span class="upside pos">+3.1%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="guide-h3" style="margin-top:24px">모바일 (컴팩트 카드)</h3>
+      <div class="ds-dev-cards">
+        <!-- 시나리오 1: ● 지금 -->
+        <div class="stock-card entered">
+          <div class="scd-top">
+            <div class="stock-name-info" style="flex:1;min-width:0;">
+              <div class="stock-name">삼성전자</div>
+              <div class="stock-code">005930.KS</div>
+            </div>
+            <div class="scd-corner">
+              <span class="sig now" data-tip="시즌 진입월 · +1.5% · 도달률 60%" tabindex="0">●</span>
+              <button class="fav-btn">★</button>
+            </div>
+          </div>
+          <div class="scd-mid">
+            <span class="price">75,000</span>
+            <span class="change pos">+1.50%</span>
+            <span class="scd-spacer"></span>
+            <span class="upside pos">여력 +66.7%</span>
+          </div>
+          <div class="scd-progress">
+            <div class="progress-bar"><div class="progress-fill bar-low" style="width:60%"></div></div>
+            <span class="progress-pct">60%</span>
+          </div>
+        </div>
+
+        <!-- 시나리오 2: ○ 대기 -->
+        <div class="stock-card entered">
+          <div class="scd-top">
+            <div class="stock-name-info" style="flex:1;min-width:0;">
+              <div class="stock-name">LG전자</div>
+              <div class="stock-code">066570.KS</div>
+            </div>
+            <div class="scd-corner">
+              <span class="sig wait" data-tip="고점 근접 79%" tabindex="0">○</span>
+              <button class="fav-btn">★</button>
+            </div>
+          </div>
+          <div class="scd-mid">
+            <span class="price">95,000</span>
+            <span class="change pos">+0.30%</span>
+            <span class="scd-spacer"></span>
+            <span class="upside pos">여력 +26.3%</span>
+          </div>
+          <div class="scd-progress">
+            <div class="progress-bar"><div class="progress-fill bar-mid" style="width:79%"></div></div>
+            <span class="progress-pct">79%</span>
+          </div>
+        </div>
+
+        <!-- 시나리오 3: ✕ 회피 -->
+        <div class="stock-card entered">
+          <div class="scd-top">
+            <div class="stock-name-info" style="flex:1;min-width:0;">
+              <div class="stock-name">카카오</div>
+              <div class="stock-code">035720.KS</div>
+            </div>
+            <div class="scd-corner">
+              <span class="sig avoid" data-tip="과열 (도달률 97%)" tabindex="0">✕</span>
+              <button class="fav-btn">★</button>
+            </div>
+          </div>
+          <div class="scd-mid">
+            <span class="price">65,000</span>
+            <span class="change neg">−2.10%</span>
+            <span class="scd-spacer"></span>
+            <span class="upside pos">여력 +3.1%</span>
+          </div>
+          <div class="scd-progress">
+            <div class="progress-bar"><div class="progress-fill bar-high" style="width:97%"></div></div>
+            <span class="progress-pct">97%</span>
+          </div>
         </div>
       </div>
     </section>
@@ -5281,7 +5523,7 @@ function renderContent(){
           <col class="c-sig"><col class="c-change"><col class="c-peak"><col class="c-pct"><col class="c-upside">
         </colgroup>
         <thead><tr>
-          <th title="● 지금 검토 / ○ 대기 / ✕ 회피">신호</th>
+          <th title="● 지금 검토 / ○ 대기 / ✕ 회피"><span class="th-sig-mark">●</span></th>
           <th class="${thClass(theme.id,'name')}" data-sort="name" data-theme="${theme.id}">종목명 / 코드${sortIcon(theme.id,'name')}</th>
           <th>성격</th>
           <th>특징</th>
@@ -7080,6 +7322,18 @@ const initialRoute = (location.hash || '#calendar').slice(1);
 if(ROUTES.includes(initialRoute) && initialRoute !== 'calendar'){
   navigate(initialRoute);
 }
+
+/* ===== 개발용 모드 감지 — ?dev=1 또는 localStorage.devMode ===== */
+(function(){
+  const params = new URLSearchParams(location.search);
+  if(params.get('dev') === '1') localStorage.setItem('devMode', '1');
+  if(params.get('dev') === '0') localStorage.removeItem('devMode');
+  if(localStorage.getItem('devMode') === '1'){
+    document.body.classList.add('dev-mode');
+    console.log('%c[LOUIS] DEV MODE ACTIVE', 'color:#ff8000;font-weight:700;font-size:14px');
+    console.log('끄려면: localStorage.removeItem("devMode") 후 새로고침');
+  }
+})();
 
 /* ===== 가이드 페이지 — 데모 토글 미리보기 핸들러 ===== */
 document.addEventListener('click', (e) => {
