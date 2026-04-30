@@ -4953,16 +4953,29 @@
           </div>
         </div>
 
+        <div class="rn-item">
+          <div class="rn-num">10</div>
+          <div class="rn-body">
+            <div class="rn-title">신호 시스템 V1 완전 제거 — 가짜 점수 깜빡임 수정</div>
+            <div class="rn-desc">
+              사용자가 "리노공업 점수가 처음 66 → 33으로 바뀐다"고 보고. 원인: <strong>OHLCV 데이터 도착 전 V1로 폴백</strong>해 가짜 점수를 보여준 후, 도착 후 V2로 교체되면서 점수가 갑자기 변하는 혼란.<br>
+              해결: <strong>V1 산식 완전 제거</strong>. OHLCV 부족 시 "지표 데이터 대기 중" skel 표시 (가짜 점수 안 보여줌). 데이터 안정성 확보 후 정확한 V2 점수 한 번만 표시.<br>
+              제거 대상: <code>calcSignal</code> 함수 (66줄) · <code>window.__useSignalV2</code> 토글 · <code>window.__signal.compare()</code> V1/V2 비교 도구. <code>renderSignalBadge</code>가 <code>score: null</code>일 때 자동으로 skel 표시.<br>
+              남은 콘솔 도구: <code>window.__signal.detail(code)</code> · <code>window.__signal.stats()</code>. 백테스트 영역의 V1 룰은 학술적 비교 도구라 그대로 유지.
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <p class="guide-p guide-note">
-        ✦ <strong>다음 단계 (Phase 2, 3~6개월)</strong>: 포지션 사이징 · ATR 기반 손절익절 · 포트폴리오 리스크 한도 · V1 vs V2 정량 비교 페이지.<br>
-        ✦ <strong>현재 콘솔 도구</strong>: <code>window.__signal.compare()</code> · <code>window.__backtest.compare()</code> · <code>window.__regime.current()</code> · <code>window.__indicators.test()</code><br>
+        ✦ <strong>다음 단계 (Phase 2, 3~6개월)</strong>: 포지션 사이징 · ATR 기반 손절익절 · 포트폴리오 리스크 한도.<br>
+        ✦ <strong>현재 콘솔 도구</strong>: <code>window.__signal.detail(code)</code> · <code>window.__signal.stats()</code> · <code>window.__backtest.compare()</code> · <code>window.__regime.current()</code> · <code>window.__indicators.test()</code><br>
         ⚠ <strong>한계</strong>: OHLCV 1년치 한정 · VIX는 미장만(국장은 V-KOSPI 별도 필요) · 슬리피지 미반영 (실거래는 백테스트보다 0.1~0.3%p 낮을 것).
       </p>
     </section>
 
-      <p class="guide-p guide-note">⚠ V2는 신중한 모드입니다. 상승장 끝부분에선 ● 자주 안 나오고, 조정 시작되면 ●가 늘어납니다 ("친구가 물리면 그게 매수" 정체성과 일치). 콘솔에서 <code>window.__signal.compare()</code>로 V1 vs V2 비교 가능. <code>window.__useSignalV2 = false</code>로 V1 롤백 가능.</p>
+      <p class="guide-p guide-note">⚠ V2는 신중한 모드입니다. 상승장 끝부분에선 ● 자주 안 나오고, 조정 시작되면 ●가 늘어납니다 ("친구가 물리면 그게 매수" 정체성과 일치). OHLCV 데이터 부족 시 "분석 대기"로 표시됩니다 (가짜 점수 안 보여줌). 콘솔에서 <code>window.__signal.stats()</code>로 전체 점수 분포 확인 가능.</p>
     </section>
 
     <section class="guide-section">
@@ -5007,8 +5020,8 @@
 
       <h3 class="guide-h3">데이터 소스</h3>
       <p class="guide-p">Yahoo Finance에서 종목별 일봉 1년치 (252영업일) 자동 수신. <strong>하루 1회</strong> 장 마감 후(KST 16시) 갱신.</p>
-      <p class="guide-p guide-note">⚠ <strong>한계</strong>: 일봉 200일치 미만 종목은 자동으로 V1(시즌+도달률) 폴백. 신규 상장주·ETF 일부 영향.<br>
-      ✦ 콘솔에서 비교 가능: <span class="guide-code">window.__signal.compare()</span> — V1 vs V2 모든 종목 결과 비교</p>
+      <p class="guide-p guide-note">⚠ <strong>한계</strong>: 일봉 30일치 미만 종목은 "분석 대기" 표시 (가짜 점수 대신 skel 표시). 신규 상장주·ETF 일부 영향.<br>
+      ✦ 콘솔에서 확인 가능: <span class="guide-code">window.__signal.stats()</span> — 전체 종목 V2 점수 분포 + 분석 대기 종목 카운트</p>
     </section>
 
     <section class="guide-section">
@@ -6221,99 +6234,25 @@ function buildFilterBar(){
    ============================================================ */
 const CURRENT_MONTH = new Date().getMonth() + 1;  // 1~12
 
-// 종목·테마·가격 entry 받아 신호 결정
-// 반환: { signal:'now'|'wait'|'avoid', reason:string, score:number }
-function calcSignal(stock, theme, entry){
-  // 가격 데이터 없으면 분석 불가
-  if(!entry || entry.status !== 'fresh' || !entry.value?.price){
-    return { signal: 'wait', reason: '가격 분석 대기', score: 0 };
-  }
-  const price = entry.value.price;
-  const peak = stock.peak;
-  const pct = (price / peak) * 100;        // 도달률
-  const change = entry.value.change || 0;   // 등락률
-  const inSeason = theme.entryMonths && theme.entryMonths.includes(CURRENT_MONTH);
-  const inPeakSeason = theme.peakMonths && theme.peakMonths.includes(CURRENT_MONTH);
-
-  // 진입월 임박 — 1~2달 안에 entryMonths가 시작되는 시즌 테마 (선취매 의도)
-  // 예: 4월에 폭염(entry [5,6]) → preSeason → 한 달 미리 진입 검토
-  const next1 = (CURRENT_MONTH % 12) + 1;
-  const next2 = (((CURRENT_MONTH + 1) % 12)) + 1;
-  const preSeason = theme.entryMonths
-    && (theme.entryMonths.includes(next1) || theme.entryMonths.includes(next2));
-
-  // 과열: 도달률 95% 이상
-  if(pct >= 95){
-    return { signal: 'avoid', reason: `과열 (도달률 ${pct.toFixed(0)}%)`, score: 0 };
-  }
-
-  // 강한 하락 모멘텀: -3% 이상 하락
-  if(change <= -3){
-    return { signal: 'avoid', reason: `하락 모멘텀 ${change.toFixed(1)}%`, score: 0 };
-  }
-
-  // 우선순위 점수 (Top Pick 정렬용)
-  let score = 0;
-  let reasons = [];
-
-  // 도달률 — 낮을수록 좋음 (최대 50점)
-  score += Math.max(0, 70 - pct) * 0.7;
-
-  // 시즌 가산점 — 진입월 > 임박 > 피크 순
-  if(inSeason){ score += 25; reasons.push('시즌 진입월'); }
-  else if(preSeason){ score += 18; reasons.push('진입월 임박 (선취매)'); }
-  else if(inPeakSeason){ score += 12; reasons.push('피크 시즌'); }
-
-  // 모멘텀 가산
-  if(change > 0){ score += Math.min(change * 2, 10); reasons.push(`+${change.toFixed(1)}%`); }
-
-  // 산업 섹터(상시) 종목은 시즌 가산점 없음 — 도달률 위주
-  if(theme.group === 'industry'){
-    reasons = reasons.filter(r => !r.includes('시즌') && !r.includes('피크') && !r.includes('임박'));
-  }
-
-  // 분류:
-  // - 매수 구간 (< 70%) + 시즌 일치/임박/피크/모멘텀 양수/섹터 → 지금
-  // - 매수 구간이지만 위 조건 모두 안 맞음 → 대기
-  // - 고점 근접 (70-95%) → 대기
-  if(pct < 70 && (inSeason || preSeason || inPeakSeason || change > 0 || theme.group === 'industry')){
-    const r = reasons.length
-      ? `${reasons.join(' · ')} · 도달률 ${pct.toFixed(0)}%`
-      : `도달률 ${pct.toFixed(0)}%`;
-    return { signal: 'now', reason: r, score };
-  }
-
-  if(pct < 70){
-    return { signal: 'wait', reason: `도달률 ${pct.toFixed(0)}% · 시즌 아님`, score: score * 0.5 };
-  }
-
-  return { signal: 'wait', reason: `고점 근접 ${pct.toFixed(0)}%`, score: 0 };
-}
-
 /* ============================================================
-   ✦ Phase A3: 신호 점수 시스템 V2 (기술 지표 기반)
-   - 100점 만점: 도달률 30 + RSI 25 + 200일선 20 + %B 15 + 거래량 10
+   ✦ 신호 점수 시스템 (V2 — 기술 지표 기반)
+   - 100점 만점: 도달률 30 + RSI 20 + MACD 8 + 200SMA 18 + %B 14 + 거래량 10
    - 시즌 보너스: 진입월/임박 +15점
-   - OHLCV 데이터 없으면 자동으로 기존 calcSignal로 폴백
+   - 즉시회피: 도달률 95%+ / 등락 -3% / RSI 70+ & 도달률 80+
+   - OHLCV 부족 시 "분석 대기" (V1 폴백 제거 — Phase A10)
    ============================================================ */
-
-/* 신호 시스템 토글 — 기본은 V2 활성화, 콘솔에서 끄고 켤 수 있음
-   window.__useSignalV2 = false  → 기존 calcSignal 사용
-   window.__useSignalV2 = true   → 점수 시스템 사용 (기본)
-*/
-window.__useSignalV2 = true;
 
 function calcSignalV2(stock, theme, entry){
   // 가격 데이터 없으면 분석 불가
   if(!entry || entry.status !== 'fresh' || !entry.value?.price){
-    return { signal: 'wait', reason: '가격 분석 대기', score: 0, version: 'v2' };
+    return { signal: 'wait', reason: '가격 분석 대기', score: null, version: 'v2' };
   }
 
-  // OHLCV 없으면 V1으로 폴백 (단계적 적용 안전장치)
+  // ✦ OHLCV 없으면 "지표 대기" 명시 (V1 폴백 제거 — 가짜 점수 안 보여줌)
+  // 사용자에게 점수가 갑자기 변하는 혼란 방지
   const ind = (typeof getIndicators === 'function') ? getIndicators(stock.code) : null;
   if(!ind || ind.dataPoints < 30){
-    const v1 = calcSignal(stock, theme, entry);
-    return { ...v1, reason: v1.reason + ' (지표 대기)', version: 'v1-fallback' };
+    return { signal: 'wait', reason: '지표 데이터 대기 중', score: null, version: 'v2-pending' };
   }
 
   const price = entry.value.price;
@@ -6471,11 +6410,9 @@ function calcSignalV2(stock, theme, entry){
 }
 
 /* 디스패처 — 토글에 따라 V1 또는 V2 호출 */
+/* 신호 산출 — 항상 V2 (V1 제거됨) */
 function calcSignalAuto(stock, theme, entry){
-  if(window.__useSignalV2){
-    return calcSignalV2(stock, theme, entry);
-  }
-  return calcSignal(stock, theme, entry);
+  return calcSignalV2(stock, theme, entry);
 }
 
 /* ============================================================
@@ -6487,6 +6424,11 @@ function renderSignalBadge(sig, opts = {}){
   const { size = 'md', tooltip = true, inline = false } = opts;
   if(!sig){
     return `<span class="sg-badge sg-skel ${size==='sm'?'sg-sm':''}" aria-label="분석 대기"><span class="sg-num">·</span></span>`;
+  }
+  // ✦ score null = 지표 데이터 대기 중 → skel 표시 (가짜 점수 안 보여줌)
+  if(sig.score === null){
+    const skelTip = tooltip ? `data-tip="${(sig.reason || '분석 대기').replace(/"/g, '&quot;')}" tabindex="0"` : '';
+    return `<span class="sg-badge sg-skel ${size==='sm'?'sg-sm':''}" ${skelTip} aria-label="분석 대기"><span class="sg-num">·</span></span>`;
   }
   const reason = sig.reason || '';
   const tipAttr = tooltip ? `data-tip="${reason.replace(/"/g, '&quot;')}" tabindex="0"` : '';
@@ -6509,35 +6451,9 @@ function renderSignalBadge(sig, opts = {}){
 
 /* ===== 디버그·비교 도구 ===== */
 window.__signal = {
-  v1: calcSignal,
   v2: calcSignalV2,
   auto: calcSignalAuto,
-  /* 모든 종목에 대해 V1 vs V2 결과 비교 */
-  compare(){
-    const rows = [];
-    ALL_THEMES.forEach(theme => {
-      theme.stocks.forEach(stock => {
-        const entry = priceCache[stock.code];
-        if(!entry || !entry.value?.price) return;
-        const v1 = calcSignal(stock, theme, entry);
-        const v2 = calcSignalV2(stock, theme, entry);
-        rows.push({
-          종목: stock.name,
-          V1: v1.signal,
-          V2: v2.signal,
-          'V1점수': +v1.score.toFixed(1),
-          'V2점수': +v2.score.toFixed(1),
-          일치: v1.signal === v2.signal ? '✓' : '✕',
-        });
-      });
-    });
-    console.table(rows);
-    const same = rows.filter(r => r.일치 === '✓').length;
-    const diff = rows.filter(r => r.일치 === '✕').length;
-    console.log(`[V1 vs V2] 일치 ${same} / 불일치 ${diff} / 전체 ${rows.length}`);
-    return { rows, same, diff };
-  },
-  /* 단일 종목 상세 */
+  /* 단일 종목 V2 상세 */
   detail(code){
     let target = null, theme = null;
     ALL_THEMES.forEach(t => t.stocks.forEach(s => {
@@ -6553,8 +6469,30 @@ window.__signal = {
     console.log('  detail:', result.detail);
     return result;
   },
+  /* 전체 종목 V2 점수 분포 */
+  stats(){
+    const rows = [];
+    ALL_THEMES.forEach(theme => {
+      theme.stocks.forEach(stock => {
+        const entry = priceCache[stock.code];
+        if(!entry || !entry.value?.price) return;
+        const v2 = calcSignalV2(stock, theme, entry);
+        rows.push({
+          종목: stock.name,
+          신호: v2.signal,
+          점수: v2.score == null ? '-' : +v2.score.toFixed(1),
+          버전: v2.version,
+        });
+      });
+    });
+    console.table(rows);
+    const pending = rows.filter(r => r.버전 === 'v2-pending').length;
+    const ready = rows.filter(r => r.버전 === 'v2').length;
+    console.log(`[V2 분포] 분석 완료 ${ready} / 지표 대기 ${pending} / 전체 ${rows.length}`);
+    return { rows, ready, pending };
+  },
 };
-/* ===== /Phase A3 ===== */
+/* ===== /신호 시스템 ===== */
 
 // 현재 필터 풀에서 Top Pick 3개 추출
 // 1순위: ● 신호 점수 상위 / 2순위: ○ 대기 중 점수 상위 (3개 채울 때까지)
