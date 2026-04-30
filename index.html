@@ -1312,6 +1312,10 @@
   .page-header-controls{
     display:flex; gap:var(--gap-4); align-items:flex-end; flex-wrap:wrap;
   }
+  /* 헤더 컨트롤 안의 토글 — 두 개 균등 분할 (테마 분석 페이지) */
+  .page-header-controls .uni-axis{
+    flex:1; min-width:200px;
+  }
 
   @media (max-width:767px){
     .page-header{ padding:var(--gap-5) var(--pad-page-x) var(--gap-3); gap:var(--gap-3); }
@@ -3102,6 +3106,235 @@
   }
   /* ===== /Theme Matrix ===== */
 
+  /* ============================================================
+     ✦ 공통 테마 카드 (.theme-card) — 3탭 모두 사용
+     - 판도(Matrix) 시트 종목 리스트
+     - 현재(Ranking) 카드 리스트
+     - 다음(Rising) 후보 카드
+     사이즈: sm (시트용) / md (현재 탭) / lg (다음 탭 후보)
+     ============================================================ */
+  .theme-card{
+    display:flex; align-items:center; gap:12px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:14px 16px;
+    cursor:pointer;
+    transition:border-color .12s ease, transform .12s ease;
+    position:relative;
+  }
+  .theme-card:hover{
+    border-color:var(--border-2);
+    transform:translateY(-1px);
+  }
+  /* 강도(tier)별 좌측 액센트 바 */
+  .theme-card::before{
+    content:''; position:absolute;
+    left:0; top:8px; bottom:8px; width:3px;
+    border-radius:2px;
+    background:var(--text-3);
+  }
+  .theme-card.hot::before     { background:var(--color-up); }
+  .theme-card.strong::before  { background:var(--accent); }
+  .theme-card.neutral::before { background:var(--text-3); }
+  .theme-card.weak::before    { background:#7a9fc8; }
+  .theme-card.cold::before    { background:var(--color-down); }
+  .theme-card.pending::before { background:var(--text-4); opacity:0.4; }
+
+  /* 좌측 — 순위 + 강도 점수 */
+  .tc-rank-block{
+    display:flex; flex-direction:column; align-items:center;
+    flex-shrink:0;
+    min-width:48px;
+    padding-left:6px;
+  }
+  .tc-rank{
+    font-family:var(--font-mono);
+    font-size:11px; color:var(--text-4);
+    letter-spacing:0.4px;
+    line-height:1;
+    margin-bottom:3px;
+  }
+  .tc-score{
+    font-family:var(--font-mono);
+    font-size:20px; font-weight:700;
+    color:var(--text-1);
+    line-height:1;
+    letter-spacing:-0.01em;
+  }
+  .theme-card.hot     .tc-score{ color:var(--color-up); }
+  .theme-card.strong  .tc-score{ color:var(--accent); }
+  .theme-card.cold    .tc-score{ color:var(--color-down); }
+  .tc-tier-label{
+    font-family:var(--font-mono);
+    font-size:8.5px; font-weight:700;
+    letter-spacing:0.8px;
+    margin-top:3px;
+    color:var(--text-4);
+  }
+  .theme-card.hot     .tc-tier-label{ color:var(--color-up); }
+  .theme-card.strong  .tc-tier-label{ color:var(--accent); }
+  .theme-card.cold    .tc-tier-label{ color:var(--color-down); }
+
+  /* 가운데 — 이름 + 메타 */
+  .tc-body{
+    flex:1; min-width:0;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .tc-name{
+    font-size:14px; font-weight:700;
+    color:var(--text-1);
+    letter-spacing:-0.01em;
+    line-height:1.3;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .tc-name .tc-season-mark{
+    color:var(--accent);
+    margin-right:4px;
+    font-size:11px;
+  }
+  .tc-meta{
+    display:flex; gap:10px; flex-wrap:wrap;
+    font-family:var(--font-mono); font-size:10.5px;
+    color:var(--text-3);
+    letter-spacing:0.2px;
+  }
+  .tc-meta-item{ display:inline-flex; gap:3px; align-items:center; }
+  .tc-meta-item b{ color:var(--text-2); font-weight:600; }
+  .tc-sector{
+    color:var(--text-4); font-size:10px;
+    text-transform:uppercase; letter-spacing:0.6px;
+  }
+
+  /* 우측 — 등락률 + 모멘텀 */
+  .tc-stats{
+    display:flex; flex-direction:column; align-items:flex-end;
+    gap:3px;
+    flex-shrink:0;
+    min-width:64px;
+  }
+  .tc-pct{
+    font-family:var(--font-mono);
+    font-size:13px; font-weight:700;
+    line-height:1;
+    letter-spacing:-0.01em;
+  }
+  .tc-pct.up   { color:var(--color-up); }
+  .tc-pct.down { color:var(--color-down); }
+  .tc-momentum{
+    font-family:var(--font-mono);
+    font-size:9.5px; line-height:1;
+    color:var(--text-4);
+    letter-spacing:0.3px;
+  }
+  .tc-momentum.rising{ color:var(--color-up); }
+  .tc-momentum.falling{ color:var(--color-down); }
+
+  /* === 사이즈 변형 === */
+  /* sm — 시트 종목 리스트용 */
+  .theme-card.sm{ padding:10px 14px; gap:10px; }
+  .theme-card.sm .tc-rank-block{ min-width:40px; }
+  .theme-card.sm .tc-score{ font-size:16px; }
+  .theme-card.sm .tc-name{ font-size:12.5px; }
+  .theme-card.sm .tc-pct{ font-size:11.5px; }
+  .theme-card.sm .tc-meta{ font-size:9.5px; gap:8px; }
+
+  /* lg — 다음 탭 후보 카드 (강조) */
+  .theme-card.lg{
+    padding:18px 20px; gap:16px;
+    background:var(--surface-3);
+  }
+  .theme-card.lg .tc-rank-block{ min-width:56px; }
+  .theme-card.lg .tc-score{ font-size:24px; }
+  .theme-card.lg .tc-name{ font-size:15px; }
+  .theme-card.lg .tc-pct{ font-size:14px; }
+
+  /* 모바일 */
+  @media (max-width:767px){
+    .theme-card{ padding:12px; gap:10px; }
+    .theme-card .tc-rank-block{ min-width:42px; padding-left:4px; }
+    .theme-card .tc-score{ font-size:17px; }
+    .theme-card .tc-name{ font-size:13px; }
+    .theme-card .tc-pct{ font-size:12px; }
+    .theme-card .tc-meta{ font-size:10px; gap:8px; }
+  }
+
+  /* 카드 그리드 컨테이너 (현재/다음 탭) */
+  .theme-card-list{
+    display:flex; flex-direction:column;
+    gap:8px;
+    margin-bottom:24px;
+  }
+  .theme-card-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap:10px;
+    margin-bottom:24px;
+  }
+  /* ===== /Theme Card ===== */
+
+  /* ============================================================
+     ✦ 시점 시뮬레이션 (Time Travel)
+     테마 분석 헤더의 시점 토글 + 페이지 상단 안내 배너
+     ============================================================ */
+  /* 헤더 시점 토글 — compact 변형 */
+  .uni-seg.compact{ padding:2px; }
+  .uni-seg.compact .tt-btn{
+    padding:5px 10px;
+    font-size:11px;
+    font-family:var(--font-mono);
+    letter-spacing:0.3px;
+  }
+
+  /* 시점 이동 안내 배너 */
+  .time-travel-banner{
+    display:flex; align-items:center; gap:12px;
+    background:rgba(255,128,0,0.08);
+    border:1px solid rgba(255,128,0,0.30);
+    border-radius:6px;
+    padding:10px 14px;
+    margin-bottom:16px;
+    font-size:12px;
+    color:var(--text-2);
+    flex-wrap:wrap;
+  }
+  .ttb-icon{
+    font-size:14px;
+    line-height:1;
+  }
+  .ttb-text{
+    flex:1; min-width:0;
+    line-height:1.4;
+  }
+  .ttb-text strong{
+    color:var(--accent);
+    font-family:var(--font-mono);
+    font-weight:700;
+    letter-spacing:0.3px;
+  }
+  .ttb-reset{
+    background:transparent;
+    border:1px solid var(--border-2);
+    color:var(--text-2);
+    padding:5px 10px;
+    border-radius:4px;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:0.3px;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:border-color .12s ease, color .12s ease;
+  }
+  .ttb-reset:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+  }
+  /* 모바일 */
+  @media (max-width:767px){
+    .time-travel-banner{ padding:8px 10px; gap:8px; font-size:11px; }
+    .ttb-reset{ width:100%; margin-top:4px; }
+  }
+
   /* ============ FORECAST ============ */
   .forecast-intro {
     font-size: 13px; color: var(--text-2);
@@ -3669,20 +3902,39 @@
     테마 분석
   </h1>
   <div class="page-header-controls">
-    <nav class="uni-seg" id="heatmap-view-tabs">
-      <button class="uni-seg-btn tab" data-view="matrix">판도</button>
-      <button class="uni-seg-btn tab active" data-view="leaderboard">현재</button>
-      <button class="uni-seg-btn tab" data-view="forecast">다음</button>
-    </nav>
+    <div class="uni-axis">
+      <div class="uni-axis-label">시점</div>
+      <nav class="uni-seg compact full" id="theme-time-tabs">
+        <button class="uni-seg-btn tt-btn active" data-time="0">오늘</button>
+        <button class="uni-seg-btn tt-btn" data-time="5">1주 전</button>
+        <button class="uni-seg-btn tt-btn" data-time="20">1개월 전</button>
+        <button class="uni-seg-btn tt-btn" data-time="60">3개월 전</button>
+      </nav>
+    </div>
+    <div class="uni-axis">
+      <div class="uni-axis-label">뷰</div>
+      <nav class="uni-seg full" id="heatmap-view-tabs">
+        <button class="uni-seg-btn tab active" data-view="matrix">판도</button>
+        <button class="uni-seg-btn tab" data-view="leaderboard">현재</button>
+        <button class="uni-seg-btn tab" data-view="forecast">다음</button>
+      </nav>
+    </div>
   </div>
 </div>
 
 <main>
+  <!-- 시점 배지 — 시간 이동 중일 때 표시 -->
+  <div class="time-travel-banner" id="timeTravelBanner" style="display:none">
+    <span class="ttb-icon">⏰</span>
+    <span class="ttb-text">시점 이동 중 — <strong id="ttbLabel">1주 전</strong>의 시장 상태를 보고 있습니다</span>
+    <button class="ttb-reset" type="button" onclick="setTimeOffset(0)">오늘로 돌아가기</button>
+  </div>
+
   <!-- ============================================================
        NEW · Theme Matrix (주기율표 메타포)
        섹터(행) × V2 점수 강도(열) — LOUIS 토큰 통합
        ============================================================ -->
-  <section class="view" id="view-matrix">
+  <section class="view active" id="view-matrix">
     <p class="leaderboard-intro">섹터(행) × <strong>모멘텀 강도</strong>(열) 매트릭스. 강한 흐름의 테마는 우측 강세 컬럼, 약세는 좌측 약세 컬럼에. <strong>강도(TS)</strong>는 20일/5일 등락률 + 200일선 위치 + RSI 모멘텀으로 계산 (V2 매수 점수와 별개).</p>
 
     <div class="matrix-wrap">
@@ -3707,23 +3959,13 @@
     </div>
   </section>
 
-  <section class="view active" id="view-leaderboard">
-    <p class="leaderboard-intro">절대 강도 순 정렬 · 우측 사분면 뱃지는 RRG 모멘텀 흐름 표시 (강도와 모멘텀은 별개 지표)</p>
-    <div class="divider"><span>1위</span></div>
-    <div id="hero"></div>
-
-    <div class="divider"><span>2 — 3위</span></div>
-    <div class="podium" id="podium"></div>
-
-    <div class="divider"><span>관심권 · 4 — 6위</span></div>
-    <div class="grid-mid" id="grid-mid"></div>
-
-    <div class="divider"><span>그 외 · 7 — 8위</span></div>
-    <div class="table-bottom" id="table-bottom"></div>
+  <section class="view" id="view-leaderboard">
+    <p class="leaderboard-intro"><strong>강도(TS) 순위</strong> — 같은 데이터를 판도탭과 공유. 상위가 현재 가장 강한 모멘텀의 테마.</p>
+    <div class="theme-card-list" id="rankingList"></div>
   </section>
 
   <section class="view" id="view-forecast">
-    <p class="forecast-intro">강도 모멘텀, 순위 상승 속도, 종목 참여율, 거래량 시그널을 종합해 다음 주도 테마 후보를 추론합니다. RRG 차트의 좌상단 <strong style="color:var(--accent)">★ Improving</strong> 사분면이 차세대 주도 후보 영역이며, <strong style="color:var(--text-1)">Top 3 + 후보 4개</strong>만 궤적이 표시됩니다. 회색 점은 호버 시 해당 테마의 궤적이 활성화됩니다. <span style="color:var(--text-3)">· 전일 종가 기준으로 산정되며, 장중에는 갱신되지 않습니다.</span></p>
+    <p class="forecast-intro"><strong>모멘텀 가속 중인 테마</strong>를 추출. <strong>가속도</strong>는 5일 평균일수익률 vs 20일 평균일수익률 비교로 산출 — 양수일수록 최근 흐름이 강해지는 중. 같은 강도(TS) 데이터를 판도/현재 탭과 공유.</p>
 
     <div class="rrg-grid">
       <div class="rrg-frame">
@@ -3750,8 +3992,8 @@
     <div class="divider"><span>시장 분석 · 회전 흐름</span></div>
     <div class="market-read" id="market-read"></div>
 
-    <div class="divider"><span>다음 주도 후보</span></div>
-    <div class="candidate-grid" id="candidate-grid"></div>
+    <div class="divider"><span>다음 주도 후보 — 모멘텀 가속 정렬</span></div>
+    <div class="theme-card-grid" id="risingList"></div>
   </section>
 </main>
 
@@ -6388,11 +6630,8 @@ function buildSummary(){
   // Top Pick 위젯 — throttled (5분 주기 또는 강제)
   maybeRenderTopPicks();
 
-  // Matrix 뷰가 활성화돼있으면 같이 갱신 (Phase A7)
-  if(typeof tmRender === 'function'){
-    const matrixView = document.getElementById('view-matrix');
-    if(matrixView && matrixView.classList.contains('active')) tmRender();
-  }
+  // 활성 테마 뷰 재렌더 (Matrix·Ranking·Rising 모두 같은 데이터)
+  if(typeof refreshActiveThemeView === 'function') refreshActiveThemeView();
 
   const themes = applyStyleFilter(getActivePool());
   const allStocks = themes.flatMap(t=>t.stocks.map(s=>({...s, country:t.country})));
@@ -6991,11 +7230,8 @@ async function refreshAllOhlcv(opts = {}){
   console.log(`[OHLCV] 갱신 완료: ✓${ok} ✕${fail}`);
   // ✦ peak 자동 채움 — 사용자 입력 우선, 비어있는 종목만
   if(typeof autoFillPeaks === 'function') autoFillPeaks();
-  // ✦ 판도 매트릭스 활성화돼있으면 재렌더 (TS는 OHLCV 의존)
-  if(typeof tmRender === 'function'){
-    const matrixView = document.getElementById('view-matrix');
-    if(matrixView && matrixView.classList.contains('active')) tmRender();
-  }
+  // ✦ 활성 테마 뷰 재렌더 (Matrix·Ranking·Rising 같은 데이터 공유)
+  if(typeof refreshActiveThemeView === 'function') refreshActiveThemeView();
   return { ok, fail, total: needsUpdate.length };
 }
 
@@ -8100,9 +8336,13 @@ function tmScoreToTier(score){
    - 200SMA 거리  20점 (-10% 0점 / 0% 10점 / +20% 풀점)
    - RSI 모멘텀   15점 (50~70 강함, 70~80 살짝 감점, 80+ 더 감점)
    ============================================================ */
-function calcThemeStrength(stock, ohlcv){
-  if(!ohlcv?.closes || ohlcv.closes.length < 21) return null;
-  const closes = ohlcv.closes;
+function calcThemeStrength(stock, ohlcv, timeOffset = 0){
+  if(!ohlcv?.closes) return null;
+  // ✦ 시점 시뮬레이션: timeOffset일만큼 끊어서 그 시점 기준으로 계산
+  // 예: timeOffset=20 → 20영업일 전 시점에서의 강도
+  const sliceEnd = ohlcv.closes.length - timeOffset;
+  if(sliceEnd < 21) return null;  // 21일 미만이면 산출 불가
+  const closes = ohlcv.closes.slice(0, sliceEnd);
   const price = closes[closes.length - 1];
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -8111,9 +8351,9 @@ function calcThemeStrength(stock, ohlcv){
   const pts20 = clamp((ret20 + 15) / 45 * 40, 0, 40);
 
   // 2) 5일 등락률 → 25점
-  let pts5;
+  let pts5, ret5 = null;
   if(closes.length >= 6){
-    const ret5 = (price - closes[closes.length - 6]) / closes[closes.length - 6] * 100;
+    ret5 = (price - closes[closes.length - 6]) / closes[closes.length - 6] * 100;
     pts5 = clamp((ret5 + 10) / 30 * 25, 0, 25);
   } else {
     pts5 = 12;
@@ -8145,49 +8385,88 @@ function calcThemeStrength(stock, ohlcv){
   return {
     ts: pts20 + pts5 + ptsSma + ptsRsi,
     ret20,
+    ret5,
     rsi,
+    price,
   };
 }
 
 /* 테마 1개 → 매트릭스 데이터 변환 (TS 기반) */
-function tmThemeToData(theme, rank){
-  // 테마 평균 TS = 구성 종목들의 평균 강도
-  // V2 점수와 분리된 별도 산식 — "지금 강한가"
-  let sumTs = 0, sumPct = 0, sumScore = 0, tsCount = 0, priceCount = 0, hasFreshData = false;
+/* 테마 1개 → 공통 데이터 모델 (모든 탭 공유)
+   판도(Matrix)·현재(Ranking)·다음(Rising) 모두 이 함수 결과 사용
+*/
+function tmThemeToData(theme, rank, timeOffset = 0){
+  // 구성 종목 평균 — TS, V2, 등락률, 모멘텀
+  // ✦ timeOffset: 영업일 기준 N일 전 시점으로 시뮬레이션 (0=오늘)
+  let sumTs = 0, sumPct = 0, sumScore = 0,
+      sumRet20 = 0, sumRet5 = 0,
+      tsCount = 0, priceCount = 0, retCount = 0,
+      hasFreshData = false;
   theme.stocks.forEach(s => {
     const entry = priceCache[s.code];
     const ohlcv = (typeof ohlcvCache !== 'undefined') ? ohlcvCache[s.code] : null;
 
-    // 가격 데이터
-    if(entry?.value?.price){
-      sumPct += entry.value.change || 0;
-      priceCount++;
-      if(entry.status === 'fresh') hasFreshData = true;
-      // V2 점수도 같이 (시트에서 표시용)
-      const sig = (typeof calcSignalAuto === 'function')
-        ? calcSignalAuto(s, theme, entry) : { score: 0 };
-      sumScore += sig.score || 0;
+    // 가격 데이터 — 시점 0이면 실시간 priceCache, 시점 이동 시 OHLCV에서
+    if(timeOffset === 0){
+      if(entry?.value?.price){
+        sumPct += entry.value.change || 0;
+        priceCount++;
+        if(entry.status === 'fresh') hasFreshData = true;
+        const sig = (typeof calcSignalAuto === 'function')
+          ? calcSignalAuto(s, theme, entry) : { score: 0 };
+        sumScore += sig.score || 0;
+      }
+    } else if(ohlcv?.closes?.length){
+      // 과거 시점 — OHLCV에서 그날 등락률 계산
+      const sliceEnd = ohlcv.closes.length - timeOffset;
+      if(sliceEnd >= 2){
+        const pastPrice = ohlcv.closes[sliceEnd - 1];
+        const prevPrice = ohlcv.closes[sliceEnd - 2];
+        const pastChange = (pastPrice - prevPrice) / prevPrice * 100;
+        sumPct += pastChange;
+        priceCount++;
+      }
     }
 
-    // TS — OHLCV 필요
-    if(ohlcv?.closes?.length >= 21){
-      const tsResult = calcThemeStrength(s, ohlcv);
+    // TS + 등락률 — OHLCV 필요 (시점 적용)
+    if(ohlcv?.closes?.length){
+      const tsResult = calcThemeStrength(s, ohlcv, timeOffset);
       if(tsResult){
         sumTs += tsResult.ts;
         tsCount++;
+        sumRet20 += tsResult.ret20;
+        if(tsResult.ret5 != null){
+          sumRet5 += tsResult.ret5;
+          retCount++;
+        }
       }
     }
   });
 
   const avgTs = tsCount > 0 ? sumTs / tsCount : 0;
   const avgPct = priceCount > 0 ? sumPct / priceCount : 0;
-  const avgV2 = priceCount > 0 ? sumScore / priceCount : 0;
+  const avgV2 = priceCount > 0 && timeOffset === 0 ? sumScore / priceCount : 0;
+  const avgRet20 = tsCount > 0 ? sumRet20 / tsCount : 0;
+  const avgRet5 = retCount > 0 ? sumRet5 / retCount : 0;
+
+  // momentum — 가속도(5일 vs 20일 평균 일일수익률 비교)
+  const dailyRet5 = avgRet5 / 5;
+  const dailyRet20 = avgRet20 / 20;
+  const momentum = dailyRet5 - dailyRet20;
 
   // OHLCV 부족하면 pending, 있으면 TS로 분류
   const tier = tsCount === 0 ? 'pending' : tmScoreToTier(avgTs);
 
-  // 시즌 마크 — 진입월 일치 또는 임박
-  const mo = (typeof CURRENT_MONTH !== 'undefined') ? CURRENT_MONTH : (new Date().getMonth() + 1);
+  // 시즌 마크 — 진입월 일치 또는 임박 (시점 이동 시 그 시점의 월 사용)
+  let mo;
+  if(timeOffset === 0){
+    mo = (typeof CURRENT_MONTH !== 'undefined') ? CURRENT_MONTH : (new Date().getMonth() + 1);
+  } else {
+    // 과거 시점 월 — 영업일 기준 영업일×1.4 ≈ 캘린더일수로 환산
+    const pastDate = new Date();
+    pastDate.setDate(pastDate.getDate() - Math.round(timeOffset * 1.4));
+    mo = pastDate.getMonth() + 1;
+  }
   let isSeason = false;
   if(theme.entryMonths){
     const next1 = (mo % 12) + 1;
@@ -8197,10 +8476,10 @@ function tmThemeToData(theme, rank){
             || theme.entryMonths.includes(next2);
   }
 
-  // 섹터 매핑 — 매핑 안 되면 cat 그대로 사용 (이름 그대로 노출)
+  // 섹터 매핑
   const secInfo = TM_SECTOR_MAP[theme.cat] || { id:'_'+theme.cat, name:theme.cat };
 
-  // 약어 — code 필드 없으면 name에서 생성
+  // 약어
   const code = theme.code || (theme.name.length > 8
     ? theme.name.replace(/[\s·\/]/g, '').slice(0, 4)
     : theme.name);
@@ -8212,28 +8491,39 @@ function tmThemeToData(theme, rank){
     sector: secInfo.id,
     sectorName: secInfo.name,
     tier,
-    score: Math.round(avgTs),       // TS — 칩에 표시되는 점수
-    v2Score: Math.round(avgV2),     // V2 — 시트 표시용
+    score: Math.round(avgTs),
+    v2Score: Math.round(avgV2),
     pct: avgPct,
+    ret20: avgRet20,
+    ret5: avgRet5,
+    momentum,
     rank,
     isSeason,
     hasData: tsCount > 0,
     hasFreshData,
+    timeOffset,
     stockCount: theme.stocks.length,
   };
 }
 
-/* 모든 테마 → 매트릭스 데이터 + 섹터별 그룹화 */
-function tmBuildMatrix(){
-  // 현재 시장 + 스타일 필터 적용된 테마들
+/* 모든 활성 테마 데이터 빌드 (3개 탭 공통, 시점 적용) */
+function buildAllThemesData(){
   const themes = (typeof applyStyleFilter === 'function' && typeof getActivePool === 'function')
     ? applyStyleFilter(getActivePool())
     : ALL_THEMES.filter(t => t.country === currentCountry);
-
+  const offset = (typeof currentTimeOffset !== 'undefined') ? currentTimeOffset : 0;
   // 강도 점수로 정렬해 rank 부여
-  const withScore = themes.map(t => tmThemeToData(t, 0));
-  withScore.sort((a, b) => b.score - a.score);
-  withScore.forEach((d, i) => d.rank = i + 1);
+  const data = themes.map(t => tmThemeToData(t, 0, offset));
+  data.sort((a, b) => b.score - a.score);
+  data.forEach((d, i) => d.rank = i + 1);
+  return data;
+}
+
+/* 모든 테마 → 매트릭스 데이터 + 섹터별 그룹화 */
+/* 모든 테마 → 매트릭스 데이터 + 섹터별 그룹화 (판도탭 전용) */
+function tmBuildMatrix(){
+  // 공통 데이터 빌더 사용 (3탭 공유)
+  const withScore = buildAllThemesData();
 
   // 섹터별 그룹화
   const bySector = {};
@@ -8268,6 +8558,50 @@ function tmRenderChip(d){
     <div class="tm-chip-symbol">${d.code}</div>
     <div class="tm-chip-name">${d.name}</div>
   </button>`;
+}
+
+/* ============================================================
+   ✦ 공통 테마 카드 렌더러 (현재 탭, 다음 탭 공유)
+   d: 공통 데이터 모델 (tmThemeToData 결과)
+   size: 'sm' | 'md' | 'lg'
+   ============================================================ */
+function renderThemeCard(d, size = 'md'){
+  const cls = ['theme-card', d.tier, size].filter(Boolean).join(' ');
+  const seasonMark = d.isSeason ? '<span class="tc-season-mark">★</span>' : '';
+  const pctSign = d.pct >= 0 ? '+' : '';
+  const pctCls = d.pct >= 0 ? 'up' : 'down';
+  const tierLabel = TM_TIER_META[d.tier]?.label || '';
+  const scoreText = d.hasData ? d.score : '·';
+
+  // 모멘텀 — 가속(rising)/감속(falling)
+  const momText = d.momentum > 0.3 ? '▲ 가속'
+                : d.momentum < -0.3 ? '▼ 감속'
+                : '— 유지';
+  const momCls = d.momentum > 0.3 ? 'rising'
+               : d.momentum < -0.3 ? 'falling' : '';
+
+  return `<div class="${cls}" data-theme-id="${d.theme.id}" onclick="tmOpenSheet('${d.theme.id}')">
+    <div class="tc-rank-block">
+      <span class="tc-rank">#${String(d.rank).padStart(2, '0')}</span>
+      <span class="tc-score">${scoreText}</span>
+      <span class="tc-tier-label">${tierLabel}</span>
+    </div>
+    <div class="tc-body">
+      <div class="tc-name">${seasonMark}${d.name}</div>
+      <div class="tc-meta">
+        <span class="tc-sector">${d.sectorName}</span>
+        ${d.hasData ? `
+          <span class="tc-meta-item">20D <b>${d.ret20 >= 0 ? '+' : ''}${d.ret20.toFixed(1)}%</b></span>
+          <span class="tc-meta-item">5D <b>${d.ret5 >= 0 ? '+' : ''}${d.ret5.toFixed(1)}%</b></span>
+          <span class="tc-meta-item">매수 <b>${d.v2Score}</b></span>
+        ` : '<span class="tc-meta-item" style="color:var(--text-4)">분석 대기</span>'}
+      </div>
+    </div>
+    <div class="tc-stats">
+      <span class="tc-pct ${pctCls}">${d.hasData ? pctSign + d.pct.toFixed(2) + '%' : '—'}</span>
+      <span class="tc-momentum ${momCls}">${d.hasData ? momText : ''}</span>
+    </div>
+  </div>`;
 }
 
 /* 매트릭스 렌더 */
@@ -8381,6 +8715,86 @@ function tmCloseSheet(){
   }
 }
 
+/* ============================================================
+   ✦ 활성 뷰 자동 갱신 헬퍼 (3탭 공통)
+   - 가격/OHLCV 갱신 후 호출
+   - 활성 뷰만 재렌더 (성능)
+   ============================================================ */
+/* ============================================================
+   ✦ 시점 시뮬레이션 (Time Travel)
+   - currentTimeOffset: 영업일 기준 N일 전 (0=오늘)
+   - setTimeOffset: 시점 변경 + 배너 갱신 + 모든 뷰 재렌더
+   ============================================================ */
+let currentTimeOffset = 0;
+
+const TIME_OFFSET_LABELS = {
+  0: '오늘',
+  5: '1주 전',
+  20: '1개월 전',
+  60: '3개월 전',
+};
+
+function setTimeOffset(offset){
+  currentTimeOffset = offset;
+
+  // 토글 active 갱신
+  document.querySelectorAll('.tt-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.time, 10) === offset);
+  });
+
+  // 배너 갱신
+  const banner = document.getElementById('timeTravelBanner');
+  const label = document.getElementById('ttbLabel');
+  if(banner && label){
+    if(offset === 0){
+      banner.style.display = 'none';
+    } else {
+      label.textContent = TIME_OFFSET_LABELS[offset] || `${offset}일 전`;
+      banner.style.display = 'flex';
+    }
+  }
+
+  // 모든 활성 뷰 재렌더
+  if(typeof refreshActiveThemeView === 'function') refreshActiveThemeView();
+}
+
+/* 토글 클릭 핸들러 등록 (DOMContentLoaded 후) */
+function initTimeTravelTabs(){
+  document.querySelectorAll('.tt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const offset = parseInt(btn.dataset.time, 10);
+      setTimeOffset(offset);
+    });
+  });
+}
+// 페이지 로드 후 초기화
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initTimeTravelTabs);
+} else {
+  initTimeTravelTabs();
+}
+
+window.__timeTravel = {
+  set: setTimeOffset,
+  current: () => currentTimeOffset,
+  label: () => TIME_OFFSET_LABELS[currentTimeOffset] || '오늘',
+};
+/* ===== /Time Travel ===== */
+
+function refreshActiveThemeView(){
+  const matrixView = document.getElementById('view-matrix');
+  const rankingView = document.getElementById('view-leaderboard');
+  const risingView = document.getElementById('view-forecast');
+  if(matrixView?.classList.contains('active') && typeof tmRender === 'function'){
+    tmRender();
+  } else if(rankingView?.classList.contains('active') && typeof renderRankingView === 'function'){
+    renderRankingView();
+  } else if(risingView?.classList.contains('active') && typeof renderRisingView === 'function'){
+    renderRisingView();
+  }
+}
+window.__refreshThemeView = refreshActiveThemeView;
+
 /* 매트릭스 탭 활성화 시 렌더 */
 function tmActivate(){
   // 점수 시스템·OHLCV 준비됐으면 즉시 렌더
@@ -8395,6 +8809,53 @@ function tmActivate(){
   if(!hasAnyOhlcv && typeof refreshAllOhlcv === 'function'){
     setTimeout(() => refreshAllOhlcv({ force: false }), 500);
   }
+}
+
+/* ============================================================
+   ✦ 현재(Ranking) 탭 렌더 — 강도 순위 카드 리스트
+   판도탭과 동일한 데이터, 다른 시각화 (리스트형)
+   ============================================================ */
+function renderRankingView(){
+  const root = document.getElementById('rankingList');
+  if(!root) return;
+  const data = buildAllThemesData();
+  if(data.length === 0){
+    root.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-3);">표시할 테마 없음</div>`;
+    return;
+  }
+  // 데이터 있는 것 → 점수 순, 데이터 없는 것 → 끝에
+  const withData = data.filter(d => d.hasData);
+  const pending = data.filter(d => !d.hasData);
+  const html = [...withData, ...pending].map(d => renderThemeCard(d, 'md')).join('');
+  root.innerHTML = html;
+  root.classList.add('fade-in-soft');
+}
+
+/* ============================================================
+   ✦ 다음(Rising) 탭 후보 렌더 — 모멘텀 가속 정렬
+   momentum (가속도) 양수 큰 순, 같은 데이터 사용
+   ============================================================ */
+function renderRisingView(){
+  const root = document.getElementById('risingList');
+  if(!root) return;
+  const data = buildAllThemesData();
+  // 가속도 양수만, 큰 순으로 (다음 주도 후보)
+  const rising = data
+    .filter(d => d.hasData && d.momentum > 0.1)
+    .sort((a, b) => b.momentum - a.momentum)
+    .slice(0, 12);
+  if(rising.length === 0){
+    root.innerHTML = `<div style="padding:30px;text-align:center;color:var(--text-3);grid-column:1/-1;">현재 가속 중인 테마 없음</div>`;
+    return;
+  }
+  // rank 재부여 (가속도 순)
+  rising.forEach((d, i) => d._risingRank = i + 1);
+  const html = rising.map(d => {
+    const card = { ...d, rank: d._risingRank };
+    return renderThemeCard(card, 'md');
+  }).join('');
+  root.innerHTML = html;
+  root.classList.add('fade-in-soft');
 }
 
 window.__themeMatrix = {
@@ -9074,10 +9535,7 @@ function setCurrentMarket(market, opts={}){
   if(typeof buildFilterBar === 'function') buildFilterBar();
   if(typeof renderMarketRegimeBadge === 'function') renderMarketRegimeBadge();  // Phase A6 국면 배지 갱신
   if(typeof maybeRenderTopPicks === 'function') maybeRenderTopPicks(true);  // 시장 변경 → 강제 재정렬
-  if(typeof tmRender === 'function'){
-    const matrixView = document.getElementById('view-matrix');
-    if(matrixView && matrixView.classList.contains('active')) tmRender();
-  }
+  if(typeof refreshActiveThemeView === 'function') refreshActiveThemeView();
   if(typeof buildSummary === 'function') buildSummary();
   if(typeof renderContent === 'function') renderContent();
   if(typeof loadPrices === 'function' && currentRoute === 'calendar') loadPrices(true);
@@ -10632,8 +11090,10 @@ document.querySelectorAll('.tab').forEach(btn => {
     btn.classList.add('active');
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + view).classList.add('active');
-    // Matrix 탭 활성화 시 자동 렌더
+    // 각 탭별 렌더 호출 — 모두 같은 데이터 소스, 다른 시각화
     if(view === 'matrix' && typeof tmActivate === 'function') tmActivate();
+    if(view === 'leaderboard' && typeof renderRankingView === 'function') renderRankingView();
+    if(view === 'forecast' && typeof renderRisingView === 'function') renderRisingView();
   });
 });
 
@@ -10859,6 +11319,13 @@ function navigate(route){
     if(typeof window.__heatmapInit === 'function'){
       try { window.__heatmapInit(); heatmapInited = true; }
       catch(e){ console.error('히트맵 초기화 실패:', e); }
+    }
+  }
+  // 히트맵 페이지 진입 시 판도탭 (디폴트) 자동 렌더
+  if(route === 'heatmap'){
+    const matrixView = document.getElementById('view-matrix');
+    if(matrixView?.classList.contains('active') && typeof tmActivate === 'function'){
+      setTimeout(() => tmActivate(), 50);
     }
   }
 
