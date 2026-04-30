@@ -3847,8 +3847,8 @@
     <div class="uni-axis">
       <div class="uni-axis-label">분류</div>
       <div class="uni-seg full" id="segGroup">
-        <button class="uni-seg-btn" data-group="season">시즌</button>
         <button class="uni-seg-btn active" data-group="industry">섹터</button>
+        <button class="uni-seg-btn" data-group="season">시즌</button>
       </div>
     </div>
     <div class="uni-axis">
@@ -5936,9 +5936,45 @@ const ALL_THEMES = [...KR_SEASON_THEMES, ...KR_INDUSTRY_THEMES, ...US_SEASON_THE
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const today=new Date(), currentMonth=today.getMonth()+1;
 const priceCache={};
+
+/* ============================================================
+   ✦ UI 상태 영속화 (localStorage)
+   풀투리프레시·새로고침·페이지 전환 후에도 사용자 선택 유지
+   - 분류 (시즌/섹터)
+   - 투자 스타일 (전체/안정/공격)
+   - 테마 분석 뷰 (판도/현재/다음)
+   - RRG 기간 (5D~180D)
+   ※ 시점(timeOffset)은 탐색용이라 저장 안 함 — 새로고침 시 "오늘"로 복귀
+   ============================================================ */
+const UI_STATE_KEY = 'ui_state_v1';
+const UI_STATE_DEFAULTS = {
+  group: 'industry',         // 섹터 (기본값)
+  style: 'all',
+  themeView: 'matrix',       // 판도
+  rrgPeriod: 10,
+};
+function loadUiState(){
+  try {
+    const saved = JSON.parse(localStorage.getItem(UI_STATE_KEY) || '{}');
+    return { ...UI_STATE_DEFAULTS, ...saved };
+  } catch(e){
+    return { ...UI_STATE_DEFAULTS };
+  }
+}
+function saveUiState(patch){
+  try {
+    const current = loadUiState();
+    const next = { ...current, ...patch };
+    localStorage.setItem(UI_STATE_KEY, JSON.stringify(next));
+  } catch(e){
+    console.warn('[UI] 상태 저장 실패', e);
+  }
+}
+const _ui = loadUiState();
+
 let currentCountry='KR';
-let currentGroup='industry';
-let currentStyle='all';
+let currentGroup = _ui.group;          // localStorage 복원
+let currentStyle = _ui.style;          // localStorage 복원
 let currentFilter='all';
 const sortState = {};
 let favorites = new Set();
@@ -8775,6 +8811,7 @@ const TIME_OFFSET_LABELS = {
 };
 
 function setTimeOffset(offset){
+  // ✦ 시점은 의도적으로 영속화 안 함 — 탐색용이라 새로고침 시 "오늘"로 복귀가 안전
   currentTimeOffset = offset;
 
   // 토글 active 갱신
@@ -9636,6 +9673,7 @@ document.querySelectorAll('#segGroup .uni-seg-btn').forEach(btn=>{
     if(currentGroup===btn.dataset.group) return;
     currentGroup = btn.dataset.group;
     currentFilter = 'all';
+    saveUiState({ group: currentGroup });  // ✦ 영속화
     syncSegControls();
     document.getElementById('calendarSection').classList.toggle('hidden', currentGroup!=='season');
     buildFilterBar();
@@ -9649,6 +9687,7 @@ document.querySelectorAll('#segStyle .uni-seg-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     if(currentStyle===btn.dataset.style) return;
     currentStyle = btn.dataset.style;
+    saveUiState({ style: currentStyle });  // ✦ 영속화
     syncSegControls();
     maybeRenderTopPicks(true);  // 스타일 변경 → 강제 재정렬
     buildSummary();
@@ -9717,6 +9756,8 @@ buildCalendar();
 buildFilterBar();
 buildSummary();
 renderContent();
+// ✦ 복원된 UI 상태로 토글 active 클래스 동기화
+syncSegControls();
 // 산업 섹터 모드면 시즌 캘린더 영역 숨김
 document.getElementById('calendarSection').classList.toggle('hidden', currentGroup!=='season');
 loadPrices(true);  // 초기 로드: fresh 캐시는 스킵 (즉시 화면 표시)
@@ -10325,8 +10366,8 @@ function build180DayHistory(t) {
   return [...out, ...t.rrgHistory];
 }
 
-// Active period state
-let currentRRGPeriod = 10;
+// Active period state — UI 영속화 적용
+let currentRRGPeriod = (typeof loadUiState === 'function') ? loadUiState().rrgPeriod : 10;
 
 /* ========== UTILS ========== */
 const cls = c => c > 0.05 ? 'up' : c < -0.05 ? 'down' : 'neutral';
@@ -11101,6 +11142,10 @@ function renderForecast() {
   renderCandidates();
 
   // Period filter handlers (bound once after first render)
+  // 첫 렌더 시 저장된 RRG 기간으로 active 동기화
+  document.querySelectorAll('#rrg-period-tabs .period-tab').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.period) === currentRRGPeriod);
+  });
   document.querySelectorAll('#rrg-period-tabs .period-tab').forEach(btn => {
     if (btn.dataset.bound) return;
     btn.dataset.bound = '1';
@@ -11108,6 +11153,8 @@ function renderForecast() {
       document.querySelectorAll('#rrg-period-tabs .period-tab').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentRRGPeriod = parseInt(btn.dataset.period);
+      // ✦ 영속화 (외부에서 정의된 saveUiState 호출)
+      if(typeof saveUiState === 'function') saveUiState({ rrgPeriod: currentRRGPeriod });
       renderRRG();
     });
   });
@@ -11135,6 +11182,8 @@ document.querySelectorAll('.tab').forEach(btn => {
     btn.classList.add('active');
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + view).classList.add('active');
+    // ✦ 뷰 선택 영속화 (외부에서 정의된 saveUiState 호출)
+    if(typeof saveUiState === 'function') saveUiState({ themeView: view });
     // 각 탭별 렌더 호출 — 모두 같은 데이터 소스, 다른 시각화
     if(view === 'matrix' && typeof tmActivate === 'function') tmActivate();
     if(view === 'leaderboard' && typeof renderRankingView === 'function') renderRankingView();
@@ -11372,11 +11421,26 @@ function navigate(route){
       catch(e){ console.error('히트맵 초기화 실패:', e); }
     }
   }
-  // 히트맵 페이지 진입 시 판도탭 (디폴트) 자동 렌더
+  // 히트맵 페이지 진입 시 저장된 뷰 복원 + 자동 렌더
   if(route === 'heatmap'){
-    const matrixView = document.getElementById('view-matrix');
-    if(matrixView?.classList.contains('active') && typeof tmActivate === 'function'){
-      setTimeout(() => tmActivate(), 50);
+    // 저장된 themeView 복원 (matrix / leaderboard / forecast)
+    const savedView = (typeof loadUiState === 'function') ? loadUiState().themeView : 'matrix';
+    const targetTab = document.querySelector(`#heatmap-view-tabs .tab[data-view="${savedView}"]`);
+    if(targetTab && !targetTab.classList.contains('active')){
+      // 클릭 시뮬 — 핸들러가 active 토글 + 렌더 처리
+      targetTab.click();
+    } else {
+      // 이미 디폴트 active(matrix)와 일치하면 직접 렌더
+      setTimeout(() => {
+        if(savedView === 'matrix' && typeof tmActivate === 'function') tmActivate();
+        else if(savedView === 'leaderboard' && typeof renderRankingView === 'function') renderRankingView();
+        else if(savedView === 'forecast'){
+          if(typeof renderRisingView === 'function') renderRisingView();
+          if(typeof renderForecast === 'function' && typeof themes !== 'undefined' && themes?.length){
+            renderForecast();
+          }
+        }
+      }, 50);
     }
   }
 
