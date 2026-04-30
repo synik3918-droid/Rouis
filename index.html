@@ -2955,18 +2955,30 @@
     z-index:50;
   }
   .tm-sheet-backdrop.open{ opacity:1; pointer-events:auto; }
+
+  /* ===== 시트 — 모바일 기본 (bottom sheet) =====
+     모바일: 화면 전체 너비, 아래에서 슬라이드업, Safe Area 대응
+  ============================================ */
   .tm-sheet{
-    position:fixed; left:0; right:0; bottom:0;
+    position:fixed;
+    left:0; right:0; bottom:0;
     background:var(--surface);
     border-top:1px solid var(--border-2);
     border-radius:14px 14px 0 0;
-    padding:18px 20px 26px;
+    padding:18px 20px;
+    /* Safe Area (iOS 홈 인디케이터) */
+    padding-bottom:calc(26px + env(safe-area-inset-bottom, 0px));
     transform:translateY(100%);
-    transition:transform .25s cubic-bezier(0.32, 0.72, 0, 1);
+    transition:transform .28s cubic-bezier(0.32, 0.72, 0, 1);
     z-index:60;
-    max-height:70vh; overflow-y:auto;
+    max-height:80vh;
+    overflow-y:auto;
+    /* 스크롤 부드럽게 */
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
   }
   .tm-sheet.open{ transform:translateY(0); }
+
   .tm-sheet-grip{
     width:36px; height:4px;
     background:var(--border-2);
@@ -2975,7 +2987,8 @@
   }
   .tm-sheet-head{
     display:flex; align-items:baseline; gap:10px;
-    margin-bottom:6px;
+    margin-bottom:8px;
+    flex-wrap:wrap;
   }
   .tm-sheet-symbol{
     font-family:var(--font-mono); font-size:11px;
@@ -2986,12 +2999,13 @@
     font-size:18px; font-weight:700;
     letter-spacing:-0.01em;
     color:var(--text-1);
+    line-height:1.3;
   }
   .tm-sheet-meta{
     display:flex; gap:14px; flex-wrap:wrap;
     font-family:var(--font-mono); font-size:11px;
     color:var(--text-3); letter-spacing:0.3px;
-    margin-bottom:18px;
+    margin-bottom:16px;
     padding-bottom:14px;
     border-bottom:1px solid var(--border);
   }
@@ -3002,30 +3016,90 @@
     font-family:var(--font-mono); font-size:10px;
     color:var(--text-4);
     letter-spacing:1.2px; text-transform:uppercase;
-    margin-bottom:8px;
+    margin-bottom:10px;
   }
   .tm-sheet-stocks{
     display:grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap:8px;
   }
   .tm-stock-row{
     background:var(--surface-2);
     border:1px solid var(--border);
     border-radius:4px;
-    padding:9px 12px;
+    padding:10px 12px;
     display:flex; justify-content:space-between; align-items:center;
+    gap:10px;
     cursor:pointer;
     transition:border-color .12s ease;
+    min-height:40px;
   }
   .tm-stock-row:hover{ border-color:var(--border-2); }
-  .tm-stock-name{ font-size:12.5px; font-weight:600; color:var(--text-1); }
+  .tm-stock-name{
+    font-size:12.5px; font-weight:600; color:var(--text-1);
+    flex:1; min-width:0;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
   .tm-stock-pct{
     font-family:var(--font-mono); font-size:11.5px;
-    font-weight:700;
+    font-weight:700; flex-shrink:0;
   }
   .tm-stock-pct.up{ color:var(--color-up); }
   .tm-stock-pct.down{ color:var(--color-down); }
+
+  /* ===== 태블릿 (≥768px) =====
+     중앙 모달 스타일 — 폭 제한 + 사이드바 회피
+  ============================================ */
+  @media (min-width:768px){
+    .tm-sheet-backdrop.open{
+      /* 백드롭 클릭 가능하게 + 시트와 함께 페이드 */
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+    }
+    .tm-sheet{
+      /* 중앙 정렬, 사이드바 240px만큼 오프셋 */
+      left:50%;
+      right:auto;
+      bottom:5vh;
+      transform:translate(-50%, calc(100% + 5vh));
+      width:min(560px, calc(100vw - 80px));
+      max-height:75vh;
+      border-radius:14px;
+      border:1px solid var(--border-2);
+      padding:20px 24px;
+      padding-bottom:24px;
+      box-shadow:0 16px 48px rgba(0,0,0,0.5);
+    }
+    .tm-sheet.open{
+      transform:translate(-50%, 0);
+    }
+    /* 사이드바가 240px 차지하니 가운데를 살짝 우측으로 (PC 기준) */
+    .tm-sheet-grip{ display:none; } /* 데스크톱에선 그립 불필요 */
+    .tm-sheet-head{ margin-top:4px; }
+  }
+
+  /* ===== 데스크톱 큰 화면 (≥1280px) =====
+     사이드바 240px 회피해서 콘텐츠 영역 가운데 정렬
+  ============================================ */
+  @media (min-width:1280px){
+    .tm-sheet{
+      /* 사이드바(240px) 영역을 빼고 가운데 정렬 */
+      left:calc(50% + 120px);
+      bottom:8vh;
+      max-height:70vh;
+      width:min(620px, calc(100vw - 280px));
+    }
+  }
+  /* 시트 열렸을 때 바디 스크롤 잠금 */
+  body.tm-sheet-lock{
+    overflow:hidden;
+    /* iOS Safari 추가 안전장치 — top은 JS에서 동적 설정 */
+    position:fixed;
+    width:100%;
+    left:0; right:0;
+    top:var(--scroll-y, 0);
+  }
   /* ===== /Theme Matrix ===== */
 
   /* ============ FORECAST ============ */
@@ -3609,7 +3683,7 @@
        섹터(행) × V2 점수 강도(열) — LOUIS 토큰 통합
        ============================================================ -->
   <section class="view" id="view-matrix">
-    <p class="leaderboard-intro">섹터(행) × <strong>V2 점수 강도</strong>(열) 매트릭스. 점수가 높은(매수 검토) 테마일수록 우측 강세 컬럼에. 칩 클릭 시 대표 종목 표시.</p>
+    <p class="leaderboard-intro">섹터(행) × <strong>모멘텀 강도</strong>(열) 매트릭스. 강한 흐름의 테마는 우측 강세 컬럼, 약세는 좌측 약세 컬럼에. <strong>강도(TS)</strong>는 20일/5일 등락률 + 200일선 위치 + RSI 모멘텀으로 계산 (V2 매수 점수와 별개).</p>
 
     <div class="matrix-wrap">
       <div class="theme-matrix" id="themeMatrix"></div>
@@ -3617,12 +3691,12 @@
 
     <div class="matrix-legend">
       <div class="ml-group">
-        <span class="ml-title">강도 (V2 점수)</span>
-        <span class="ml-swatch ml-hot"><i></i>HOT 80+</span>
-        <span class="ml-swatch ml-strong"><i></i>STRONG 65~80</span>
-        <span class="ml-swatch ml-neutral"><i></i>NEUTRAL 40~65</span>
-        <span class="ml-swatch ml-weak"><i></i>WEAK 20~40</span>
-        <span class="ml-swatch ml-cold"><i></i>COLD &lt;20</span>
+        <span class="ml-title">강도 (TS)</span>
+        <span class="ml-swatch ml-hot"><i></i>HOT 85+</span>
+        <span class="ml-swatch ml-strong"><i></i>STRONG 70~85</span>
+        <span class="ml-swatch ml-neutral"><i></i>NEUTRAL 50~70</span>
+        <span class="ml-swatch ml-weak"><i></i>WEAK 30~50</span>
+        <span class="ml-swatch ml-cold"><i></i>COLD &lt;30</span>
         <span class="ml-swatch ml-pending"><i></i>PENDING 분석 대기</span>
       </div>
       <div class="ml-group">
@@ -3693,6 +3767,7 @@
   </div>
   <div class="tm-sheet-meta">
     <span>강도 <b id="tmSheetScore">—</b></span>
+    <span>매수 점수 <b id="tmSheetV2">—</b></span>
     <span>등락률 <b id="tmSheetPct">—</b></span>
     <span>섹터 <b id="tmSheetSector">—</b></span>
     <span>등급 <b id="tmSheetTier">—</b></span>
@@ -4579,6 +4654,19 @@
               한국 종목은 100원 단위, 미국 종목은 0.01달러 단위로 라운딩.
               캐시 로드 시 즉시 실행 + OHLCV 갱신 후 자동 재실행.
               콘솔 <code>window.__autoPeak.run()</code>으로 강제 실행, <code>__autoPeak.status()</code>로 채움 현황 확인.
+            </div>
+          </div>
+        </div>
+
+        <div class="rn-item">
+          <div class="rn-num">09</div>
+          <div class="rn-body">
+            <div class="rn-title">판도탭 — Theme Strength (TS) 산식 분리</div>
+            <div class="rn-desc">
+              판도탭이 V2 매수 점수를 강도로 사용해 강세장에 모두 비어있던 문제 수정. V2는 "지금 살지 말지" (보수적), 판도는 "지금 강한가" (모멘텀)이 필요한데 두 의미가 충돌했음.<br>
+              <strong>새 TS 산식 (0~100점)</strong>: 20일 등락률 40 + 5일 등락률 25 + 200SMA 거리 20 + RSI 모멘텀 15. V2 점수와 완전히 독립.<br>
+              <strong>임계값</strong>: HOT 85+ / STRONG 70~85 / NEUTRAL 50~70 / WEAK 30~50 / COLD &lt;30. 시트에는 TS와 V2 둘 다 표시 (강도와 매수 점수 분리).<br>
+              검증: 전력기기 6종목 모두 HOT (90+), 약세 종목 NAVER·Tesla는 WEAK·COLD로 정확히 분류.
             </div>
           </div>
         </div>
@@ -6903,6 +6991,11 @@ async function refreshAllOhlcv(opts = {}){
   console.log(`[OHLCV] 갱신 완료: ✓${ok} ✕${fail}`);
   // ✦ peak 자동 채움 — 사용자 입력 우선, 비어있는 종목만
   if(typeof autoFillPeaks === 'function') autoFillPeaks();
+  // ✦ 판도 매트릭스 활성화돼있으면 재렌더 (TS는 OHLCV 의존)
+  if(typeof tmRender === 'function'){
+    const matrixView = document.getElementById('view-matrix');
+    if(matrixView && matrixView.classList.contains('active')) tmRender();
+  }
   return { ok, fail, total: needsUpdate.length };
 }
 
@@ -7978,41 +8071,120 @@ const TM_SECTOR_ORDER = ['semi','mobility','tech','bio','defense','energy','powe
 
 const TM_TIERS = ['hot','strong','neutral','weak','cold','pending'];
 const TM_TIER_META = {
-  hot:     { label:'HOT',     sub:'80+ · 매수 검토' },
-  strong:  { label:'STRONG',  sub:'65~80 · 강세' },
-  neutral: { label:'NEUTRAL', sub:'40~65 · 중립' },
-  weak:    { label:'WEAK',    sub:'20~40 · 약세' },
-  cold:    { label:'COLD',    sub:'<20 · 침체' },
+  hot:     { label:'HOT',     sub:'85+ · 강한 모멘텀' },
+  strong:  { label:'STRONG',  sub:'70~85 · 상승 추세' },
+  neutral: { label:'NEUTRAL', sub:'50~70 · 보합' },
+  weak:    { label:'WEAK',    sub:'30~50 · 약세' },
+  cold:    { label:'COLD',    sub:'<30 · 침체' },
   pending: { label:'PENDING', sub:'분석 대기' },
 };
 
-/* 점수 → 강도 등급 */
+/* TS(Theme Strength) → 강도 등급 — 판도탭 전용 분류
+   85+ HOT / 70+ STRONG / 50+ NEUTRAL / 30+ WEAK / <30 COLD
+*/
 function tmScoreToTier(score){
-  if(score >= 80) return 'hot';
-  if(score >= 65) return 'strong';
-  if(score >= 40) return 'neutral';
-  if(score >= 20) return 'weak';
+  if(score >= 85) return 'hot';
+  if(score >= 70) return 'strong';
+  if(score >= 50) return 'neutral';
+  if(score >= 30) return 'weak';
   return 'cold';
 }
 
-/* 테마 1개 → 매트릭스 데이터 변환 */
+/* ============================================================
+   ✦ Theme Strength (TS) — "지금 강한가" 모멘텀 강도 0~100
+   판도탭 전용. V2 매수 점수와 분리된 별도 산식.
+
+   배분:
+   - 20일 등락률  40점 (-15% ~ +30% 범위 정규화)
+   - 5일 등락률   25점 (-10% ~ +20% 범위 정규화)
+   - 200SMA 거리  20점 (-10% 0점 / 0% 10점 / +20% 풀점)
+   - RSI 모멘텀   15점 (50~70 강함, 70~80 살짝 감점, 80+ 더 감점)
+   ============================================================ */
+function calcThemeStrength(stock, ohlcv){
+  if(!ohlcv?.closes || ohlcv.closes.length < 21) return null;
+  const closes = ohlcv.closes;
+  const price = closes[closes.length - 1];
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  // 1) 20일 등락률 → 40점
+  const ret20 = (price - closes[closes.length - 21]) / closes[closes.length - 21] * 100;
+  const pts20 = clamp((ret20 + 15) / 45 * 40, 0, 40);
+
+  // 2) 5일 등락률 → 25점
+  let pts5;
+  if(closes.length >= 6){
+    const ret5 = (price - closes[closes.length - 6]) / closes[closes.length - 6] * 100;
+    pts5 = clamp((ret5 + 10) / 30 * 25, 0, 25);
+  } else {
+    pts5 = 12;
+  }
+
+  // 3) 200SMA 거리 → 20점
+  let ptsSma;
+  const sma200 = calcSMA(closes, 200);
+  if(sma200){
+    const dist = (price - sma200) / sma200 * 100;
+    ptsSma = clamp((dist + 10) / 30 * 20, 0, 20);
+  } else {
+    const sma60 = calcSMA(closes, 60);
+    ptsSma = sma60 && price > sma60 ? 10 : 5;
+  }
+
+  // 4) RSI 모멘텀 → 15점
+  let ptsRsi = 5;
+  const rsi = calcRSI(closes, 14);
+  if(rsi != null){
+    if(rsi >= 55 && rsi <= 70) ptsRsi = 15;
+    else if(rsi >= 50 && rsi < 55) ptsRsi = 10;
+    else if(rsi > 70 && rsi <= 80) ptsRsi = 12;
+    else if(rsi > 80) ptsRsi = 8;
+    else if(rsi >= 40 && rsi < 50) ptsRsi = 6;
+    else ptsRsi = 2;
+  }
+
+  return {
+    ts: pts20 + pts5 + ptsSma + ptsRsi,
+    ret20,
+    rsi,
+  };
+}
+
+/* 테마 1개 → 매트릭스 데이터 변환 (TS 기반) */
 function tmThemeToData(theme, rank){
-  // 테마 평균 V2 점수 = 구성 종목들의 평균
-  let sumScore = 0, sumPct = 0, count = 0, hasFreshData = false;
+  // 테마 평균 TS = 구성 종목들의 평균 강도
+  // V2 점수와 분리된 별도 산식 — "지금 강한가"
+  let sumTs = 0, sumPct = 0, sumScore = 0, tsCount = 0, priceCount = 0, hasFreshData = false;
   theme.stocks.forEach(s => {
     const entry = priceCache[s.code];
-    if(!entry?.value?.price) return;
-    const sig = (typeof calcSignalAuto === 'function')
-      ? calcSignalAuto(s, theme, entry) : { score: 0 };
-    sumScore += sig.score || 0;
-    sumPct += entry.value.change || 0;
-    count++;
-    if(entry.status === 'fresh') hasFreshData = true;
+    const ohlcv = (typeof ohlcvCache !== 'undefined') ? ohlcvCache[s.code] : null;
+
+    // 가격 데이터
+    if(entry?.value?.price){
+      sumPct += entry.value.change || 0;
+      priceCount++;
+      if(entry.status === 'fresh') hasFreshData = true;
+      // V2 점수도 같이 (시트에서 표시용)
+      const sig = (typeof calcSignalAuto === 'function')
+        ? calcSignalAuto(s, theme, entry) : { score: 0 };
+      sumScore += sig.score || 0;
+    }
+
+    // TS — OHLCV 필요
+    if(ohlcv?.closes?.length >= 21){
+      const tsResult = calcThemeStrength(s, ohlcv);
+      if(tsResult){
+        sumTs += tsResult.ts;
+        tsCount++;
+      }
+    }
   });
-  const avgScore = count > 0 ? sumScore / count : 0;
-  const avgPct = count > 0 ? sumPct / count : 0;
-  // 데이터 없으면 'pending' 등급 (별도 표시), 있으면 점수에 따라 분류
-  const tier = count === 0 ? 'pending' : tmScoreToTier(avgScore);
+
+  const avgTs = tsCount > 0 ? sumTs / tsCount : 0;
+  const avgPct = priceCount > 0 ? sumPct / priceCount : 0;
+  const avgV2 = priceCount > 0 ? sumScore / priceCount : 0;
+
+  // OHLCV 부족하면 pending, 있으면 TS로 분류
+  const tier = tsCount === 0 ? 'pending' : tmScoreToTier(avgTs);
 
   // 시즌 마크 — 진입월 일치 또는 임박
   const mo = (typeof CURRENT_MONTH !== 'undefined') ? CURRENT_MONTH : (new Date().getMonth() + 1);
@@ -8028,7 +8200,7 @@ function tmThemeToData(theme, rank){
   // 섹터 매핑 — 매핑 안 되면 cat 그대로 사용 (이름 그대로 노출)
   const secInfo = TM_SECTOR_MAP[theme.cat] || { id:'_'+theme.cat, name:theme.cat };
 
-  // 약어 — code 필드 없으면 name에서 생성 (한글 2자 또는 영문 3자)
+  // 약어 — code 필드 없으면 name에서 생성
   const code = theme.code || (theme.name.length > 8
     ? theme.name.replace(/[\s·\/]/g, '').slice(0, 4)
     : theme.name);
@@ -8040,11 +8212,12 @@ function tmThemeToData(theme, rank){
     sector: secInfo.id,
     sectorName: secInfo.name,
     tier,
-    score: Math.round(avgScore),
+    score: Math.round(avgTs),       // TS — 칩에 표시되는 점수
+    v2Score: Math.round(avgV2),     // V2 — 시트 표시용
     pct: avgPct,
     rank,
     isSeason,
-    hasData: count > 0,
+    hasData: tsCount > 0,
     hasFreshData,
     stockCount: theme.stocks.length,
   };
@@ -8159,6 +8332,7 @@ function tmOpenSheet(themeId){
   document.getElementById('tmSheetSymbol').textContent = data.code;
   document.getElementById('tmSheetName').textContent = data.name;
   document.getElementById('tmSheetScore').textContent = data.hasData ? data.score : '—';
+  document.getElementById('tmSheetV2').textContent = data.v2Score > 0 ? data.v2Score : '—';
   const pctEl = document.getElementById('tmSheetPct');
   pctEl.textContent = data.hasData ? `${data.pct >= 0 ? '+' : ''}${data.pct.toFixed(2)}%` : '—';
   pctEl.style.color = data.pct >= 0 ? 'var(--color-up)' : 'var(--color-down)';
@@ -8186,11 +8360,25 @@ function tmOpenSheet(themeId){
 
   document.getElementById('tmSheet').classList.add('open');
   document.getElementById('tmSheetBackdrop').classList.add('open');
+  // 바디 스크롤 잠금 + 현재 스크롤 위치 보존
+  const scrollY = window.scrollY;
+  document.body.style.setProperty('--scroll-y', `-${scrollY}px`);
+  document.body.dataset.scrollY = String(scrollY);
+  document.body.classList.add('tm-sheet-lock');
 }
 
 function tmCloseSheet(){
   document.getElementById('tmSheet')?.classList.remove('open');
   document.getElementById('tmSheetBackdrop')?.classList.remove('open');
+  // 바디 스크롤 잠금 해제 + 위치 복원
+  const wasLocked = document.body.classList.contains('tm-sheet-lock');
+  document.body.classList.remove('tm-sheet-lock');
+  if(wasLocked){
+    const y = parseInt(document.body.dataset.scrollY || '0', 10);
+    document.body.style.removeProperty('--scroll-y');
+    delete document.body.dataset.scrollY;
+    window.scrollTo(0, y);
+  }
 }
 
 /* 매트릭스 탭 활성화 시 렌더 */
@@ -8201,6 +8389,11 @@ function tmActivate(){
   const hasAnyPrice = Object.keys(priceCache || {}).length > 0;
   if(!hasAnyPrice && typeof loadPrices === 'function'){
     loadPrices(true);
+  }
+  // OHLCV 없으면 백그라운드 페치 (판도는 OHLCV 의존)
+  const hasAnyOhlcv = (typeof ohlcvCache !== 'undefined') && Object.keys(ohlcvCache).length > 0;
+  if(!hasAnyOhlcv && typeof refreshAllOhlcv === 'function'){
+    setTimeout(() => refreshAllOhlcv({ force: false }), 500);
   }
 }
 
