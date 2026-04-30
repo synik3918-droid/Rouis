@@ -3090,6 +3090,11 @@
   }
   .tm-stock-pct.up{ color:var(--color-up); }
   .tm-stock-pct.down{ color:var(--color-down); }
+  /* 종목 점수+등락률 묶음 */
+  .tm-stock-meta{
+    display:inline-flex; align-items:center; gap:8px;
+    flex-shrink:0;
+  }
 
   /* ===== 태블릿 (≥768px) =====
      중앙 모달 스타일 — 폭 제한 + 사이드바 회피
@@ -6505,6 +6510,8 @@ function getTopPicks(){
       const entry = priceCache[stock.code];
       if(!entry || entry.status !== 'fresh' || !entry.value?.price) return;
       const sig = calcSignalAuto(stock, theme, entry);
+      // ✦ 분석 대기(score null) 종목은 Top Pick에서 제외 — 가짜 추천 방지
+      if(sig.score === null) return;
       const item = { stock, theme, entry, ...sig };
       if(sig.signal === 'now') nowList.push(item);
       else if(sig.signal === 'wait') waitList.push(item);
@@ -8414,7 +8421,7 @@ function tmThemeToData(theme, rank, timeOffset = 0){
   // ✦ timeOffset: 영업일 기준 N일 전 시점으로 시뮬레이션 (0=오늘)
   let sumTs = 0, sumPct = 0, sumScore = 0,
       sumRet20 = 0, sumRet5 = 0,
-      tsCount = 0, priceCount = 0, retCount = 0,
+      tsCount = 0, priceCount = 0, scoreCount = 0, retCount = 0,
       hasFreshData = false;
   theme.stocks.forEach(s => {
     const entry = priceCache[s.code];
@@ -8426,9 +8433,14 @@ function tmThemeToData(theme, rank, timeOffset = 0){
         sumPct += entry.value.change || 0;
         priceCount++;
         if(entry.status === 'fresh') hasFreshData = true;
+        // ✦ V2와 같은 가드: fresh 가격 + OHLCV 충분일 때만 점수 평균에 포함
+        // null 점수(분석 대기)는 평균에서 제외 — 0 처리해서 깎이는 것 방지
         const sig = (typeof calcSignalAuto === 'function')
-          ? calcSignalAuto(s, theme, entry) : { score: 0 };
-        sumScore += sig.score || 0;
+          ? calcSignalAuto(s, theme, entry) : null;
+        if(sig && typeof sig.score === 'number'){
+          sumScore += sig.score;
+          scoreCount++;
+        }
       }
     } else if(ohlcv?.closes?.length){
       // 과거 시점 — OHLCV에서 그날 등락률 계산
@@ -8459,7 +8471,7 @@ function tmThemeToData(theme, rank, timeOffset = 0){
 
   const avgTs = tsCount > 0 ? sumTs / tsCount : 0;
   const avgPct = priceCount > 0 ? sumPct / priceCount : 0;
-  const avgV2 = priceCount > 0 && timeOffset === 0 ? sumScore / priceCount : 0;
+  const avgV2 = scoreCount > 0 && timeOffset === 0 ? sumScore / scoreCount : 0;
   const avgRet20 = tsCount > 0 ? sumRet20 / tsCount : 0;
   const avgRet5 = retCount > 0 ? sumRet5 / retCount : 0;
 
@@ -8691,7 +8703,7 @@ function tmOpenSheet(themeId){
     : data.tier === 'cold' ? 'var(--color-down)'
     : 'var(--text-2)';
 
-  // 종목 리스트
+  // 종목 리스트 — 종목탭과 같은 점수 표시 (renderSignalBadge 통일)
   const stocksEl = document.getElementById('tmSheetStocks');
   stocksEl.innerHTML = theme.stocks.map(s => {
     const entry = priceCache[s.code];
@@ -8700,9 +8712,17 @@ function tmOpenSheet(themeId){
     const sign = ch >= 0 ? '+' : '';
     const cls = hasPrice ? (ch >= 0 ? 'up' : 'down') : '';
     const pctText = hasPrice ? `${sign}${ch.toFixed(2)}%` : '—';
+    // 종목별 V2 점수 — 같은 calcSignalAuto + renderSignalBadge 사용
+    const sig = (typeof calcSignalAuto === 'function')
+      ? calcSignalAuto(s, theme, entry) : null;
+    const badge = (typeof renderSignalBadge === 'function')
+      ? renderSignalBadge(sig, { size: 'sm', tooltip: false }) : '';
     return `<div class="tm-stock-row" onclick="navigate('calendar');setTimeout(()=>scrollToStock('${s.code}'),300);">
       <span class="tm-stock-name">${s.name}</span>
-      <span class="tm-stock-pct ${cls}">${pctText}</span>
+      <span class="tm-stock-meta">
+        ${badge}
+        <span class="tm-stock-pct ${cls}">${pctText}</span>
+      </span>
     </div>`;
   }).join('');
 
