@@ -2688,9 +2688,9 @@
   }
   .theme-matrix{
     display:grid;
-    grid-template-columns: 110px repeat(5, minmax(140px, 1fr));
+    grid-template-columns: 110px repeat(6, minmax(120px, 1fr));
     gap:0;
-    min-width:760px;
+    min-width:830px;
     border:1px solid var(--border);
     border-radius:5px;
     overflow:hidden;
@@ -2742,6 +2742,7 @@
   .tm-col-head.neutral .tm-tier-label{ color:var(--text-3); }       /* 회색 — 중립 */
   .tm-col-head.weak    .tm-tier-label{ color:#7a9fc8; }             /* 옅은 파랑 */
   .tm-col-head.cold    .tm-tier-label{ color:var(--color-down); }   /* 파랑 — 하락 */
+  .tm-col-head.pending .tm-tier-label{ color:var(--text-4); }       /* 더 옅은 회색 — 대기 */
 
   /* 행 헤더 (섹터) */
   .tm-row-head{
@@ -2774,6 +2775,7 @@
   .tm-cell.neutral { background:transparent; }
   .tm-cell.weak    { background:rgba(122,159,200,0.03); }
   .tm-cell.cold    { background:rgba(79,143,232,0.04); }
+  .tm-cell.pending { background:rgba(255,255,255,0.015); }
   .tm-cell.empty{
     display:flex; align-items:center; justify-content:center;
     color:var(--text-4); font-size:14px; opacity:0.3;
@@ -2856,6 +2858,28 @@
   }
   .tm-chip.cold .tm-chip-score{ color:var(--color-down); }
 
+  /* 분석 대기 — 스켈레톤 펄스 (sg-skel과 일관) */
+  .tm-chip.pending{
+    background:var(--surface-2);
+    border-color:var(--border);
+    opacity:0.7;
+  }
+  .tm-chip.pending .tm-chip-score{
+    color:var(--text-4);
+  }
+  .tm-chip.pending::after{
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(90deg,
+      transparent 0%,
+      rgba(255,255,255,0.03) 50%,
+      transparent 100%);
+    background-size:200% 100%;
+    animation: skel-pulse 1.4s ease-in-out infinite;
+    pointer-events:none;
+    border-radius:inherit;
+  }
+
   /* 시즌 진입월/임박 마크 (★) */
   .tm-chip.season::before{
     content:'★';
@@ -2901,13 +2925,14 @@
   .ml-swatch.ml-neutral i{ background:var(--text-3); }
   .ml-swatch.ml-weak    i{ background:#7a9fc8; }
   .ml-swatch.ml-cold    i{ background:var(--color-down); }
+  .ml-swatch.ml-pending i{ background:var(--text-4); opacity:0.5; }
 
   /* 모바일 */
   @media (max-width:767px){
     .matrix-wrap{ padding:4px; border-radius:10px; }
     .theme-matrix{
-      grid-template-columns: 86px repeat(5, minmax(110px, 1fr));
-      min-width:636px;
+      grid-template-columns: 86px repeat(6, minmax(96px, 1fr));
+      min-width:662px;
       border-radius:4px;
     }
     .tm-row-head{ padding:10px 10px; }
@@ -3598,6 +3623,7 @@
         <span class="ml-swatch ml-neutral"><i></i>NEUTRAL 40~65</span>
         <span class="ml-swatch ml-weak"><i></i>WEAK 20~40</span>
         <span class="ml-swatch ml-cold"><i></i>COLD &lt;20</span>
+        <span class="ml-swatch ml-pending"><i></i>PENDING 분석 대기</span>
       </div>
       <div class="ml-group">
         <span class="ml-title">마크</span>
@@ -4529,6 +4555,34 @@
           </div>
         </div>
 
+        <div class="rn-item">
+          <div class="rn-num">07</div>
+          <div class="rn-body">
+            <div class="rn-title">데이터 — KR 산업 테마 4종 신규 (2025-2026 시장 정합성)</div>
+            <div class="rn-desc">
+              25-26년 한국 시장 주도 테마 누락 보완.<br>
+              ① <strong>전력기기 / 전선·HVDC</strong> — HD현대일렉트릭·LS ELECTRIC·효성중공업·LS·대한전선·대원전선·가온전선·제룡전기 (AI 데이터센터 전력 + 미국 송배전 노후화).<br>
+              ② <strong>원전 / SMR·우라늄</strong> — 두산에너빌리티·한전기술·한전KPS·우진엔텍·비에이치아이·우리기술 (글로벌 원전 르네상스 + URA ETF +129%).<br>
+              ③ <strong>정책주 / 상법개정·코스닥 활성화</strong> — KB금융·신한지주·하나금융·미래에셋증권·키움증권·삼성생명 (이재명 정부 자본시장 선진화).<br>
+              ④ <strong>스테이블코인 / 디지털자산</strong> — 카카오·카카오페이·한화투자증권·미래에셋증권·갤럭시아머니트리·헥토파이낸셜 (원화 스테이블코인 정책 + STO 제도화).<br>
+              KR 산업 테마 12개 → <strong>16개</strong>로 확장. 판도 탭의 "전력·인프라"·"금융" 섹터에 자동 매핑.
+            </div>
+          </div>
+        </div>
+
+        <div class="rn-item">
+          <div class="rn-num">08</div>
+          <div class="rn-body">
+            <div class="rn-title">peak 자동화 — 사용자가 일일이 입력 안 해도 됨</div>
+            <div class="rn-desc">
+              종목 추가 시 peak 가격을 사용자가 직접 알려주는 부담을 제거. <strong>OHLCV 1년치 high에서 자동 산출</strong> — 사용자 입력 우선 (이미 peak가 있으면 건드리지 않음), 비어있는 종목만 52주 고점에서 자동 채움.
+              한국 종목은 100원 단위, 미국 종목은 0.01달러 단위로 라운딩.
+              캐시 로드 시 즉시 실행 + OHLCV 갱신 후 자동 재실행.
+              콘솔 <code>window.__autoPeak.run()</code>으로 강제 실행, <code>__autoPeak.status()</code>로 채움 현황 확인.
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <p class="guide-p guide-note">
@@ -5288,6 +5342,48 @@ const KR_INDUSTRY_THEMES = [
       {name:'코스맥스', code:'192820.KS', reason:'화장품 ODM 글로벌 1위, 인디브랜드 수혜', peak:280000, peakTime:'인디 OEM 호황', styles:['blue','aggressive'], roles:['momentum']},
       {name:'한국콜마', code:'161890.KS', reason:'화장품 ODM 2위 + 제약 다각화', peak:90000, peakTime:'ODM 수주', styles:['blue','aggressive'], roles:['momentum']},
       {name:'실리콘투', code:'257720.KQ', reason:'K-뷰티 글로벌 유통(스타일코리안), 미국 폭발', peak:80000, peakTime:'미국 침투', styles:['aggressive'], roles:['smallcap','momentum']},
+    ]},
+  { id:'kr-power-grid', country:'KR', group:'industry', cat:'전력기기/전선', icon:'⚡', name:'전력기기 / 전선·HVDC', timing:'AI 데이터센터 + 송배전 노후화 사이클 (다년)', color:'#ffaa00', desc:'AI 전력 수요 + 미국 송배전 인프라 교체 + HVDC 해저케이블 수주', reliability:5,
+    stocks:[
+      {name:'HD현대일렉트릭', code:'267260.KS', reason:'초고압 변압기 글로벌 강자, 미국·중동 수주 폭발', peak:1500000, peakTime:'2025-2027 사이클', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'LS ELECTRIC', code:'010120.KS', reason:'배전·산업 자동화, 데이터센터 솔루션', peak:450000, peakTime:'2025-2027 사이클', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'효성중공업', code:'298040.KS', reason:'초고압 변압기 + 풍력 동시 수혜', peak:850000, peakTime:'2025-2027 사이클', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'LS', code:'006260.KS', reason:'지주, 자회사(LS전선·LS MnM) 가치 재평가', peak:170000, peakTime:'사이클', styles:['blue'], roles:['lead','value']},
+      {name:'대한전선', code:'001440.KS', reason:'초고압 케이블 + HVDC 해저케이블 수주', peak:30000, peakTime:'해저 수주', styles:['aggressive'], roles:['momentum']},
+      {name:'대원전선', code:'006340.KS', reason:'전선 제조, 사이클 후행 수혜', peak:5000, peakTime:'사이클', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'가온전선', code:'000500.KS', reason:'산업·통신 케이블', peak:60000, peakTime:'사이클', styles:['aggressive'], roles:['smallcap']},
+      {name:'제룡전기', code:'033100.KS', reason:'주상변압기, 미국 수출 중소형주', peak:80000, peakTime:'미국 수주', styles:['aggressive'], roles:['smallcap','momentum']},
+    ]},
+
+  { id:'kr-nuclear', country:'KR', group:'industry', cat:'원전/SMR', icon:'☢️', name:'원전 / SMR·우라늄', timing:'AI 데이터센터 전력 + 글로벌 원전 르네상스 (다년)', color:'#22c599', desc:'AI 데이터센터 24/7 전력 수요 + 탄소중립 + SMR 상용화 + 우라늄 사이클', reliability:5,
+    stocks:[
+      {name:'두산에너빌리티', code:'034020.KS', reason:'글로벌 SMR·대형원전 핵심, NuScale 협력', peak:80000, peakTime:'SMR 상용화', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'한전기술', code:'052690.KS', reason:'원전 설계 독점, 폴란드·체코 수주', peak:120000, peakTime:'해외 원전 수주', styles:['blue','aggressive'], roles:['lead','momentum']},
+      {name:'한전KPS', code:'051600.KS', reason:'원전 정비·O&M, 해외 원전 정비 수주', peak:65000, peakTime:'정비 사이클', styles:['blue'], roles:['value','lead']},
+      {name:'우진엔텍', code:'457550.KQ', reason:'원자력 계측·제어, SMR 수혜', peak:30000, peakTime:'SMR', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'비에이치아이', code:'083650.KQ', reason:'발전소 보조기기, 원전·화력', peak:35000, peakTime:'발전소 보수', styles:['aggressive'], roles:['smallcap']},
+      {name:'우리기술', code:'032820.KQ', reason:'원전 제어 시스템 SI', peak:7000, peakTime:'원전 사이클', styles:['aggressive'], roles:['smallcap','momentum']},
+    ]},
+
+  { id:'kr-policy', country:'KR', group:'industry', cat:'정책/상법개정', icon:'📜', name:'정책주 / 상법개정·코스닥 활성화', timing:'이재명 정부 자본시장 선진화 정책 (지속)', color:'#7c6fcd', desc:'상법 개정 + 배당소득 분리과세 + 코스닥 활성화 + 주주환원 강화 수혜', reliability:4,
+    stocks:[
+      {name:'KB금융', code:'105560.KS', reason:'배당주 대표, 분리과세 직접 수혜', peak:130000, peakTime:'배당 시즌', styles:['blue'], roles:['value','lead']},
+      {name:'신한지주', code:'055550.KS', reason:'배당확대·자사주 소각 적극', peak:80000, peakTime:'배당 시즌', styles:['blue'], roles:['value']},
+      {name:'하나금융지주', code:'086790.KS', reason:'배당성향 상향 + 주주환원', peak:90000, peakTime:'배당 시즌', styles:['blue'], roles:['value']},
+      {name:'미래에셋증권', code:'006800.KS', reason:'코스닥 활성화 직접 수혜', peak:15000, peakTime:'증시 활황', styles:['blue','aggressive'], roles:['turn','momentum']},
+      {name:'키움증권', code:'039490.KS', reason:'개인투자자 점유율 1위, 거래대금 증가', peak:200000, peakTime:'코스닥 활성화', styles:['aggressive'], roles:['momentum']},
+      {name:'삼성생명', code:'032830.KS', reason:'밸류업 프로그램 핵심', peak:130000, peakTime:'밸류업', styles:['blue'], roles:['value','turn']},
+    ]},
+
+  { id:'kr-stablecoin', country:'KR', group:'industry', cat:'스테이블코인/디지털자산', icon:'🪙', name:'스테이블코인 / 디지털자산', timing:'2025-2026 정책 / 토큰증권 / 원화 스테이블코인', color:'#5b9bd5', desc:'원화 스테이블코인 정책 논의 + 가상자산 ETF + 토큰증권(STO) 제도화', reliability:3,
+    stocks:[
+      {name:'카카오', code:'035720.KS', reason:'클립·카카오페이, 디지털자산 인프라', peak:60000, peakTime:'정책 모멘텀', styles:['blue'], roles:['lead','turn']},
+      {name:'카카오페이', code:'377300.KS', reason:'간편결제 + 가상자산 진출', peak:50000, peakTime:'정책', styles:['aggressive'], roles:['momentum']},
+      {name:'두나무', code:'unlisted-DUNAMU', reason:'업비트 운영사, 비상장 (참고)', peak:200000, peakTime:'-', styles:['aggressive'], roles:['lead']},
+      {name:'한화투자증권', code:'003530.KS', reason:'STO 라이선스, 토큰증권 선도', peak:5000, peakTime:'STO', styles:['aggressive'], roles:['smallcap','momentum']},
+      {name:'미래에셋증권', code:'006800.KS', reason:'STO 플랫폼 구축', peak:15000, peakTime:'STO', styles:['blue'], roles:['lead']},
+      {name:'갤럭시아머니트리', code:'094480.KQ', reason:'결제·디지털자산 인프라', peak:8000, peakTime:'디지털자산', styles:['aggressive'], roles:['smallcap']},
+      {name:'헥토파이낸셜', code:'234340.KQ', reason:'결제 인프라, 가상자산 정산', peak:20000, peakTime:'결제 인프라', styles:['aggressive'], roles:['smallcap','momentum']},
     ]},
 ];
 
@@ -6204,6 +6300,12 @@ function buildSummary(){
   // Top Pick 위젯 — throttled (5분 주기 또는 강제)
   maybeRenderTopPicks();
 
+  // Matrix 뷰가 활성화돼있으면 같이 갱신 (Phase A7)
+  if(typeof tmRender === 'function'){
+    const matrixView = document.getElementById('view-matrix');
+    if(matrixView && matrixView.classList.contains('active')) tmRender();
+  }
+
   const themes = applyStyleFilter(getActivePool());
   const allStocks = themes.flatMap(t=>t.stocks.map(s=>({...s, country:t.country})));
   let lowCount=0, midCount=0, highCount=0, freshCount=0;
@@ -6723,7 +6825,11 @@ function loadOhlcvCache(){
       }
     });
     const count = Object.keys(ohlcvCache).length;
-    if(count > 0) console.log(`[OHLCV] 캐시 로드: ${count}개 종목`);
+    if(count > 0){
+      console.log(`[OHLCV] 캐시 로드: ${count}개 종목`);
+      // 캐시된 OHLCV가 있으면 즉시 peak 자동 채움 (첫 화면 막지 않음)
+      if(typeof autoFillPeaks === 'function') autoFillPeaks();
+    }
   } catch(e){
     console.warn('[OHLCV] 캐시 로드 실패', e);
   }
@@ -6795,8 +6901,61 @@ async function refreshAllOhlcv(opts = {}){
   await Promise.all(Array.from({length: concurrency}, worker));
   saveOhlcvCache();
   console.log(`[OHLCV] 갱신 완료: ✓${ok} ✕${fail}`);
+  // ✦ peak 자동 채움 — 사용자 입력 우선, 비어있는 종목만
+  if(typeof autoFillPeaks === 'function') autoFillPeaks();
   return { ok, fail, total: needsUpdate.length };
 }
+
+/* ============================================================
+   ✦ peak 자동화 — OHLCV 1년치 high에서 52주 고점 자동 산출
+   - 사용자 입력 우선 (peak가 이미 있으면 건드리지 않음)
+   - peak 없거나 0이면 OHLCV의 1년치 최고가에서 자동 채움
+   - 보수적으로 1년치 high를 그대로 사용 (피크 아래에서 매수 검토)
+   ============================================================ */
+function autoFillPeaks(){
+  if(typeof ohlcvCache !== 'object') return { filled: 0, skipped: 0 };
+  let filled = 0, skipped = 0, missing = 0;
+  ALL_THEMES.forEach(theme => {
+    theme.stocks.forEach(s => {
+      // 이미 의미 있는 peak가 있으면 건드리지 않음
+      if(s.peak && s.peak > 0){
+        skipped++;
+        return;
+      }
+      const ohlcv = ohlcvCache[s.code];
+      if(!ohlcv?.highs || ohlcv.highs.length < 30){
+        missing++;
+        return;
+      }
+      // 1년치 최고가 (52주 고점)
+      const high52 = Math.max(...ohlcv.highs.filter(h => h != null && h > 0));
+      if(!isFinite(high52) || high52 <= 0){
+        missing++;
+        return;
+      }
+      // 한국 종목은 100원 단위, 미국 종목은 0.01달러 단위로 라운딩
+      const isKR = /\.K[SQ]$/.test(s.code);
+      s.peak = isKR ? Math.round(high52 / 100) * 100 : Math.round(high52 * 100) / 100;
+      filled++;
+    });
+  });
+  if(filled > 0){
+    console.log(`[peak] 자동 채움: ✓${filled} · 사용자 입력 유지 ${skipped} · 데이터 없음 ${missing}`);
+  }
+  return { filled, skipped, missing };
+}
+
+window.__autoPeak = {
+  run: autoFillPeaks,
+  /* 디버그: 모든 테마의 peak 상태 */
+  status(){
+    let withPeak = 0, withoutPeak = 0;
+    ALL_THEMES.forEach(t => t.stocks.forEach(s => {
+      if(s.peak > 0) withPeak++; else withoutPeak++;
+    }));
+    return { withPeak, withoutPeak, total: withPeak + withoutPeak };
+  },
+};
 
 /* 진입 시 1회 자동 호출 — 프리뷰 모드는 스킵 */
 function initOhlcv(){
@@ -7749,46 +7908,82 @@ window.__regime = {
    - sg-badge·skel·fade-in-soft 컴포넌트 재사용
    ============================================================ */
 
-/* 섹터 → 그룹 매핑 (LOUIS 테마의 cat 필드 기반) */
+/* 섹터 → 그룹 매핑 (LOUIS 테마의 cat 필드 기반)
+   실제 ALL_THEMES의 cat 값을 모두 커버 — slash 포함 / 시즌 / 이벤트 처리 */
 const TM_SECTOR_MAP = {
-  // 한국
-  '반도체':       { id:'semi',     name:'반도체 · IT' },
-  '디스플레이':    { id:'semi',     name:'반도체 · IT' },
-  '배터리':       { id:'battery',  name:'배터리 · EV' },
-  '바이오':       { id:'bio',      name:'바이오 · 헬스' },
-  '제약':         { id:'bio',      name:'바이오 · 헬스' },
-  'AI':           { id:'aisw',     name:'AI · SW' },
-  '소프트웨어':    { id:'aisw',     name:'AI · SW' },
-  '게임':         { id:'media',    name:'미디어 · 엔터' },
-  '엔터테인먼트':  { id:'media',    name:'미디어 · 엔터' },
-  'K-콘텐츠':      { id:'media',    name:'미디어 · 엔터' },
-  '방산':         { id:'defense',  name:'방산 · 우주' },
-  '우주항공':      { id:'defense',  name:'방산 · 우주' },
-  '조선':         { id:'energy',   name:'조선 · 에너지' },
-  '원자력':       { id:'energy',   name:'조선 · 에너지' },
-  '신재생':       { id:'energy',   name:'조선 · 에너지' },
-  '에너지':       { id:'energy',   name:'조선 · 에너지' },
-  '소재':         { id:'material', name:'소재 · 화학' },
-  '화학':         { id:'material', name:'소재 · 화학' },
-  '금융':         { id:'finance',  name:'금융 · 리츠' },
-  '은행':         { id:'finance',  name:'금융 · 리츠' },
-  '리츠':         { id:'finance',  name:'금융 · 리츠' },
-  '소비재':       { id:'consumer', name:'컨슈머 · 유통' },
-  '유통':         { id:'consumer', name:'컨슈머 · 유통' },
-  '음식료':       { id:'consumer', name:'컨슈머 · 유통' },
-  '여행':         { id:'consumer', name:'컨슈머 · 유통' },
-  '시즌':         { id:'season',   name:'시즌 테마' },
+  // 반도체·IT
+  '반도체':            { id:'semi',     name:'반도체 · IT' },
+  '디스플레이':        { id:'semi',     name:'반도체 · IT' },
+
+  // 배터리·EV·모빌리티
+  '2차전지/EV':         { id:'mobility', name:'배터리 · 모빌리티' },
+  '전기차':            { id:'mobility', name:'배터리 · 모빌리티' },
+  '자동차':            { id:'mobility', name:'배터리 · 모빌리티' },
+
+  // 바이오·헬스
+  '바이오/제약':        { id:'bio',      name:'바이오 · 헬스' },
+  '헬스케어':          { id:'bio',      name:'바이오 · 헬스' },
+
+  // AI·SW·테크
+  '빅테크':            { id:'tech',     name:'AI · 빅테크' },
+  '빅테크/플랫폼':      { id:'tech',     name:'AI · 빅테크' },
+  '로봇/자동화':        { id:'tech',     name:'AI · 빅테크' },
+  '클라우드 SaaS':      { id:'tech',     name:'AI · 빅테크' },
+  '사이버보안':        { id:'tech',     name:'AI · 빅테크' },
+  '양자컴퓨팅':        { id:'tech',     name:'AI · 빅테크' },
+
+  // 방산·우주
+  '방산':              { id:'defense',  name:'방산 · 우주' },
+  '방산/우주항공':      { id:'defense',  name:'방산 · 우주' },
+  '우주':              { id:'defense',  name:'방산 · 우주' },
+  '우주/위성':          { id:'defense',  name:'방산 · 우주' },
+
+  // 조선·에너지
+  '조선':              { id:'energy',   name:'조선 · 에너지' },
+  '에너지':            { id:'energy',   name:'조선 · 에너지' },
+  '전력기기/전선':      { id:'power',    name:'전력 · 인프라' },
+  '원전/SMR':           { id:'power',    name:'전력 · 인프라' },
+
+  // 미디어·엔터
+  'K-콘텐츠/엔터':      { id:'media',    name:'미디어 · 엔터' },
+
+  // 금융
+  '금융':              { id:'finance',  name:'금융' },
+  '정책/상법개정':      { id:'finance',  name:'금융' },
+  '스테이블코인/디지털자산': { id:'finance',  name:'금융' },
+
+  // 컨슈머·유통
+  '소비재':            { id:'consumer', name:'컨슈머 · 유통' },
+  '화장품/뷰티':        { id:'consumer', name:'컨슈머 · 유통' },
+
+  // 시즌 (월별 cat 값까지 모두 시즌으로)
+  '봄':                { id:'season',   name:'시즌 · 계절' },
+  '여름':              { id:'season',   name:'시즌 · 계절' },
+  '가을':              { id:'season',   name:'시즌 · 계절' },
+  '겨울':              { id:'season',   name:'시즌 · 계절' },
+  '1월':               { id:'season',   name:'시즌 · 계절' },
+  '9월':               { id:'season',   name:'시즌 · 계절' },
+  '3~4월':             { id:'season',   name:'시즌 · 계절' },
+  '7~9월':             { id:'season',   name:'시즌 · 계절' },
+  '10~12월':            { id:'season',   name:'시즌 · 계절' },
+  '11~12월':            { id:'season',   name:'시즌 · 계절' },
+  '12~2월':            { id:'season',   name:'시즌 · 계절' },
+
+  // 이벤트성
+  '이벤트':            { id:'event',    name:'이벤트 · 정책' },
+  '산업이벤트':        { id:'event',    name:'이벤트 · 정책' },
 };
 
-const TM_SECTOR_ORDER = ['semi','battery','bio','aisw','defense','energy','media','material','finance','consumer','season'];
+const TM_SECTOR_ORDER = ['semi','mobility','tech','bio','defense','energy','power','media','material','finance','consumer','event','season'];
 
-const TM_TIERS = ['hot','strong','neutral','weak','cold'];
+const TM_TIERS = ['hot','strong','neutral','weak','cold','pending'];
 const TM_TIER_META = {
   hot:     { label:'HOT',     sub:'80+ · 매수 검토' },
   strong:  { label:'STRONG',  sub:'65~80 · 강세' },
   neutral: { label:'NEUTRAL', sub:'40~65 · 중립' },
   weak:    { label:'WEAK',    sub:'20~40 · 약세' },
   cold:    { label:'COLD',    sub:'<20 · 침체' },
+  pending: { label:'PENDING', sub:'분석 대기' },
 };
 
 /* 점수 → 강도 등급 */
@@ -7816,7 +8011,8 @@ function tmThemeToData(theme, rank){
   });
   const avgScore = count > 0 ? sumScore / count : 0;
   const avgPct = count > 0 ? sumPct / count : 0;
-  const tier = tmScoreToTier(avgScore);
+  // 데이터 없으면 'pending' 등급 (별도 표시), 있으면 점수에 따라 분류
+  const tier = count === 0 ? 'pending' : tmScoreToTier(avgScore);
 
   // 시즌 마크 — 진입월 일치 또는 임박
   const mo = (typeof CURRENT_MONTH !== 'undefined') ? CURRENT_MONTH : (new Date().getMonth() + 1);
@@ -7829,12 +8025,17 @@ function tmThemeToData(theme, rank){
             || theme.entryMonths.includes(next2);
   }
 
-  // 섹터 매핑
-  const secInfo = TM_SECTOR_MAP[theme.cat] || { id:'consumer', name:theme.cat };
+  // 섹터 매핑 — 매핑 안 되면 cat 그대로 사용 (이름 그대로 노출)
+  const secInfo = TM_SECTOR_MAP[theme.cat] || { id:'_'+theme.cat, name:theme.cat };
+
+  // 약어 — code 필드 없으면 name에서 생성 (한글 2자 또는 영문 3자)
+  const code = theme.code || (theme.name.length > 8
+    ? theme.name.replace(/[\s·\/]/g, '').slice(0, 4)
+    : theme.name);
 
   return {
     theme,
-    code: theme.code || theme.name.slice(0, 3).toUpperCase(),
+    code,
     name: theme.name,
     sector: secInfo.id,
     sectorName: secInfo.name,
@@ -7882,15 +8083,14 @@ function tmBuildMatrix(){
 
 /* 칩 HTML */
 function tmRenderChip(d){
-  const sign = d.pct >= 0 ? '+' : '';
   const cls = ['tm-chip', d.tier];
   if(d.isSeason) cls.push('season');
-  if(d.score < 20) cls.push('subdued');
-  if(!d.hasData) cls.push('subdued');
+  if(d.tier === 'cold' || d.tier === 'weak') cls.push('subdued');
+  const scoreDisplay = d.tier === 'pending' ? '·' : d.score;
   return `<button class="${cls.join(' ')}" data-tm-theme="${d.theme.id}" type="button">
     <div class="tm-chip-top">
       <span class="tm-chip-rank">#${String(d.rank).padStart(2, '0')}</span>
-      <span class="tm-chip-score">${d.hasData ? d.score : '·'}</span>
+      <span class="tm-chip-score">${scoreDisplay}</span>
     </div>
     <div class="tm-chip-symbol">${d.code}</div>
     <div class="tm-chip-name">${d.name}</div>
@@ -7997,6 +8197,11 @@ function tmCloseSheet(){
 function tmActivate(){
   // 점수 시스템·OHLCV 준비됐으면 즉시 렌더
   tmRender();
+  // 가격 데이터가 없으면 (첫 진입 등) 자동으로 가격 로드 트리거
+  const hasAnyPrice = Object.keys(priceCache || {}).length > 0;
+  if(!hasAnyPrice && typeof loadPrices === 'function'){
+    loadPrices(true);
+  }
 }
 
 window.__themeMatrix = {
