@@ -4013,7 +4013,7 @@
        섹터(행) × V2 점수 강도(열) — LOUIS 토큰 통합
        ============================================================ -->
   <section class="view active" id="view-matrix">
-    <p class="leaderboard-intro">섹터(행) × <strong>모멘텀 강도</strong>(열) 매트릭스. 강한 흐름의 테마는 우측 강세 컬럼, 약세는 좌측 약세 컬럼에. <strong>강도(TS)</strong>는 20일/5일 등락률 + 200일선 위치 + RSI 모멘텀으로 계산 (V2 매수 점수와 별개).</p>
+    <p class="leaderboard-intro">섹터(행) × <strong>모멘텀 강도</strong>(열) 매트릭스. 강한 흐름의 테마는 우측 강세 컬럼, 약세는 좌측 약세 컬럼에. <strong>강도(TS)</strong>는 20일/5일 등락률 + 200일선 위치 + RSI 모멘텀으로 계산 (V2 매수 점수와 별개). <span style="color:var(--text-3);font-size:11.5px">※ 산업 섹터 데이터만 사용 — 종목분석의 시즌/섹터 토글 영향 받지 않음</span></p>
 
     <div class="matrix-wrap">
       <div class="theme-matrix" id="themeMatrix"></div>
@@ -8565,12 +8565,18 @@ function tmThemeToData(theme, rank, timeOffset = 0){
   };
 }
 
-/* 모든 활성 테마 데이터 빌드 (3개 탭 공통, 시점 적용) */
+/* 모든 활성 테마 데이터 빌드 (3개 탭 공통, 시점 적용)
+   ✦ 테마 분석은 항상 industry(섹터)만 사용 — 종목분석의 시즌/섹터 토글 영향 받지 않음
+   - 시즌 테마는 시점성, 산업 섹터는 상시성 → 매트릭스 메타포는 산업에만 의미
+   - 사용자가 종목분석에서 시즌 보다가 들어와도 테마 분석은 일관된 산업 데이터
+*/
 function buildAllThemesData(){
-  const themes = (typeof applyStyleFilter === 'function' && typeof getActivePool === 'function')
-    ? applyStyleFilter(getActivePool())
-    : ALL_THEMES.filter(t => t.country === currentCountry);
   const offset = (typeof currentTimeOffset !== 'undefined') ? currentTimeOffset : 0;
+  // 항상 industry 그룹 + 현재 국가 + 스타일 필터만 적용
+  const industryThemes = ALL_THEMES.filter(t => t.country === currentCountry && t.group === 'industry');
+  const themes = (typeof applyStyleFilter === 'function')
+    ? applyStyleFilter(industryThemes)
+    : industryThemes;
   // 강도 점수로 정렬해 rank 부여
   const data = themes.map(t => tmThemeToData(t, 0, offset));
   data.sort((a, b) => b.score - a.score);
@@ -9683,6 +9689,8 @@ document.querySelectorAll('#segStyle .uni-seg-btn').forEach(btn=>{
     maybeRenderTopPicks(true);  // 스타일 변경 → 강제 재정렬
     buildSummary();
     renderContent();
+    // ✦ 테마 분석도 같은 데이터 사용하니 활성 뷰 재렌더
+    if(typeof refreshActiveThemeView === 'function') refreshActiveThemeView();
   });
 });
 
