@@ -30,7 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -469,7 +469,112 @@
     .tp-rank{ font-size:16px; }
   }
 
-  /* 신호 1글자 배지 (테이블·카드용) */
+  /* ============================================================
+     ✦ 신호 점수 박스 (.sg-badge) — 단추형 ●○✕ → 점수 표시로 전환
+     크기: md(테이블 32×16) / sm(인라인 28×14)
+     상태: sg-now (오렌지 채움) / sg-wait (회색 보더) / sg-avoid (빗금) / sg-skel (스켈레톤)
+     ============================================================ */
+  .sg-badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:30px; height:18px;
+    padding:0 5px;
+    border-radius:3px;
+    font-family:var(--font-mono);
+    font-size:11px; font-weight:700;
+    line-height:1; letter-spacing:0;
+    position:relative; cursor:help;
+    transition:transform .12s ease, background-color .15s ease;
+    flex-shrink:0;
+  }
+  .sg-badge .sg-num{ line-height:1; }
+
+  /* 작은 사이즈 (Top Pick 인라인 등) */
+  .sg-sm{
+    min-width:26px; height:16px; font-size:10px; padding:0 4px;
+  }
+  /* 인라인 (텍스트 사이) */
+  .sg-inline{ vertical-align:middle; margin-right:6px; cursor:pointer; }
+
+  /* 매수 검토 — 오렌지 채움, 검정 텍스트 */
+  .sg-now{
+    background:var(--accent);
+    color:#000;
+    border:1px solid var(--accent);
+  }
+  .sg-now:hover{ transform:translateY(-1px); }
+
+  /* 대기 — 회색 보더, 회색 텍스트 */
+  .sg-wait{
+    background:transparent;
+    color:var(--text-2);
+    border:1px solid var(--border-2);
+  }
+  .sg-wait:hover{ border-color:var(--text-3); }
+
+  /* 회피 — 빨강 빗금 패턴 */
+  .sg-avoid{
+    background:repeating-linear-gradient(
+      135deg,
+      transparent 0,
+      transparent 3px,
+      rgba(232,72,94,0.08) 3px,
+      rgba(232,72,94,0.08) 4px
+    );
+    color:var(--color-up);
+    border:1px solid rgba(232,72,94,0.4);
+  }
+  .sg-avoid .sg-x{ font-size:11px; }
+
+  /* 스켈레톤 (분석 대기) */
+  .sg-skel{
+    background:var(--surface-2);
+    color:var(--text-4);
+    border:1px solid var(--border);
+    cursor:default;
+  }
+  .sg-skel .sg-num{ opacity:0.5; }
+
+  /* 모바일 */
+  @media (max-width:767px){
+    .sg-badge{ min-width:28px; height:17px; font-size:10.5px; }
+    .sg-sm{ min-width:24px; height:15px; font-size:9.5px; }
+  }
+
+  /* 커스텀 툴팁 (data-tip 속성) */
+  .sg-badge[data-tip]:hover::after,
+  .sg-badge[data-tip]:focus::after,
+  .sg-badge[data-tip].show-tip::after{
+    content: attr(data-tip);
+    position:absolute;
+    bottom:calc(100% + 8px); left:50%;
+    transform:translateX(-50%);
+    background:var(--surface-3);
+    color:var(--text-1);
+    border:1px solid var(--border-2);
+    padding:8px 12px;
+    border-radius:var(--r-md);
+    font-size:11px; font-weight:500;
+    font-family:var(--font-sans);
+    letter-spacing:0;
+    white-space:nowrap;
+    box-shadow:0 4px 12px rgba(0,0,0,0.4);
+    z-index:50;
+    pointer-events:none;
+  }
+  .sg-badge[data-tip]:hover::before,
+  .sg-badge[data-tip]:focus::before,
+  .sg-badge[data-tip].show-tip::before{
+    content:'';
+    position:absolute;
+    bottom:calc(100% + 2px); left:50%;
+    transform:translateX(-50%);
+    border:5px solid transparent;
+    border-top-color:var(--border-2);
+    z-index:50;
+    pointer-events:none;
+  }
+
+  /* ===== 기존 .sig — 가이드/디자인 시스템 미리보기에서만 호환용 (deprecated) ===== */
   .sig{
     display:inline-flex; align-items:center; justify-content:center;
     width:16px; height:16px; border-radius:50%;
@@ -487,7 +592,7 @@
     background:transparent; color:var(--text-4);
     border:1px solid var(--text-4);
   }
-  /* 커스텀 툴팁 (data-tip 속성) */
+  /* 커스텀 툴팁 (data-tip 속성) — 기존 .sig 호환 */
   .sig[data-tip]:hover::after,
   .sig[data-tip]:focus::after,
   .sig[data-tip].show-tip::after{
@@ -599,7 +704,7 @@
 
   /* ===== TABLE ===== */
   table{width:100%;table-layout:fixed;border-collapse:collapse;}
-  col.c-sig{width:43px;}
+  col.c-sig{width:53px;}
   col.c-name{width:15%;}
   col.c-tag{width:10%;}
   col.c-reason{width:15%;}
@@ -979,52 +1084,20 @@
     border-bottom:1px solid var(--border); margin-bottom:18px;
     cursor:default;
   }
-  .sb-logo-mark{
-    font-size:22px; color:var(--accent); line-height:1;
-  }
   .sb-logo-text{
-    font-family:var(--font-display); font-size:26px; letter-spacing:4px;
-    line-height:1; color:var(--text-1);
-    text-shadow:
-      0 0 8px rgba(255,128,0,0.35),
-      0 0 18px rgba(255,128,0,0.18);
-    transition: text-shadow .35s ease;
+    /* 시안 스타일 — Bodoni Moda 이탤릭 editorial */
+    font-family:'Bodoni Moda', 'Noto Serif KR', Georgia, serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:26px;
+    letter-spacing:-0.01em;
+    line-height:1;
+    color:var(--text-1);
   }
-  .sidebar-logo:hover .sb-logo-text{
-    text-shadow:
-      0 0 10px rgba(255,128,0,0.6),
-      0 0 22px rgba(255,128,0,0.35),
-      0 0 38px rgba(255,128,0,0.15);
-  }
-  /* 글자별 등장 (한 글자씩 타이핑되듯) — 페이지 로드 1회 */
-  .sb-l-char{
-    display:inline-block;
-    opacity:0;
-    animation: louis-type 0.08s linear var(--d) forwards;
-  }
-  @keyframes louis-type{
-    to { opacity: 1; }
-  }
-  /* I 글자 — 등장 + 등장 후 깜빡임 */
-  .sb-logo-i{
-    color: var(--accent);
-    text-shadow:
-      0 0 10px rgba(255,128,0,0.8),
-      0 0 20px rgba(255,128,0,0.5),
-      0 0 32px rgba(255,128,0,0.25);
-    animation:
-      louis-type 0.08s linear var(--d) forwards,
-      louis-i-blink 1.1s steps(2, end) 1.6s infinite;
-  }
-  @keyframes louis-i-blink{
-    0%, 49.99% { opacity: 1; }
-    50%, 100% { opacity: 0; }
-  }
-  .sidebar-logo:hover .sb-logo-i{
-    text-shadow:
-      0 0 14px rgba(255,128,0,1),
-      0 0 28px rgba(255,128,0,0.7),
-      0 0 44px rgba(255,128,0,0.35);
+  .sb-logo-dot{
+    color:var(--accent);
+    margin-left:1px;
+    font-style:italic;
   }
   .sidebar-nav{
     flex:1; display:flex; flex-direction:column; gap:4px; padding:0 12px;
@@ -2600,6 +2673,336 @@
     letter-spacing: -0.01em;
   }
 
+  /* ============================================================
+     ✦ Theme Matrix — 주기율표 메타포 (LOUIS 토큰 통합)
+     섹터(행) × V2 점수 강도(열) — sg-badge·skel·fade-in-soft 재사용
+     ============================================================ */
+  .matrix-wrap{
+    overflow-x:auto;
+    margin-bottom:14px;
+    padding:6px;
+    /* 오렌지 포인트 외곽 — 토글 active 스타일과 동일 패턴 */
+    background:var(--accent-soft);
+    border:1px solid var(--accent-border);
+    border-radius:var(--r-lg);
+  }
+  .theme-matrix{
+    display:grid;
+    grid-template-columns: 110px repeat(5, minmax(140px, 1fr));
+    gap:0;
+    min-width:760px;
+    border:1px solid var(--border);
+    border-radius:5px;
+    overflow:hidden;
+    background:var(--surface);
+  }
+
+  /* 코너 + 헤더 공통 */
+  .tm-corner, .tm-col-head, .tm-row-head, .tm-cell{
+    border-right:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+  }
+  .tm-corner, .tm-col-head, .tm-row-head{
+    background:var(--surface-2);
+  }
+  /* 마지막 컬럼/행은 보더 제거 */
+  .tm-col-head:last-child, .tm-cell.last-col{ border-right:0; }
+  .theme-matrix > .row-last{ border-bottom:0; }
+
+  /* 코너 */
+  .tm-corner{
+    padding:10px 12px;
+    font-family:var(--font-mono);
+    font-size:9px;
+    color:var(--text-4);
+    letter-spacing:1px;
+    display:flex; align-items:flex-end; justify-content:flex-end;
+    text-align:right;
+    line-height:1.3;
+  }
+
+  /* 컬럼 헤더 (강도) */
+  .tm-col-head{
+    padding:10px 12px;
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .tm-tier-label{
+    font-family:var(--font-mono); font-size:10px;
+    letter-spacing:1.2px; text-transform:uppercase;
+    font-weight:700;
+  }
+  .tm-tier-sub{
+    font-size:10px;
+    color:var(--text-4);
+    letter-spacing:0.2px;
+  }
+  /* 강도 컬러 — LOUIS 토큰 (한국식 빨/파 + 블룸버그 오렌지) */
+  .tm-col-head.hot     .tm-tier-label{ color:var(--color-up); }     /* 빨강 — 상승 */
+  .tm-col-head.strong  .tm-tier-label{ color:var(--accent); }       /* 오렌지 — 강세 */
+  .tm-col-head.neutral .tm-tier-label{ color:var(--text-3); }       /* 회색 — 중립 */
+  .tm-col-head.weak    .tm-tier-label{ color:#7a9fc8; }             /* 옅은 파랑 */
+  .tm-col-head.cold    .tm-tier-label{ color:var(--color-down); }   /* 파랑 — 하락 */
+
+  /* 행 헤더 (섹터) */
+  .tm-row-head{
+    padding:12px 12px;
+    display:flex; flex-direction:column; gap:3px;
+    justify-content:center;
+  }
+  .tm-sec-name{
+    font-size:12px; font-weight:700; color:var(--text-1);
+    letter-spacing:-0.005em;
+    line-height:1.3;
+  }
+  .tm-sec-meta{
+    font-family:var(--font-mono); font-size:9.5px;
+    color:var(--text-4);
+    letter-spacing:0.3px;
+  }
+
+  /* 셀 */
+  .tm-cell{
+    padding:8px;
+    min-height:72px;
+    display:flex; flex-wrap:wrap; align-content:flex-start;
+    gap:5px;
+    position:relative;
+  }
+  /* 셀 배경 — 강도별 옅은 톤 (LOUIS 토큰 alpha) */
+  .tm-cell.hot     { background:rgba(232,72,94,0.04); }
+  .tm-cell.strong  { background:rgba(255,128,0,0.04); }
+  .tm-cell.neutral { background:transparent; }
+  .tm-cell.weak    { background:rgba(122,159,200,0.03); }
+  .tm-cell.cold    { background:rgba(79,143,232,0.04); }
+  .tm-cell.empty{
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-4); font-size:14px; opacity:0.3;
+  }
+
+  /* 칩 (테마 원소) */
+  .tm-chip{
+    background:var(--surface-3);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:6px 7px 5px;
+    cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease;
+    min-width:60px;
+    display:flex; flex-direction:column; align-items:stretch;
+    position:relative;
+    font-family:var(--font-mono);
+  }
+  .tm-chip:hover{
+    transform:translateY(-1px);
+    border-color:var(--border-2);
+  }
+  .tm-chip-top{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:8.5px; color:var(--text-4);
+    letter-spacing:0.4px;
+    margin-bottom:2px;
+    line-height:1;
+  }
+  .tm-chip-rank{ color:var(--text-3); font-weight:600; }
+  .tm-chip-score{
+    font-weight:700; font-size:9.5px;
+    letter-spacing:0;
+  }
+  .tm-chip-symbol{
+    font-family:var(--font-sans);
+    font-weight:700; font-size:13px;
+    letter-spacing:-0.01em;
+    color:var(--text-1);
+    line-height:1.15;
+    margin:1px 0 2px;
+  }
+  .tm-chip-name{
+    font-family:var(--font-sans);
+    font-size:9.5px;
+    color:var(--text-3);
+    font-weight:400;
+    line-height:1.2;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+
+  /* 칩 강도별 변형 — 점수 색상 */
+  .tm-chip.hot{
+    background:rgba(232,72,94,0.10);
+    border-color:rgba(232,72,94,0.32);
+  }
+  .tm-chip.hot .tm-chip-score{ color:var(--color-up); }
+
+  .tm-chip.strong{
+    background:rgba(255,128,0,0.08);
+    border-color:rgba(255,128,0,0.28);
+  }
+  .tm-chip.strong .tm-chip-score{ color:var(--accent); }
+
+  .tm-chip.neutral{
+    background:var(--surface-3);
+    border-color:var(--border-2);
+  }
+  .tm-chip.neutral .tm-chip-score{ color:var(--text-2); }
+
+  .tm-chip.weak{
+    background:rgba(122,159,200,0.06);
+    border-color:rgba(122,159,200,0.22);
+  }
+  .tm-chip.weak .tm-chip-score{ color:#7a9fc8; }
+
+  .tm-chip.cold{
+    background:rgba(79,143,232,0.08);
+    border-color:rgba(79,143,232,0.28);
+  }
+  .tm-chip.cold .tm-chip-score{ color:var(--color-down); }
+
+  /* 시즌 진입월/임박 마크 (★) */
+  .tm-chip.season::before{
+    content:'★';
+    position:absolute;
+    top:3px; left:5px;
+    font-size:8px;
+    color:var(--accent);
+    font-family:var(--font-sans);
+    line-height:1;
+  }
+  .tm-chip.season .tm-chip-rank{ padding-left:9px; }
+
+  /* 보조 테마 (subdued) — 미세하게 흐림 */
+  .tm-chip.subdued{ opacity:0.55; }
+  .tm-chip.subdued:hover{ opacity:1; }
+
+  /* 범례 */
+  .matrix-legend{
+    display:flex; flex-wrap:wrap;
+    gap:18px 24px;
+    padding:6px 2px 4px;
+    font-family:var(--font-mono); font-size:10px;
+    color:var(--text-4); letter-spacing:0.4px;
+    align-items:center;
+  }
+  .ml-group{
+    display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+  }
+  .ml-title{
+    color:var(--text-3); text-transform:uppercase;
+    letter-spacing:1.2px;
+  }
+  .ml-swatch{
+    display:inline-flex; align-items:center; gap:5px;
+    color:var(--text-2);
+  }
+  .ml-swatch i{
+    width:10px; height:10px; border-radius:2px;
+    display:inline-block;
+  }
+  .ml-swatch.ml-hot     i{ background:var(--color-up); }
+  .ml-swatch.ml-strong  i{ background:var(--accent); }
+  .ml-swatch.ml-neutral i{ background:var(--text-3); }
+  .ml-swatch.ml-weak    i{ background:#7a9fc8; }
+  .ml-swatch.ml-cold    i{ background:var(--color-down); }
+
+  /* 모바일 */
+  @media (max-width:767px){
+    .matrix-wrap{ padding:4px; border-radius:10px; }
+    .theme-matrix{
+      grid-template-columns: 86px repeat(5, minmax(110px, 1fr));
+      min-width:636px;
+      border-radius:4px;
+    }
+    .tm-row-head{ padding:10px 10px; }
+    .tm-sec-name{ font-size:11px; }
+    .tm-sec-meta{ font-size:9px; }
+    .tm-tier-sub{ display:none; }
+    .tm-cell{ min-height:60px; padding:6px; }
+    .tm-chip{ min-width:50px; padding:5px 6px 4px; }
+    .tm-chip-symbol{ font-size:11.5px; }
+    .tm-chip-name{ font-size:9px; }
+    .matrix-legend{ gap:10px 16px; font-size:9.5px; }
+  }
+
+  /* 칩 상세 시트 (LOUIS 기존 패턴 활용 — bottom sheet) */
+  .tm-sheet-backdrop{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.55);
+    opacity:0; pointer-events:none;
+    transition:opacity .2s ease;
+    z-index:50;
+  }
+  .tm-sheet-backdrop.open{ opacity:1; pointer-events:auto; }
+  .tm-sheet{
+    position:fixed; left:0; right:0; bottom:0;
+    background:var(--surface);
+    border-top:1px solid var(--border-2);
+    border-radius:14px 14px 0 0;
+    padding:18px 20px 26px;
+    transform:translateY(100%);
+    transition:transform .25s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index:60;
+    max-height:70vh; overflow-y:auto;
+  }
+  .tm-sheet.open{ transform:translateY(0); }
+  .tm-sheet-grip{
+    width:36px; height:4px;
+    background:var(--border-2);
+    border-radius:2px;
+    margin:0 auto 14px;
+  }
+  .tm-sheet-head{
+    display:flex; align-items:baseline; gap:10px;
+    margin-bottom:6px;
+  }
+  .tm-sheet-symbol{
+    font-family:var(--font-mono); font-size:11px;
+    color:var(--accent); letter-spacing:1px;
+    font-weight:700;
+  }
+  .tm-sheet-name{
+    font-size:18px; font-weight:700;
+    letter-spacing:-0.01em;
+    color:var(--text-1);
+  }
+  .tm-sheet-meta{
+    display:flex; gap:14px; flex-wrap:wrap;
+    font-family:var(--font-mono); font-size:11px;
+    color:var(--text-3); letter-spacing:0.3px;
+    margin-bottom:18px;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--border);
+  }
+  .tm-sheet-meta b{
+    color:var(--text-1); font-weight:700; margin-left:3px;
+  }
+  .tm-sheet-section-title{
+    font-family:var(--font-mono); font-size:10px;
+    color:var(--text-4);
+    letter-spacing:1.2px; text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .tm-sheet-stocks{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap:8px;
+  }
+  .tm-stock-row{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:9px 12px;
+    display:flex; justify-content:space-between; align-items:center;
+    cursor:pointer;
+    transition:border-color .12s ease;
+  }
+  .tm-stock-row:hover{ border-color:var(--border-2); }
+  .tm-stock-name{ font-size:12.5px; font-weight:600; color:var(--text-1); }
+  .tm-stock-pct{
+    font-family:var(--font-mono); font-size:11.5px;
+    font-weight:700;
+  }
+  .tm-stock-pct.up{ color:var(--color-up); }
+  .tm-stock-pct.down{ color:var(--color-down); }
+  /* ===== /Theme Matrix ===== */
+
   /* ============ FORECAST ============ */
   .forecast-intro {
     font-size: 13px; color: var(--text-2);
@@ -2979,9 +3382,7 @@
 <!-- ===== Sidebar (Global Navigation) ===== -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <span class="sb-logo-text">
-      <span class="sb-l-char" style="--d:0.40s">L</span><span class="sb-l-char" style="--d:0.52s">O</span><span class="sb-l-char" style="--d:0.64s">U</span><span class="sb-l-char sb-logo-i" style="--d:0.76s">I</span><span class="sb-l-char" style="--d:0.88s">S</span>
-    </span>
+    <span class="sb-logo-text">Louis<span class="sb-logo-dot">·</span></span>
   </div>
 
   <!-- 시장 토글은 우측 하단 플로팅으로 이동 -->
@@ -3170,6 +3571,7 @@
   </h1>
   <div class="page-header-controls">
     <nav class="uni-seg" id="heatmap-view-tabs">
+      <button class="uni-seg-btn tab" data-view="matrix">판도</button>
       <button class="uni-seg-btn tab active" data-view="leaderboard">현재</button>
       <button class="uni-seg-btn tab" data-view="forecast">다음</button>
     </nav>
@@ -3177,6 +3579,34 @@
 </div>
 
 <main>
+  <!-- ============================================================
+       NEW · Theme Matrix (주기율표 메타포)
+       섹터(행) × V2 점수 강도(열) — LOUIS 토큰 통합
+       ============================================================ -->
+  <section class="view" id="view-matrix">
+    <p class="leaderboard-intro">섹터(행) × <strong>V2 점수 강도</strong>(열) 매트릭스. 점수가 높은(매수 검토) 테마일수록 우측 강세 컬럼에. 칩 클릭 시 대표 종목 표시.</p>
+
+    <div class="matrix-wrap">
+      <div class="theme-matrix" id="themeMatrix"></div>
+    </div>
+
+    <div class="matrix-legend">
+      <div class="ml-group">
+        <span class="ml-title">강도 (V2 점수)</span>
+        <span class="ml-swatch ml-hot"><i></i>HOT 80+</span>
+        <span class="ml-swatch ml-strong"><i></i>STRONG 65~80</span>
+        <span class="ml-swatch ml-neutral"><i></i>NEUTRAL 40~65</span>
+        <span class="ml-swatch ml-weak"><i></i>WEAK 20~40</span>
+        <span class="ml-swatch ml-cold"><i></i>COLD &lt;20</span>
+      </div>
+      <div class="ml-group">
+        <span class="ml-title">마크</span>
+        <span style="color:var(--accent);font-family:var(--font-mono);font-size:11px">★</span>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3);letter-spacing:0.3px">시즌 진입월·임박</span>
+      </div>
+    </div>
+  </section>
+
   <section class="view active" id="view-leaderboard">
     <p class="leaderboard-intro">절대 강도 순 정렬 · 우측 사분면 뱃지는 RRG 모멘텀 흐름 표시 (강도와 모멘텀은 별개 지표)</p>
     <div class="divider"><span>1위</span></div>
@@ -3226,6 +3656,24 @@
 </main>
 
 </div><!-- /page-heatmap -->
+
+<!-- Theme Matrix bottom sheet (Phase A7) -->
+<div class="tm-sheet-backdrop" id="tmSheetBackdrop"></div>
+<div class="tm-sheet" id="tmSheet">
+  <div class="tm-sheet-grip"></div>
+  <div class="tm-sheet-head">
+    <span class="tm-sheet-symbol" id="tmSheetSymbol">—</span>
+    <span class="tm-sheet-name" id="tmSheetName">—</span>
+  </div>
+  <div class="tm-sheet-meta">
+    <span>강도 <b id="tmSheetScore">—</b></span>
+    <span>등락률 <b id="tmSheetPct">—</b></span>
+    <span>섹터 <b id="tmSheetSector">—</b></span>
+    <span>등급 <b id="tmSheetTier">—</b></span>
+  </div>
+  <div class="tm-sheet-section-title">대표 종목 · 종목분석에서 자세히</div>
+  <div class="tm-sheet-stocks" id="tmSheetStocks"></div>
+</div>
 
 <!-- ========== PAGE: GUIDE ========== -->
 <div class="page page-guide" id="page-guide" style="display:none">
@@ -3408,6 +3856,20 @@
             <div class="rn-desc">📅🔥📖 이모지 → 라인 SVG (캘린더/막대그래프/노트북). 브랜드 원칙 섹션과 동일한 스펙(viewBox 24, stroke 1.5, round). <code>currentColor</code> 적용으로 한 가지 회색 톤.</div>
           </div>
         </div>
+        <div class="rn-item">
+          <div class="rn-num">08</div>
+          <div class="rn-body">
+            <div class="rn-title">신호 시각화 — 단추형 ●○✕ → 점수 박스</div>
+            <div class="rn-desc">"구멍 뚫린 단추" 같다는 피드백 반영. 16×16 원 모양 → 30×18 점수 박스(<code>.sg-badge</code>)로 전환. <strong>매수 검토</strong>는 오렌지 채움 + 점수(예: <code>71</code>), <strong>대기</strong>는 회색 보더 + 점수, <strong>회피</strong>는 빨강 빗금 + ✕. 정보 밀도 향상 — 신호 + 점수 동시 인지. Top Pick 카드도 동일 패턴(작은 사이즈) 적용.</div>
+          </div>
+        </div>
+        <div class="rn-item">
+          <div class="rn-num">09</div>
+          <div class="rn-body">
+            <div class="rn-title">테마 분석 — 판도 (주기율표 메타포)</div>
+            <div class="rn-desc">테마 분석 페이지에 새 <strong>판도 뷰</strong> 추가 (기존 현재/다음 탭 옆). 섹터(행) × V2 점수 강도(열) 매트릭스로 한눈에 시장 전체 구도 파악. 강도 5단계 (HOT 80+ / STRONG 65~80 / NEUTRAL 40~65 / WEAK 20~40 / COLD &lt;20) — LOUIS 토큰(한국식 빨/파, 블룸버그 오렌지)으로 통일. 시즌 진입월/임박 테마는 <code>★</code> 마크. 매트릭스 외곽은 <strong>오렌지 토글 박스</strong>(액센트 컬러)로 클릭 가능 영역 강조. 칩 클릭 시 bottom sheet로 대표 종목 + 강도/등락률/섹터/등급 표시.</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -3540,24 +4002,52 @@
           </div>
         </div>
 
-        <!-- 신호 배지 -->
+        <!-- 신호 점수 박스 (sg-badge) — 단추형 ●○✕ → 점수 표시 -->
         <div class="ds-comp">
-          <div class="ds-comp-label">신호 배지 (●○✕)</div>
-          <div style="display:flex;gap:18px;align-items:center">
-            <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-              <span class="sig now">●</span>
-              <span class="ds-mini">지금</span>
+          <div class="ds-comp-label">신호 점수 박스 (V2)</div>
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <span class="sg-badge sg-now"><span class="sg-num">71</span></span>
+              <span class="ds-mini">매수 검토</span>
             </div>
-            <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-              <span class="sig wait">○</span>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <span class="sg-badge sg-now"><span class="sg-num">82</span></span>
+              <span class="ds-mini">강한 매수</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <span class="sg-badge sg-wait"><span class="sg-num">52</span></span>
               <span class="ds-mini">대기</span>
             </div>
-            <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-              <span class="sig avoid">✕</span>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <span class="sg-badge sg-wait"><span class="sg-num">31</span></span>
+              <span class="ds-mini">대기 (낮음)</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <span class="sg-badge sg-avoid"><span class="sg-num sg-x">✕</span></span>
               <span class="ds-mini">회피</span>
             </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <span class="sg-badge sg-skel"><span class="sg-num">·</span></span>
+              <span class="ds-mini">분석 대기</span>
+            </div>
           </div>
-          <div class="ds-comp-note">16×16px · 폰트 10px · 행동 제안용</div>
+          <div class="ds-comp-note">
+            매수: 임계값 이상 (강세장 70+ / 약세장 55+) — 오렌지 채움.
+            대기: 임계값 미만 — 회색 보더만.
+            회피: 즉시회피 룰(과열 95%+ / RSI 70+ AND 도달률 80%+) — 빨강 빗금.
+            분석 대기: 데이터 부족 — 스켈레톤. <strong>기존 ●○✕ 단추형 → 정보 밀도 높은 점수형으로 전환.</strong>
+          </div>
+        </div>
+
+        <!-- 작은 사이즈 (인라인용) -->
+        <div class="ds-comp">
+          <div class="ds-comp-label">신호 박스 — 인라인 작은 사이즈 (.sg-sm)</div>
+          <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:14px;color:var(--text-1)"><span class="sg-badge sg-sm sg-now"><span class="sg-num">71</span></span>리노공업</span>
+            <span style="font-size:14px;color:var(--text-1)"><span class="sg-badge sg-sm sg-wait"><span class="sg-num">48</span></span>NAVER</span>
+            <span style="font-size:14px;color:var(--text-1)"><span class="sg-badge sg-sm sg-avoid"><span class="sg-num sg-x">✕</span></span>SK하이닉스</span>
+          </div>
+          <div class="ds-comp-note">Top Pick 카드의 종목명 옆 인라인 표시용. 16×26~28px.</div>
         </div>
 
         <!-- 신호 + 즐겨찾기 묶음 (테이블 첫 컬럼 패턴) -->
@@ -3565,19 +4055,19 @@
           <div class="ds-comp-label">신호 + 즐겨찾기 묶음 (테이블 첫 컬럼)</div>
           <div style="display:flex;gap:24px;align-items:center;padding:12px 0">
             <div class="sig-cell">
-              <span class="sig now">●</span>
+              <span class="sg-badge sg-now"><span class="sg-num">71</span></span>
               <button type="button" class="fav-btn on" style="background:transparent;border:none;cursor:pointer;font-size:15px;line-height:1;padding:0;color:var(--accent)">★</button>
             </div>
             <div class="sig-cell">
-              <span class="sig wait">○</span>
+              <span class="sg-badge sg-wait"><span class="sg-num">52</span></span>
               <button type="button" class="fav-btn" style="background:transparent;border:none;cursor:pointer;font-size:15px;line-height:1;padding:0;color:var(--text-4)">★</button>
             </div>
             <div class="sig-cell">
-              <span class="sig avoid">✕</span>
+              <span class="sg-badge sg-avoid"><span class="sg-num sg-x">✕</span></span>
               <button type="button" class="fav-btn" style="background:transparent;border:none;cursor:pointer;font-size:15px;line-height:1;padding:0;color:var(--text-4)">★</button>
             </div>
           </div>
-          <div class="ds-comp-note">신호(16px) + gap(4px) + 별(15px) = 35px / 컬럼 43px (좌측 padding 4px 포함)</div>
+          <div class="ds-comp-note">박스(30~32px) + gap(4px) + 별(15px) = ~50px / 컬럼 53px</div>
         </div>
 
         <!-- 스켈레톤 시스템 (표준) -->
@@ -4052,22 +4542,24 @@
     </section>
 
     <section class="guide-section">
-      <h2 class="guide-h2">행동 제안 신호</h2>
-      <p class="guide-p">종목 행 첫 컬럼에 표시되는 1글자 신호. <strong>참고용 분석 결과</strong>이며 매매 권유가 아닙니다.</p>
+      <h2 class="guide-h2">행동 제안 신호 (점수 박스)</h2>
+      <p class="guide-p">종목 행 첫 컬럼에 V2 점수가 표시됩니다. <strong>참고용 분석 결과</strong>이며 매매 권유가 아닙니다.</p>
       <div class="guide-grid">
-        <div class="guide-item"><span class="sig now" style="margin-bottom:4px">●</span>
-          <div class="guide-item-desc"><strong style="color:var(--accent)">지금 검토</strong> — 도달률 70% 미만이면서 다음 중 하나: 시즌 진입월 일치 / <strong>진입월 1~2개월 임박 (선취매)</strong> / 피크 시즌 / 모멘텀 양수 / 섹터(상시).</div></div>
-        <div class="guide-item"><span class="sig wait" style="margin-bottom:4px">○</span>
-          <div class="guide-item-desc"><strong>대기</strong> — 도달률 양호하나 시즌·모멘텀 조건 미충족, 또는 도달률 70~95% (고점 근접).</div></div>
-        <div class="guide-item"><span class="sig avoid" style="margin-bottom:4px">✕</span>
-          <div class="guide-item-desc"><strong>회피</strong> — 도달률 95% 이상 (과열) 또는 강한 하락 모멘텀(−3% 이상).</div></div>
+        <div class="guide-item"><span class="sg-badge sg-now" style="margin-bottom:4px"><span class="sg-num">71</span></span>
+          <div class="guide-item-desc"><strong style="color:var(--accent)">매수 검토</strong> — V2 점수 임계값 이상 (강세장 70+ / 약세장 55+). 오렌지 채움. 숫자가 크면 강한 매수.</div></div>
+        <div class="guide-item"><span class="sg-badge sg-wait" style="margin-bottom:4px"><span class="sg-num">52</span></span>
+          <div class="guide-item-desc"><strong>대기</strong> — 임계값 미만. 일부 지표만 양호, 추가 확인 필요.</div></div>
+        <div class="guide-item"><span class="sg-badge sg-avoid" style="margin-bottom:4px"><span class="sg-num sg-x">✕</span></span>
+          <div class="guide-item-desc"><strong>회피</strong> — 즉시회피 룰 (도달률 95%+ / 등락 -3% 이하 / RSI 70+ AND 도달률 80%+). 빨강 빗금.</div></div>
+        <div class="guide-item"><span class="sg-badge sg-skel" style="margin-bottom:4px"><span class="sg-num">·</span></span>
+          <div class="guide-item-desc"><strong>분석 대기</strong> — 가격 데이터 없음 또는 OHLCV 미도착.</div></div>
       </div>
-      <p class="guide-p guide-note">신호는 <strong>5분 이내 갱신된 가격</strong>에서만 산출. 데이터 없는 종목은 자동 "대기"로 표시.</p>
+      <p class="guide-p guide-note">기존 ●○✕ "단추형" 신호를 점수 박스로 전환 (2026-04). 정보 밀도 향상 — 한 번에 신호 + 점수 동시 인지.</p>
     </section>
 
     <section class="guide-section">
       <h2 class="guide-h2">점수 시스템 (V2 — 기술 지표 통합)</h2>
-      <p class="guide-p">2026년 4월 도입. 기존 "도달률 + 시즌"만으로 결정하던 신호를 <strong>5가지 기술 지표 종합 점수(100점 만점)</strong>로 재산출합니다.</p>
+      <p class="guide-p">2026년 4월 도입. 기존 "도달률 + 시즌"만으로 결정하던 신호를 <strong>5가지 기술 지표 + MACD 종합 점수(100점 만점)</strong>로 재산출합니다.</p>
 
       <div class="guide-formula">
         <div class="gf-row"><span class="gf-key">도달률</span><span class="gf-eq">=</span><span class="gf-val">최대 30점 — &lt;50% 풀점, 50~70% 단계 감소, 70~85% 빠른 감소, 85% 이상 0점</span></div>
@@ -4079,14 +4571,14 @@
         <div class="gf-row"><span class="gf-key">+ 시즌 보너스</span><span class="gf-eq">=</span><span class="gf-val">진입월 +15 / 임박 +12 / 피크 +8</span></div>
       </div>
 
-      <h3 class="guide-h3">신호 결정 임계값</h3>
+      <h3 class="guide-h3">신호 결정 임계값 (시장 국면 동적 조정)</h3>
       <div class="guide-grid">
-        <div class="guide-item"><span class="sig now" style="margin-bottom:4px">●</span>
-          <div class="guide-item-desc"><strong style="color:var(--accent)">65점 이상</strong> — 여러 지표가 동시 양호 (예: RSI 과매도 + 200일선 위 + 볼린저 하단)</div></div>
-        <div class="guide-item"><span class="sig wait" style="margin-bottom:4px">○</span>
-          <div class="guide-item-desc"><strong>40~65점</strong> — 일부 지표만 양호, 추가 확인 필요</div></div>
-        <div class="guide-item"><span class="sig avoid" style="margin-bottom:4px">✕</span>
-          <div class="guide-item-desc"><strong>즉시 회피</strong> — 도달률 95%+ / 등락 -3% 이하 / RSI 70+ AND 도달률 80+ (점수 무관)</div></div>
+        <div class="guide-item"><span class="sg-badge sg-now" style="margin-bottom:4px"><span class="sg-num">71</span></span>
+          <div class="guide-item-desc"><strong style="color:var(--accent)">매수 검토</strong> — 강세장 70+ / 약상승·불확실 65+ / 약세장 55+ — 여러 지표 동시 양호.</div></div>
+        <div class="guide-item"><span class="sg-badge sg-wait" style="margin-bottom:4px"><span class="sg-num">52</span></span>
+          <div class="guide-item-desc"><strong>대기</strong> — 점수 40+ 임계값 미만 — 일부 지표만 양호, 추가 확인 필요.</div></div>
+        <div class="guide-item"><span class="sg-badge sg-avoid" style="margin-bottom:4px"><span class="sg-num sg-x">✕</span></span>
+          <div class="guide-item-desc"><strong>즉시 회피</strong> — 도달률 95%+ / 등락 -3% 이하 / RSI 70+ AND 도달률 80%+ (점수 무관).</div></div>
       </div>
 
       <h3 class="guide-h3">데이터 소스</h3>
@@ -5484,6 +5976,35 @@ function calcSignalAuto(stock, theme, entry){
   return calcSignal(stock, theme, entry);
 }
 
+/* ============================================================
+   ✦ 신호 점수 시각화 헬퍼 (Phase A9: 단추형 → 점수형)
+   - 입력: sig 객체 (signal, score, reason)
+   - 출력: HTML 문자열 — [71] 형태의 점수 박스
+   ============================================================ */
+function renderSignalBadge(sig, opts = {}){
+  const { size = 'md', tooltip = true, inline = false } = opts;
+  if(!sig){
+    return `<span class="sg-badge sg-skel ${size==='sm'?'sg-sm':''}" aria-label="분석 대기"><span class="sg-num">·</span></span>`;
+  }
+  const reason = sig.reason || '';
+  const tipAttr = tooltip ? `data-tip="${reason.replace(/"/g, '&quot;')}" tabindex="0"` : '';
+  const cls = `sg-${sig.signal}`; // sg-now / sg-wait / sg-avoid
+  const sizeCls = size === 'sm' ? 'sg-sm' : '';
+  const inlineCls = inline ? 'sg-inline' : '';
+
+  // 점수 표시: avoid는 "✕", 점수 없으면 "·", 있으면 정수
+  let display;
+  if(sig.signal === 'avoid'){
+    display = '<span class="sg-num sg-x">✕</span>';
+  } else if(typeof sig.score === 'number' && sig.score > 0){
+    display = `<span class="sg-num">${Math.round(sig.score)}</span>`;
+  } else {
+    display = '<span class="sg-num">·</span>';
+  }
+
+  return `<span class="sg-badge ${cls} ${sizeCls} ${inlineCls}" ${tipAttr}>${display}</span>`;
+}
+
 /* ===== 디버그·비교 도구 ===== */
 window.__signal = {
   v1: calcSignal,
@@ -5582,15 +6103,13 @@ function renderTopPicks(){
       .trim() || '기술 지표 양호';
     // 신호별 카드 클래스 — ● 강조 / ○ 대기는 살짝 흐리게
     const cardCls = p.signal === 'now' ? '' : ' tp-wait';
-    const sigBadge = p.signal === 'now'
-      ? `<span class="tp-sig tp-sig-now" title="지금 검토">●</span>`
-      : `<span class="tp-sig tp-sig-wait" title="대기 (점수 부족)">○</span>`;
+    // 종목명 옆 점수 박스 (renderSignalBadge 헬퍼 사용 — 작은 사이즈)
+    const sigBadgeInline = renderSignalBadge({ signal: p.signal, score: p.score, reason: p.reason }, { size: 'sm', tooltip: false, inline: true });
     return `
       <div class="toppick-card${cardCls}" onclick="scrollToStock('${p.stock.code}')">
         <div class="tp-rank">#${i + 1}</div>
         <div class="tp-head">
-          <div class="tp-name">${sigBadge}${p.stock.name}<span class="tp-code">${p.stock.code}</span></div>
-          ${p.version === 'v2' && p.score ? `<span class="tp-score" title="V2 점수 (RSI·200일선·%B·거래량·도달률 종합)">${Math.round(p.score)}</span>` : ''}
+          <div class="tp-name">${sigBadgeInline}${p.stock.name}<span class="tp-code">${p.stock.code}</span></div>
         </div>
         <div class="tp-theme">${p.theme.name}</div>
         <div class="tp-reason">${cleanReason}</div>
@@ -7223,6 +7742,272 @@ window.__regime = {
 };
 /* ===== /Phase A6 시장 국면 분류 ===== */
 
+/* ============================================================
+   ✦ Phase A7: Theme Matrix (주기율표 메타포)
+   - 섹터(행) × V2 점수 강도(열) 매트릭스
+   - 기존 ALL_THEMES 데이터 + V2 점수 활용
+   - sg-badge·skel·fade-in-soft 컴포넌트 재사용
+   ============================================================ */
+
+/* 섹터 → 그룹 매핑 (LOUIS 테마의 cat 필드 기반) */
+const TM_SECTOR_MAP = {
+  // 한국
+  '반도체':       { id:'semi',     name:'반도체 · IT' },
+  '디스플레이':    { id:'semi',     name:'반도체 · IT' },
+  '배터리':       { id:'battery',  name:'배터리 · EV' },
+  '바이오':       { id:'bio',      name:'바이오 · 헬스' },
+  '제약':         { id:'bio',      name:'바이오 · 헬스' },
+  'AI':           { id:'aisw',     name:'AI · SW' },
+  '소프트웨어':    { id:'aisw',     name:'AI · SW' },
+  '게임':         { id:'media',    name:'미디어 · 엔터' },
+  '엔터테인먼트':  { id:'media',    name:'미디어 · 엔터' },
+  'K-콘텐츠':      { id:'media',    name:'미디어 · 엔터' },
+  '방산':         { id:'defense',  name:'방산 · 우주' },
+  '우주항공':      { id:'defense',  name:'방산 · 우주' },
+  '조선':         { id:'energy',   name:'조선 · 에너지' },
+  '원자력':       { id:'energy',   name:'조선 · 에너지' },
+  '신재생':       { id:'energy',   name:'조선 · 에너지' },
+  '에너지':       { id:'energy',   name:'조선 · 에너지' },
+  '소재':         { id:'material', name:'소재 · 화학' },
+  '화학':         { id:'material', name:'소재 · 화학' },
+  '금융':         { id:'finance',  name:'금융 · 리츠' },
+  '은행':         { id:'finance',  name:'금융 · 리츠' },
+  '리츠':         { id:'finance',  name:'금융 · 리츠' },
+  '소비재':       { id:'consumer', name:'컨슈머 · 유통' },
+  '유통':         { id:'consumer', name:'컨슈머 · 유통' },
+  '음식료':       { id:'consumer', name:'컨슈머 · 유통' },
+  '여행':         { id:'consumer', name:'컨슈머 · 유통' },
+  '시즌':         { id:'season',   name:'시즌 테마' },
+};
+
+const TM_SECTOR_ORDER = ['semi','battery','bio','aisw','defense','energy','media','material','finance','consumer','season'];
+
+const TM_TIERS = ['hot','strong','neutral','weak','cold'];
+const TM_TIER_META = {
+  hot:     { label:'HOT',     sub:'80+ · 매수 검토' },
+  strong:  { label:'STRONG',  sub:'65~80 · 강세' },
+  neutral: { label:'NEUTRAL', sub:'40~65 · 중립' },
+  weak:    { label:'WEAK',    sub:'20~40 · 약세' },
+  cold:    { label:'COLD',    sub:'<20 · 침체' },
+};
+
+/* 점수 → 강도 등급 */
+function tmScoreToTier(score){
+  if(score >= 80) return 'hot';
+  if(score >= 65) return 'strong';
+  if(score >= 40) return 'neutral';
+  if(score >= 20) return 'weak';
+  return 'cold';
+}
+
+/* 테마 1개 → 매트릭스 데이터 변환 */
+function tmThemeToData(theme, rank){
+  // 테마 평균 V2 점수 = 구성 종목들의 평균
+  let sumScore = 0, sumPct = 0, count = 0, hasFreshData = false;
+  theme.stocks.forEach(s => {
+    const entry = priceCache[s.code];
+    if(!entry?.value?.price) return;
+    const sig = (typeof calcSignalAuto === 'function')
+      ? calcSignalAuto(s, theme, entry) : { score: 0 };
+    sumScore += sig.score || 0;
+    sumPct += entry.value.change || 0;
+    count++;
+    if(entry.status === 'fresh') hasFreshData = true;
+  });
+  const avgScore = count > 0 ? sumScore / count : 0;
+  const avgPct = count > 0 ? sumPct / count : 0;
+  const tier = tmScoreToTier(avgScore);
+
+  // 시즌 마크 — 진입월 일치 또는 임박
+  const mo = (typeof CURRENT_MONTH !== 'undefined') ? CURRENT_MONTH : (new Date().getMonth() + 1);
+  let isSeason = false;
+  if(theme.entryMonths){
+    const next1 = (mo % 12) + 1;
+    const next2 = ((mo + 1) % 12) + 1;
+    isSeason = theme.entryMonths.includes(mo)
+            || theme.entryMonths.includes(next1)
+            || theme.entryMonths.includes(next2);
+  }
+
+  // 섹터 매핑
+  const secInfo = TM_SECTOR_MAP[theme.cat] || { id:'consumer', name:theme.cat };
+
+  return {
+    theme,
+    code: theme.code || theme.name.slice(0, 3).toUpperCase(),
+    name: theme.name,
+    sector: secInfo.id,
+    sectorName: secInfo.name,
+    tier,
+    score: Math.round(avgScore),
+    pct: avgPct,
+    rank,
+    isSeason,
+    hasData: count > 0,
+    hasFreshData,
+    stockCount: theme.stocks.length,
+  };
+}
+
+/* 모든 테마 → 매트릭스 데이터 + 섹터별 그룹화 */
+function tmBuildMatrix(){
+  // 현재 시장 + 스타일 필터 적용된 테마들
+  const themes = (typeof applyStyleFilter === 'function' && typeof getActivePool === 'function')
+    ? applyStyleFilter(getActivePool())
+    : ALL_THEMES.filter(t => t.country === currentCountry);
+
+  // 강도 점수로 정렬해 rank 부여
+  const withScore = themes.map(t => tmThemeToData(t, 0));
+  withScore.sort((a, b) => b.score - a.score);
+  withScore.forEach((d, i) => d.rank = i + 1);
+
+  // 섹터별 그룹화
+  const bySector = {};
+  withScore.forEach(d => {
+    if(!bySector[d.sector]) bySector[d.sector] = { id: d.sector, name: d.sectorName, items: [] };
+    bySector[d.sector].items.push(d);
+  });
+
+  // 섹터 순서대로 정렬, 빈 섹터 제외
+  const sectors = TM_SECTOR_ORDER
+    .filter(id => bySector[id])
+    .map(id => bySector[id]);
+  // 매핑 안 된 섹터 뒤에 추가
+  Object.values(bySector).forEach(s => {
+    if(!TM_SECTOR_ORDER.includes(s.id)) sectors.push(s);
+  });
+
+  return sectors;
+}
+
+/* 칩 HTML */
+function tmRenderChip(d){
+  const sign = d.pct >= 0 ? '+' : '';
+  const cls = ['tm-chip', d.tier];
+  if(d.isSeason) cls.push('season');
+  if(d.score < 20) cls.push('subdued');
+  if(!d.hasData) cls.push('subdued');
+  return `<button class="${cls.join(' ')}" data-tm-theme="${d.theme.id}" type="button">
+    <div class="tm-chip-top">
+      <span class="tm-chip-rank">#${String(d.rank).padStart(2, '0')}</span>
+      <span class="tm-chip-score">${d.hasData ? d.score : '·'}</span>
+    </div>
+    <div class="tm-chip-symbol">${d.code}</div>
+    <div class="tm-chip-name">${d.name}</div>
+  </button>`;
+}
+
+/* 매트릭스 렌더 */
+function tmRender(){
+  const root = document.getElementById('themeMatrix');
+  if(!root) return;
+
+  const sectors = tmBuildMatrix();
+  if(sectors.length === 0){
+    root.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-3);grid-column:1/-1;">표시할 테마 없음</div>`;
+    return;
+  }
+
+  let html = '';
+  // 코너
+  html += `<div class="tm-corner">SECTOR ↓<br>STRENGTH →</div>`;
+  // 컬럼 헤더
+  TM_TIERS.forEach(t => {
+    html += `<div class="tm-col-head ${t}">
+      <span class="tm-tier-label">${TM_TIER_META[t].label}</span>
+      <span class="tm-tier-sub">${TM_TIER_META[t].sub}</span>
+    </div>`;
+  });
+
+  // 행
+  sectors.forEach((sec, sIdx) => {
+    const isLast = sIdx === sectors.length - 1;
+    const lastCls = isLast ? ' row-last' : '';
+    html += `<div class="tm-row-head${lastCls}">
+      <span class="tm-sec-name">${sec.name}</span>
+      <span class="tm-sec-meta">${sec.items.length} themes</span>
+    </div>`;
+    TM_TIERS.forEach((tier, tIdx) => {
+      const lastColCls = tIdx === TM_TIERS.length - 1 ? ' last-col' : '';
+      const themesInCell = sec.items.filter(d => d.tier === tier);
+      const cellCls = ['tm-cell', tier, lastCls.trim(), lastColCls.trim()].filter(Boolean).join(' ');
+      if(themesInCell.length === 0){
+        html += `<div class="${cellCls} empty">·</div>`;
+      } else {
+        html += `<div class="${cellCls}">${themesInCell.map(tmRenderChip).join('')}</div>`;
+      }
+    });
+  });
+
+  root.innerHTML = html;
+  root.classList.add('fade-in-soft');
+
+  // 칩 클릭 → 시트 열기
+  root.querySelectorAll('[data-tm-theme]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const themeId = chip.dataset.tmTheme;
+      tmOpenSheet(themeId);
+    });
+  });
+}
+
+/* 칩 시트 — 테마 상세 */
+function tmOpenSheet(themeId){
+  const theme = ALL_THEMES.find(t => t.id === themeId);
+  if(!theme) return;
+  const data = tmThemeToData(theme, 0);
+  document.getElementById('tmSheetSymbol').textContent = data.code;
+  document.getElementById('tmSheetName').textContent = data.name;
+  document.getElementById('tmSheetScore').textContent = data.hasData ? data.score : '—';
+  const pctEl = document.getElementById('tmSheetPct');
+  pctEl.textContent = data.hasData ? `${data.pct >= 0 ? '+' : ''}${data.pct.toFixed(2)}%` : '—';
+  pctEl.style.color = data.pct >= 0 ? 'var(--color-up)' : 'var(--color-down)';
+  document.getElementById('tmSheetSector').textContent = data.sectorName;
+  document.getElementById('tmSheetTier').textContent = TM_TIER_META[data.tier].label;
+  document.getElementById('tmSheetTier').style.color = data.tier === 'hot' ? 'var(--color-up)'
+    : data.tier === 'strong' ? 'var(--accent)'
+    : data.tier === 'cold' ? 'var(--color-down)'
+    : 'var(--text-2)';
+
+  // 종목 리스트
+  const stocksEl = document.getElementById('tmSheetStocks');
+  stocksEl.innerHTML = theme.stocks.map(s => {
+    const entry = priceCache[s.code];
+    const ch = entry?.value?.change;
+    const hasPrice = ch != null;
+    const sign = ch >= 0 ? '+' : '';
+    const cls = hasPrice ? (ch >= 0 ? 'up' : 'down') : '';
+    const pctText = hasPrice ? `${sign}${ch.toFixed(2)}%` : '—';
+    return `<div class="tm-stock-row" onclick="navigate('calendar');setTimeout(()=>scrollToStock('${s.code}'),300);">
+      <span class="tm-stock-name">${s.name}</span>
+      <span class="tm-stock-pct ${cls}">${pctText}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('tmSheet').classList.add('open');
+  document.getElementById('tmSheetBackdrop').classList.add('open');
+}
+
+function tmCloseSheet(){
+  document.getElementById('tmSheet')?.classList.remove('open');
+  document.getElementById('tmSheetBackdrop')?.classList.remove('open');
+}
+
+/* 매트릭스 탭 활성화 시 렌더 */
+function tmActivate(){
+  // 점수 시스템·OHLCV 준비됐으면 즉시 렌더
+  tmRender();
+}
+
+window.__themeMatrix = {
+  render: tmRender,
+  activate: tmActivate,
+  data: tmBuildMatrix,
+  open: tmOpenSheet,
+  close: tmCloseSheet,
+};
+/* ===== /Phase A7 Theme Matrix ===== */
+
 /* 살아있는 프록시 목록 (영구 차단 적용) */
 function getActiveProxies(){
   return PROXIES.map((_,i)=>i).filter(i => proxyHealth[i] > -3);
@@ -7561,7 +8346,6 @@ function renderStockCardHtml(s, theme){
     ? `<div class="scd-cache"><span class="cache-badge">캐시 · ${timeSince(entry.updatedAt)}</span></div>` : '';
 
   const sig = calcSignalAuto(s, theme, entry);
-  const sigChar = sig.signal === 'now' ? '●' : sig.signal === 'wait' ? '○' : '✕';
 
   // 기술 지표 인디케이터 (모바일 카드용)
   const indM = (typeof getIndicators === 'function') ? getIndicators(s.code) : null;
@@ -7597,7 +8381,7 @@ function renderStockCardHtml(s, theme){
         ${techBadgesM}
       </div>
       <div class="scd-corner">
-        <span class="sig ${sig.signal}" data-tip="${sig.reason}" tabindex="0">${sigChar}</span>
+        ${renderSignalBadge(sig)}
         <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')">★</button>
       </div>
     </div>
@@ -7678,9 +8462,8 @@ function renderStockRowHtml(s, theme){
 
   // 신호 계산
   const sig = calcSignalAuto(s, theme, entry);
-  const sigChar = sig.signal === 'now' ? '●' : sig.signal === 'wait' ? '○' : '✕';
   const sigCell = `<td><div class="sig-cell">
-    <span class="sig ${sig.signal}" data-tip="${sig.reason}" tabindex="0">${sigChar}</span>
+    ${renderSignalBadge(sig)}
     <button class="fav-btn ${isFav?'on':''}" data-fav="${s.code}" onclick="toggleFav('${s.code}')" title="즐겨찾기">★</button>
   </div></td>`;
 
@@ -7893,6 +8676,10 @@ function setCurrentMarket(market, opts={}){
   if(typeof buildFilterBar === 'function') buildFilterBar();
   if(typeof renderMarketRegimeBadge === 'function') renderMarketRegimeBadge();  // Phase A6 국면 배지 갱신
   if(typeof maybeRenderTopPicks === 'function') maybeRenderTopPicks(true);  // 시장 변경 → 강제 재정렬
+  if(typeof tmRender === 'function'){
+    const matrixView = document.getElementById('view-matrix');
+    if(matrixView && matrixView.classList.contains('active')) tmRender();
+  }
   if(typeof buildSummary === 'function') buildSummary();
   if(typeof renderContent === 'function') renderContent();
   if(typeof loadPrices === 'function' && currentRoute === 'calendar') loadPrices(true);
@@ -9447,7 +10234,19 @@ document.querySelectorAll('.tab').forEach(btn => {
     btn.classList.add('active');
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + view).classList.add('active');
+    // Matrix 탭 활성화 시 자동 렌더
+    if(view === 'matrix' && typeof tmActivate === 'function') tmActivate();
   });
+});
+
+/* Theme Matrix 시트 닫기 */
+document.addEventListener('click', (e) => {
+  if(e.target && e.target.id === 'tmSheetBackdrop'){
+    if(typeof tmCloseSheet === 'function') tmCloseSheet();
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && typeof tmCloseSheet === 'function') tmCloseSheet();
 });
 
 /* ========== MARKET STATUS ========== */
