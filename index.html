@@ -2707,12 +2707,17 @@
      ============================================================ */
   .matrix-wrap{
     overflow-x:auto;
+    overflow-y:auto;          /* ✦ 세로도 스크롤 가능 (sticky 작동 조건) */
+    max-height:78vh;          /* 화면의 78% 높이까지 (사용자가 가로/세로 모두 자유롭게) */
     margin-bottom:14px;
     padding:6px;
     /* 오렌지 포인트 외곽 — 토글 active 스타일과 동일 패턴 */
     background:var(--accent-soft);
     border:1px solid var(--accent-border);
     border-radius:var(--r-lg);
+    /* iOS 부드러운 스크롤 */
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
   }
   .theme-matrix{
     display:grid;
@@ -2721,7 +2726,7 @@
     min-width:830px;
     border:1px solid var(--border);
     border-radius:5px;
-    overflow:hidden;
+    /* overflow:hidden 제거 — sticky 작동을 위해 */
     background:var(--surface);
   }
 
@@ -2737,19 +2742,28 @@
   .tm-col-head:last-child, .tm-cell.last-col{ border-right:0; }
   .theme-matrix > .row-last{ border-bottom:0; }
 
-  /* ✦ Sticky 처리 — 가로 스크롤 시 첫 컬럼(섹터)·코너 고정
-     세로 스크롤은 페이지 자체라 별도 sticky 불필요 */
+  /* ✦ Sticky 처리 — 양방향 고정으로 맥락 유지
+     1. 코너: 좌측+상단 고정 (좌상단 코너) — z 최상위
+     2. 컬럼 헤더(강도): 상단 고정 — 세로 스크롤 시 유지
+     3. 행 헤더(섹터): 좌측 고정 — 가로 스크롤 시 유지
+   */
   .tm-corner{
     position:sticky;
+    top:0;
     left:0;
-    z-index:3;
-    /* 좌측 보더 효과 (sticky 시 분리 보이게) */
-    box-shadow:1px 0 0 var(--border);
+    z-index:4;       /* 코너가 가장 위 */
+    box-shadow:1px 1px 0 var(--border);
+  }
+  .tm-col-head{
+    position:sticky;
+    top:0;
+    z-index:2;       /* 행 헤더(z3)보다 아래, 코너(z4)보다 아래 */
+    box-shadow:0 1px 0 var(--border);
   }
   .tm-row-head{
     position:sticky;
     left:0;
-    z-index:2;
+    z-index:3;       /* 컬럼 헤더(z2) 위로 살짝 우선 */
     box-shadow:1px 0 0 var(--border);
   }
 
@@ -2973,7 +2987,7 @@
 
   /* 모바일 */
   @media (max-width:767px){
-    .matrix-wrap{ padding:4px; border-radius:10px; }
+    .matrix-wrap{ padding:4px; border-radius:10px; max-height:72vh; }
     .theme-matrix{
       grid-template-columns: 86px repeat(6, minmax(96px, 1fr));
       min-width:662px;
@@ -2988,6 +3002,25 @@
     .tm-chip-symbol{ font-size:11.5px; }
     .tm-chip-name{ font-size:9px; }
     .matrix-legend{ gap:10px 16px; font-size:9.5px; }
+  }
+
+  /* ✦ 패드 (768~1099px) — 매트릭스 콤팩트 사이즈
+     사이드바 hidden 상태라 콘텐츠 영역 최대 활용 */
+  @media (min-width:768px) and (max-width:1099px){
+    .matrix-wrap{ max-height:74vh; }
+    .theme-matrix{
+      grid-template-columns: 100px repeat(6, minmax(108px, 1fr));
+      min-width:748px;
+    }
+    .tm-row-head{ padding:11px 10px; }
+    .tm-sec-name{ font-size:11.5px; }
+    .tm-sec-meta{ font-size:9.5px; }
+    .tm-tier-label{ font-size:11px; }
+    .tm-tier-sub{ font-size:9px; }
+    .tm-cell{ min-height:66px; padding:7px; gap:4px; }
+    .tm-chip{ min-width:54px; padding:5px 6px 4px; }
+    .tm-chip-symbol{ font-size:12px; }
+    .tm-chip-name{ font-size:9.5px; }
   }
 
   /* 칩 상세 시트 (LOUIS 기존 패턴 활용 — bottom sheet) */
