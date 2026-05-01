@@ -279,6 +279,29 @@
   .tp-meta-item strong{ color:var(--text-1); font-weight:600; font-size:12px; margin-left:4px; }
   .tp-meta-lbl{ color:var(--text-3); font-size:10px; letter-spacing:0.3px; }
 
+  /* Top Pick — 30분 캐시 + 자리 유지 머지 + 페이드 + NEW 뱃지 */
+  .toppick-card.tp-swap-in{
+    animation: tpSwapIn .5s ease forwards;
+  }
+  @keyframes tpSwapIn{
+    from{ opacity:0; transform:translateY(6px); }
+    to  { opacity:1; transform:translateY(0); }
+  }
+  .toppick-card.tp-just-updated::after{
+    content:'NEW';
+    position:absolute; top:8px; right:42px;
+    font-family:var(--font-mono); font-size:9px; font-weight:700;
+    color:var(--accent); letter-spacing:0.08em;
+    opacity:0;
+    animation: tpNew 4s ease forwards;
+    pointer-events:none;
+  }
+  @keyframes tpNew{
+    0%,5%   { opacity:0; }
+    10%,80% { opacity:1; }
+    100%    { opacity:0; }
+  }
+
   /* ============================================================
      ✦ Phase A6: 시장 국면 배지 (Market Regime)
      ============================================================ */
@@ -1368,6 +1391,521 @@
      ============================================================ */
   .page-guide{ padding:0 0 var(--gap-7); max-width:1100px; }
   .guide-body{ display:flex; flex-direction:column; gap:var(--gap-6); padding: 0 var(--pad-page-x); }
+
+  /* ============================================================
+     ✦ Cycle Hunter Page — 사이클 헌터 전용
+     컨셉: 5년 일봉 기반 사이클 위상 분석 (산업+매크로 통합)
+     디자인 원칙: 종목 분석 페이지와 톤 동일, 사이클 특화 컴포넌트만 추가
+     ============================================================ */
+  .page-cycle{ padding:0 0 var(--gap-7); }
+
+  /* 사이클 위상 5단계 컬러 토큰 — 한국식과 충돌 안 하도록 별도 명명 */
+  .page-cycle{
+    --ph-trough:    #4f8fe8;   /* 🌑 바닥 — 파랑 (저점) */
+    --ph-recovery:  #22c599;   /* 🌒 회복 — 그린 (반등) */
+    --ph-expansion: #ff8000;   /* 🌓 확장 — 오렌지 (상승) */
+    --ph-peak:      #ffc83d;   /* 🌔 정점근접 — 노랑 (경계) */
+    --ph-cooling:   #e8485e;   /* 🌕 냉각 — 빨강 (이탈) */
+    --ph-unknown:   #5c6470;   /* ❓ 미상 — 회색 */
+  }
+
+  /* ===== 페이지 상단 인트로 (정체성 한 문장) ===== */
+  .cycle-intro{
+    padding: 0 var(--pad-page-x);
+    margin-bottom: var(--gap-4);
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.6;
+    max-width: 820px;
+  }
+  .cycle-intro strong{ color: var(--text-1); font-weight: 700; }
+  .cycle-intro .ci-phase{
+    display:inline-block; padding:1px 6px; border-radius:3px;
+    font-family:var(--font-mono); font-size:11px;
+    background:var(--accent-soft); color:var(--accent);
+    margin:0 2px;
+  }
+
+  /* ===== 사이클 바닥 후보 Top 3 (이번 주 주목 위치) ===== */
+  .cycle-toppick-section{
+    padding: var(--gap-3) var(--pad-page-x) 0;
+  }
+  .cycle-toppick-header{
+    display:flex; align-items:baseline; gap:10px;
+    margin-bottom: var(--gap-3);
+    flex-wrap:wrap;
+  }
+  .cycle-toppick-title{
+    font-family:var(--font-sans);
+    font-size:14px; font-weight:700;
+    color:var(--text-1);
+    letter-spacing:-0.01em;
+  }
+  .cycle-toppick-sub{
+    font-family:var(--font-mono);
+    font-size:10px; color:var(--text-3);
+    letter-spacing:0.5px;
+  }
+  .cycle-toppick-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr);
+    gap:var(--gap-3);
+  }
+  /* 사이클 후보 카드 — 토픽카드보다 살짝 큰 사이즈, 스파크라인 강조 */
+  .cyc-pick-card{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--r-md);
+    padding:14px 16px 14px 18px;
+    cursor:pointer;
+    transition: border-color .15s ease, transform .15s ease;
+    display:flex; flex-direction:column; gap:8px;
+    overflow:hidden;
+  }
+  .cyc-pick-card::before{
+    content:''; position:absolute;
+    left:0; top:14px; bottom:14px; width:2px;
+    background: var(--ph-recovery);
+    border-radius:1px;
+  }
+  .cyc-pick-card.phase-trough::before    { background: var(--ph-trough); }
+  .cyc-pick-card.phase-recovery::before  { background: var(--ph-recovery); }
+  .cyc-pick-card.phase-expansion::before { background: var(--ph-expansion); }
+  .cyc-pick-card.phase-peak::before      { background: var(--ph-peak); }
+  .cyc-pick-card.phase-cooling::before   { background: var(--ph-cooling); }
+  .cyc-pick-card:hover{
+    border-color:var(--border-2);
+    transform:translateY(-1px);
+  }
+  .cyc-pick-rank{
+    position:absolute; top:10px; right:12px;
+    font-family:var(--font-mono); font-size:10px; font-weight:600;
+    color:var(--text-3); line-height:1;
+    letter-spacing:0.5px;
+  }
+  .cyc-pick-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:8px; padding-right:32px;
+  }
+  .cyc-pick-name{
+    font-size:15px; font-weight:700; color:var(--text-1);
+    line-height:1.2;
+    display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;
+    min-width:0;
+  }
+  .cyc-pick-code{
+    font-family:var(--font-mono); font-size:10px;
+    color:var(--text-3); font-weight:500;
+    letter-spacing:0.3px;
+  }
+  .cyc-pick-score{
+    font-family:var(--font-mono);
+    font-size:11px; font-weight:700;
+    color:var(--accent);
+    line-height:1; flex-shrink:0;
+    letter-spacing:0;
+  }
+  .cyc-pick-score::after{ content:'점'; font-size:9px; opacity:0.7; margin-left:1px; }
+  .cyc-pick-cycle{
+    font-size:11px; color:var(--text-3);
+    letter-spacing:0.2px;
+  }
+  /* 스파크라인 영역 */
+  .cyc-spark{
+    width:100%; height:54px;
+    margin: 4px 0 2px;
+  }
+  .cyc-spark svg{ display:block; width:100%; height:100%; }
+  .cyc-spark .spk-line{ fill:none; stroke-width:1.5; }
+  .cyc-spark .spk-area{ fill-opacity:0.10; }
+  .cyc-spark .spk-now{ fill: var(--accent); }
+  .cyc-spark .spk-low{ fill: var(--ph-trough); }
+  .cyc-spark .spk-high{ fill: var(--text-4); }
+  .cyc-spark .spk-baseline{ stroke: var(--border-2); stroke-dasharray:2 3; }
+  /* 메타 — 위상 배지 + 핵심 메트릭 */
+  .cyc-pick-meta{
+    display:flex; gap:14px; align-items:center;
+    flex-wrap:wrap;
+    padding-top:8px;
+    border-top:1px solid var(--border);
+    font-family:var(--font-mono);
+  }
+  .cyc-pick-meta-item{
+    color:var(--text-2); font-size:11px;
+    display:inline-flex; gap:4px; align-items:baseline;
+  }
+  .cyc-pick-meta-item .lbl{
+    color:var(--text-3); font-size:10px; letter-spacing:0.3px;
+  }
+  .cyc-pick-meta-item strong{
+    color:var(--text-1); font-weight:600; font-size:12px;
+  }
+
+  /* ===== 위상 배지 (Phase Badge) — 5단계 달 모양 ===== */
+  .phase-badge{
+    display:inline-flex; align-items:center; gap:5px;
+    padding:3px 8px; border-radius:3px;
+    font-family:var(--font-sans);
+    font-size:11px; font-weight:600;
+    line-height:1.4; letter-spacing:-0.005em;
+    border:1px solid;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .phase-badge .pb-icon{
+    font-size:11px; line-height:1;
+  }
+  .phase-badge .pb-week{
+    font-family:var(--font-mono); font-size:9px;
+    margin-left:2px; opacity:0.7; letter-spacing:0.3px;
+  }
+  .phase-badge.trough{
+    color:var(--ph-trough);
+    background:rgba(79,143,232,0.10);
+    border-color:rgba(79,143,232,0.30);
+  }
+  .phase-badge.recovery{
+    color:var(--ph-recovery);
+    background:rgba(34,197,153,0.10);
+    border-color:rgba(34,197,153,0.30);
+  }
+  .phase-badge.expansion{
+    color:var(--ph-expansion);
+    background:rgba(255,128,0,0.10);
+    border-color:rgba(255,128,0,0.30);
+  }
+  .phase-badge.peak{
+    color:#d4a020;
+    background:rgba(255,200,61,0.08);
+    border-color:rgba(255,200,61,0.28);
+  }
+  .phase-badge.cooling{
+    color:var(--ph-cooling);
+    background:rgba(232,72,94,0.10);
+    border-color:rgba(232,72,94,0.30);
+  }
+  .phase-badge.unknown{
+    color:var(--text-3);
+    background:rgba(92,100,112,0.06);
+    border-color:var(--border);
+  }
+  /* 작은 사이즈 (테이블·인라인) */
+  .phase-badge.sm{
+    font-size:10px; padding:2px 6px;
+  }
+  .phase-badge.sm .pb-icon{ font-size:10px; }
+  .phase-badge.sm .pb-week{ display:none; }
+
+  /* ===== 사이클 분류 토글 — 산업/매크로/즐겨찾기 ===== */
+  .cycle-class-section{
+    padding: var(--gap-4) var(--pad-page-x) 0;
+  }
+
+  /* ===== 4단계 위상 요약 카드 (종목 분석 summary와 같은 그리드) ===== */
+  .cycle-summary-section{
+    padding: var(--gap-4) var(--pad-page-x) 0;
+  }
+  .cycle-summary-grid{
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:14px;
+  }
+  .cyc-sum-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-left:2px solid var(--border);
+    border-radius:6px;
+    padding:16px 18px;
+    cursor:pointer;
+    transition: border-color .15s, transform .15s;
+  }
+  .cyc-sum-card:hover{ border-color:var(--border-2); transform:translateY(-1px); }
+  .cyc-sum-card.active{ border-color:var(--text-2); }
+  /* 강조 — 바닥/회복은 LOUIS 정체성 ("물리면 매수") */
+  .cyc-sum-card.s-trough  { border-left-color:var(--ph-trough); }
+  .cyc-sum-card.s-recovery{ border-left-color:var(--ph-recovery); }
+  .cyc-sum-card.s-expansion{ border-left-color:var(--border); }
+  .cyc-sum-card.s-fav     { border-left-color:var(--accent); }
+  .cyc-sum-label{
+    font-size:11px; font-weight:600;
+    letter-spacing:1px; text-transform:uppercase;
+    display:flex; align-items:center; gap:6px;
+    margin-bottom:10px;
+    color:var(--text-3);
+  }
+  .cyc-sum-card.s-trough .cyc-sum-label{ color:var(--ph-trough); }
+  .cyc-sum-card.s-recovery .cyc-sum-label{ color:var(--ph-recovery); }
+  .cyc-sum-card.s-fav .cyc-sum-label{ color:var(--accent); }
+  .cyc-sum-value{
+    font-family:var(--font-mono);
+    font-size:28px; font-weight:700; line-height:1;
+    color:var(--text-1);
+  }
+  .cyc-sum-unit{
+    font-size:13px; color:var(--text-3);
+    font-weight:400; margin-left:2px;
+  }
+  .cyc-sum-sub{
+    font-family:var(--font-mono); font-size:11px;
+    color:var(--text-3);
+    margin-top:8px; letter-spacing:0.2px;
+  }
+
+  /* ===== 사이클 필터 바 ===== */
+  .cycle-filters{
+    padding: var(--gap-5) var(--pad-page-x) 0;
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  }
+  .cycle-filters .filter-label{ color:var(--muted); font-size:13px; margin-right:6px; font-weight:600; }
+
+  /* ===== 사이클 카드 그리드 (메인) ===== */
+  .cycle-main{
+    padding: var(--gap-5) var(--pad-page-x) var(--gap-7);
+  }
+  .cycle-card-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 14px;
+  }
+  /* 한 카드 — 종목 분석 행과 톤은 같으나 스파크라인이 본질 */
+  .cyc-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--r-md);
+    padding:16px 18px;
+    cursor:pointer;
+    transition: border-color .15s ease, transform .15s ease;
+    display:flex; flex-direction:column; gap:10px;
+    position:relative;
+    overflow:hidden;
+  }
+  .cyc-card:hover{
+    border-color:var(--border-2);
+    transform:translateY(-1px);
+  }
+  .cyc-card.fav-on::before{
+    content:''; position:absolute;
+    top:0; left:0; bottom:0; width:2px;
+    background:var(--accent);
+  }
+  .cyc-card-head{
+    display:flex; align-items:flex-start; gap:10px;
+  }
+  .cyc-card-info{ flex:1; min-width:0; }
+  .cyc-card-name{
+    font-size:15px; font-weight:700; color:var(--text-1);
+    line-height:1.2;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    margin-bottom:3px;
+  }
+  .cyc-card-sub{
+    font-family:var(--font-mono); font-size:10.5px;
+    color:var(--text-3); letter-spacing:0.3px;
+    display:flex; gap:6px; flex-wrap:wrap; align-items:center;
+  }
+  .cyc-card-sub .cs-cycle{
+    color:var(--text-2); font-weight:600;
+  }
+  .cyc-card-corner{
+    display:flex; flex-direction:column; align-items:flex-end; gap:4px;
+    flex-shrink:0;
+  }
+  .cyc-card-fav{
+    background:transparent; border:none; cursor:pointer;
+    font-size:16px; line-height:1; padding:0;
+    color:var(--border-2); transition:color .12s, transform .12s;
+  }
+  .cyc-card-fav:hover{ color:var(--accent); transform:scale(1.15); }
+  .cyc-card-fav.on{ color:var(--accent); }
+  .cyc-card-score{
+    font-family:var(--font-mono); font-size:11px; font-weight:700;
+    color:var(--accent); line-height:1;
+  }
+  .cyc-card-score::after{ content:'점'; font-size:9px; opacity:0.7; margin-left:1px; }
+
+  /* 스파크라인 (메인 카드 — 후보 카드보다 살짝 큼) */
+  .cyc-card-spark{
+    width:100%; height:64px; margin:2px 0;
+  }
+  .cyc-card-spark svg{ display:block; width:100%; height:100%; }
+
+  /* 4메트릭 (하단) */
+  .cyc-card-metrics{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:8px;
+    padding-top:8px;
+    border-top:1px solid var(--border);
+    font-family:var(--font-mono);
+  }
+  .cyc-metric{
+    display:flex; flex-direction:column; gap:2px;
+    text-align:left;
+  }
+  .cyc-metric .m-lbl{
+    font-size:9.5px; color:var(--text-3);
+    letter-spacing:0.4px; text-transform:uppercase;
+    line-height:1.2;
+  }
+  .cyc-metric .m-val{
+    font-size:13px; font-weight:700; color:var(--text-1);
+    line-height:1.1;
+    letter-spacing:-0.01em;
+  }
+  .cyc-metric .m-val.up   { color: var(--color-up); }
+  .cyc-metric .m-val.down { color: var(--color-down); }
+  .cyc-metric .m-val.warn { color: var(--ph-cooling); }
+  .cyc-metric .m-val.good { color: var(--ph-recovery); }
+  .cyc-metric .m-sub{
+    font-size:9px; color:var(--text-4);
+    letter-spacing:0.2px;
+  }
+
+  /* 사이클 카드 빈 상태 */
+  .cyc-empty{
+    grid-column:1/-1;
+    padding:var(--gap-5) var(--gap-4); text-align:center;
+    background:var(--surface-1); border:1px dashed var(--border);
+    border-radius:var(--r-md);
+    font-size:13px; color:var(--text-3);
+    line-height:1.6;
+  }
+
+  /* 사이클 데이터 로딩 스켈레톤 */
+  .cyc-card.loading .cyc-card-spark{
+    background:linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 50%, var(--surface-2) 100%);
+    background-size:200% 100%;
+    animation: skel-pulse 1.4s ease-in-out infinite;
+    border-radius:4px;
+  }
+  .cyc-card.loading .cyc-card-spark svg{ visibility:hidden; }
+
+  /* ===== Bottom Sheet (사이클 카드 상세) ===== */
+  .cyc-sheet-backdrop{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.55);
+    opacity:0; pointer-events:none;
+    transition:opacity .2s ease;
+    z-index:50;
+  }
+  .cyc-sheet-backdrop.open{ opacity:1; pointer-events:auto; }
+  .cyc-sheet{
+    position:fixed; left:0; right:0; bottom:0;
+    background:var(--surface);
+    border-top:1px solid var(--border-2);
+    border-radius:14px 14px 0 0;
+    padding:18px 20px;
+    padding-bottom:calc(26px + env(safe-area-inset-bottom, 0px));
+    transform:translateY(100%);
+    transition:transform .28s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index:60;
+    max-height:80vh;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+  }
+  .cyc-sheet.open{ transform:translateY(0); }
+  .cyc-sheet-grip{
+    width:36px; height:4px;
+    background:var(--border-2);
+    border-radius:2px;
+    margin:0 auto 14px;
+  }
+  .cyc-sheet-head{
+    display:flex; align-items:baseline; gap:10px;
+    margin-bottom:6px; flex-wrap:wrap;
+  }
+  .cyc-sheet-name{
+    font-size:18px; font-weight:700;
+    letter-spacing:-0.01em; color:var(--text-1);
+  }
+  .cyc-sheet-code{
+    font-family:var(--font-mono); font-size:11px;
+    color:var(--text-3); letter-spacing:0.3px;
+  }
+  .cyc-sheet-meta{
+    display:flex; gap:14px; flex-wrap:wrap;
+    font-family:var(--font-mono); font-size:11px;
+    color:var(--text-3); letter-spacing:0.3px;
+    margin-bottom:14px; padding-bottom:14px;
+    border-bottom:1px solid var(--border);
+  }
+  .cyc-sheet-meta b{ color:var(--text-1); font-weight:700; margin-left:3px; }
+  .cyc-sheet-chart{
+    width:100%; height:240px;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:var(--r-sm);
+    margin-bottom:14px;
+    padding:12px;
+  }
+  .cyc-sheet-chart svg{ display:block; width:100%; height:100%; }
+  .cyc-sheet-section-title{
+    font-family:var(--font-mono); font-size:10px;
+    color:var(--text-4);
+    letter-spacing:1.2px; text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .cyc-sheet-detail-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
+    gap:8px;
+  }
+  .cyc-sheet-detail-item{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:8px 10px;
+  }
+  .cyc-sheet-detail-item .di-lbl{
+    font-family:var(--font-mono); font-size:9px;
+    color:var(--text-4);
+    letter-spacing:0.5px; text-transform:uppercase;
+    margin-bottom:3px;
+  }
+  .cyc-sheet-detail-item .di-val{
+    font-family:var(--font-mono); font-size:13px;
+    font-weight:700; color:var(--text-1);
+    letter-spacing:-0.01em;
+  }
+
+  /* 모바일 반응형 */
+  @media (max-width:1099px){
+    .cycle-toppick-grid{ grid-template-columns:1fr; }
+    .cycle-summary-grid{ grid-template-columns:repeat(2, 1fr); }
+    .cycle-card-grid{ grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); }
+  }
+  @media (max-width:767px){
+    .cycle-summary-grid{ gap:8px; }
+    .cyc-sum-card{ padding:12px 14px; }
+    .cyc-sum-value{ font-size:22px; }
+    .cyc-card{ padding:14px; }
+    .cyc-card-spark{ height:54px; }
+    .cyc-card-metrics{ grid-template-columns:repeat(2, 1fr); }
+    .cyc-pick-meta-item{ font-size:10px; }
+    .cyc-sheet{ padding:16px; }
+    .cyc-sheet-chart{ height:200px; padding:8px; }
+  }
+  @media (min-width:768px){
+    .cyc-sheet{
+      left:50%; right:auto; bottom:5vh;
+      transform:translate(-50%, calc(100% + 5vh));
+      width:min(680px, calc(100vw - 80px));
+      max-height:75vh;
+      border-radius:14px;
+      border:1px solid var(--border-2);
+      padding:20px 24px 24px;
+      box-shadow:0 16px 48px rgba(0,0,0,0.5);
+    }
+    .cyc-sheet.open{ transform:translate(-50%, 0); }
+    .cyc-sheet-grip{ display:none; }
+  }
+  @media (min-width:1280px){
+    .cyc-sheet{
+      left:calc(50% + 120px);
+      bottom:8vh;
+      max-height:70vh;
+      width:min(740px, calc(100vw - 280px));
+    }
+  }
+  /* ===== /Cycle Hunter Page ===== */
 
   /* ============================================================
      ✦ 가이드 페이지 탭 네비게이션 (sticky)
@@ -2707,17 +3245,12 @@
      ============================================================ */
   .matrix-wrap{
     overflow-x:auto;
-    overflow-y:auto;          /* ✦ 세로도 스크롤 가능 (sticky 작동 조건) */
-    max-height:78vh;          /* 화면의 78% 높이까지 (사용자가 가로/세로 모두 자유롭게) */
     margin-bottom:14px;
     padding:6px;
     /* 오렌지 포인트 외곽 — 토글 active 스타일과 동일 패턴 */
     background:var(--accent-soft);
     border:1px solid var(--accent-border);
     border-radius:var(--r-lg);
-    /* iOS 부드러운 스크롤 */
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior:contain;
   }
   .theme-matrix{
     display:grid;
@@ -2726,7 +3259,7 @@
     min-width:830px;
     border:1px solid var(--border);
     border-radius:5px;
-    /* overflow:hidden 제거 — sticky 작동을 위해 */
+    overflow:hidden;
     background:var(--surface);
   }
 
@@ -2742,28 +3275,19 @@
   .tm-col-head:last-child, .tm-cell.last-col{ border-right:0; }
   .theme-matrix > .row-last{ border-bottom:0; }
 
-  /* ✦ Sticky 처리 — 양방향 고정으로 맥락 유지
-     1. 코너: 좌측+상단 고정 (좌상단 코너) — z 최상위
-     2. 컬럼 헤더(강도): 상단 고정 — 세로 스크롤 시 유지
-     3. 행 헤더(섹터): 좌측 고정 — 가로 스크롤 시 유지
-   */
+  /* ✦ Sticky 처리 — 가로 스크롤 시 첫 컬럼(섹터)·코너 고정
+     세로 스크롤은 페이지 자체라 별도 sticky 불필요 */
   .tm-corner{
     position:sticky;
-    top:0;
     left:0;
-    z-index:4;       /* 코너가 가장 위 */
-    box-shadow:1px 1px 0 var(--border);
-  }
-  .tm-col-head{
-    position:sticky;
-    top:0;
-    z-index:2;       /* 행 헤더(z3)보다 아래, 코너(z4)보다 아래 */
-    box-shadow:0 1px 0 var(--border);
+    z-index:3;
+    /* 좌측 보더 효과 (sticky 시 분리 보이게) */
+    box-shadow:1px 0 0 var(--border);
   }
   .tm-row-head{
     position:sticky;
     left:0;
-    z-index:3;       /* 컬럼 헤더(z2) 위로 살짝 우선 */
+    z-index:2;
     box-shadow:1px 0 0 var(--border);
   }
 
@@ -2987,7 +3511,7 @@
 
   /* 모바일 */
   @media (max-width:767px){
-    .matrix-wrap{ padding:4px; border-radius:10px; max-height:72vh; }
+    .matrix-wrap{ padding:4px; border-radius:10px; }
     .theme-matrix{
       grid-template-columns: 86px repeat(6, minmax(96px, 1fr));
       min-width:662px;
@@ -3002,25 +3526,6 @@
     .tm-chip-symbol{ font-size:11.5px; }
     .tm-chip-name{ font-size:9px; }
     .matrix-legend{ gap:10px 16px; font-size:9.5px; }
-  }
-
-  /* ✦ 패드 (768~1099px) — 매트릭스 콤팩트 사이즈
-     사이드바 hidden 상태라 콘텐츠 영역 최대 활용 */
-  @media (min-width:768px) and (max-width:1099px){
-    .matrix-wrap{ max-height:74vh; }
-    .theme-matrix{
-      grid-template-columns: 100px repeat(6, minmax(108px, 1fr));
-      min-width:748px;
-    }
-    .tm-row-head{ padding:11px 10px; }
-    .tm-sec-name{ font-size:11.5px; }
-    .tm-sec-meta{ font-size:9.5px; }
-    .tm-tier-label{ font-size:11px; }
-    .tm-tier-sub{ font-size:9px; }
-    .tm-cell{ min-height:66px; padding:7px; gap:4px; }
-    .tm-chip{ min-width:54px; padding:5px 6px 4px; }
-    .tm-chip-symbol{ font-size:12px; }
-    .tm-chip-name{ font-size:9.5px; }
   }
 
   /* 칩 상세 시트 (LOUIS 기존 패턴 활용 — bottom sheet) */
@@ -3123,11 +3628,6 @@
   }
   .tm-stock-pct.up{ color:var(--color-up); }
   .tm-stock-pct.down{ color:var(--color-down); }
-  /* 종목 점수+등락률 묶음 */
-  .tm-stock-meta{
-    display:inline-flex; align-items:center; gap:8px;
-    flex-shrink:0;
-  }
 
   /* ===== 태블릿 (≥768px) =====
      중앙 모달 스타일 — 폭 제한 + 사이드바 회피
@@ -3821,6 +4321,16 @@
       </span>
       <span class="nav-label">테마 분석</span>
     </a>
+    <a href="#cycle" class="nav-item" data-route="cycle">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- 달 모양 (사이클·바닥 메타포) + 사이클 곡선 힌트 -->
+          <path d="M15.5 4 a8 8 0 1 0 4.5 12.5 a6.5 6.5 0 0 1 -4.5 -12.5 z"/>
+          <path d="M3 21 q4 -6 8 -3 t 8 -2" opacity="0.5"/>
+        </svg>
+      </span>
+      <span class="nav-label">사이클 헌터</span>
+    </a>
     <a href="#guide" class="nav-item" data-route="guide">
       <span class="nav-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -3885,8 +4395,8 @@
     <div class="uni-axis">
       <div class="uni-axis-label">분류</div>
       <div class="uni-seg full" id="segGroup">
-        <button class="uni-seg-btn active" data-group="industry">섹터</button>
         <button class="uni-seg-btn" data-group="season">시즌</button>
+        <button class="uni-seg-btn active" data-group="industry">섹터</button>
       </div>
     </div>
     <div class="uni-axis">
@@ -4013,7 +4523,7 @@
        섹터(행) × V2 점수 강도(열) — LOUIS 토큰 통합
        ============================================================ -->
   <section class="view active" id="view-matrix">
-    <p class="leaderboard-intro">섹터(행) × <strong>모멘텀 강도</strong>(열) 매트릭스. 강한 흐름의 테마는 우측 강세 컬럼, 약세는 좌측 약세 컬럼에. <strong>강도(TS)</strong>는 20일/5일 등락률 + 200일선 위치 + RSI 모멘텀으로 계산 (V2 매수 점수와 별개). <span style="color:var(--text-3);font-size:11.5px">※ 산업 섹터 데이터만 사용 — 종목분석의 시즌/섹터 토글 영향 받지 않음</span></p>
+    <p class="leaderboard-intro">섹터(행) × <strong>모멘텀 강도</strong>(열) 매트릭스. 강한 흐름의 테마는 우측 강세 컬럼, 약세는 좌측 약세 컬럼에. <strong>강도(TS)</strong>는 20일/5일 등락률 + 200일선 위치 + RSI 모멘텀으로 계산 (V2 매수 점수와 별개).</p>
 
     <div class="matrix-wrap">
       <div class="theme-matrix" id="themeMatrix"></div>
@@ -4096,6 +4606,110 @@
   <div class="tm-sheet-stocks" id="tmSheetStocks"></div>
 </div>
 
+<!-- ========== PAGE: CYCLE HUNTER ========== -->
+<div class="page page-cycle" id="page-cycle" style="display:none">
+  <div class="page-header">
+    <h1 class="page-header-title">
+      <span class="ph-sub">
+        <span id="cyc-market-date">--</span>
+        <span style="opacity:.5">·</span>
+        5년 일봉 기준
+      </span>
+      사이클 헌터
+    </h1>
+    <div class="page-header-controls">
+      <div class="uni-axis">
+        <div class="uni-axis-label">사이클</div>
+        <div class="uni-seg full" id="cycleClassSeg">
+          <button class="uni-seg-btn active" data-cycle-class="all">전체</button>
+          <button class="uni-seg-btn" data-cycle-class="industry">산업</button>
+          <button class="uni-seg-btn" data-cycle-class="macro">매크로</button>
+        </div>
+      </div>
+      <div class="uni-axis">
+        <div class="uni-axis-label">위상 정렬</div>
+        <div class="uni-seg full" id="cycleSortSeg">
+          <button class="uni-seg-btn active" data-cycle-sort="score">점수↓</button>
+          <button class="uni-seg-btn" data-cycle-sort="depth">바닥깊이</button>
+          <button class="uni-seg-btn" data-cycle-sort="recovery">회복강도</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cycle-intro">
+    <strong>"친구가 물리면 그게 매수"의 데이터 버전.</strong> 5년 일봉으로 종목의 사이클 위상을 추정해
+    <span class="ci-phase">🌑 바닥</span> · <span class="ci-phase">🌒 회복</span> · <span class="ci-phase">🌓 확장</span> ·
+    <span class="ci-phase">🌔 정점근접</span> · <span class="ci-phase">🌕 냉각</span> 5단계로 분류합니다.
+    <strong>일반 종목 분석</strong>이 "지금 사도 되나"를 묻는다면, 사이클 헌터는 <strong>"지금 사이클 어디쯤인가"</strong>를 봅니다.
+  </div>
+
+  <!-- 사이클 바닥 후보 Top 3 -->
+  <div class="cycle-toppick-section">
+    <div class="cycle-toppick-header">
+      <span class="cycle-toppick-title">바닥 후보 Top 3</span>
+      <span class="cycle-toppick-sub">5년 저점 + 회복 모멘텀 상위 — 사이클 헌터 핵심</span>
+    </div>
+    <div class="cycle-toppick-grid" id="cycPickGrid">
+      <div class="cyc-empty">5년 일봉 데이터 페치 중… 잠시만요.</div>
+    </div>
+  </div>
+
+  <!-- 4단계 위상 요약 -->
+  <div class="cycle-summary-section">
+    <div class="cycle-summary-grid" id="cycSummaryGrid">
+      <div class="cyc-sum-card s-trough" data-cyc-filter="trough">
+        <div class="cyc-sum-label">🌑 바닥 형성</div>
+        <div class="cyc-sum-value" id="cycSumTrough">·<span class="cyc-sum-unit">종목</span></div>
+        <div class="cyc-sum-sub">5년 저점 ±15%</div>
+      </div>
+      <div class="cyc-sum-card s-recovery" data-cyc-filter="recovery">
+        <div class="cyc-sum-label">🌒 회복 진입</div>
+        <div class="cyc-sum-value" id="cycSumRecovery">·<span class="cyc-sum-unit">종목</span></div>
+        <div class="cyc-sum-sub">바닥 탈출 + 6M 양수</div>
+      </div>
+      <div class="cyc-sum-card s-expansion" data-cyc-filter="expansion">
+        <div class="cyc-sum-label">🌓 사이클 중반</div>
+        <div class="cyc-sum-value" id="cycSumExpansion">·<span class="cyc-sum-unit">종목</span></div>
+        <div class="cyc-sum-sub">200일선 위 + 거래량↑</div>
+      </div>
+      <div class="cyc-sum-card s-fav" data-cyc-filter="fav">
+        <div class="cyc-sum-label">★ 즐겨찾기</div>
+        <div class="cyc-sum-value" id="cycSumFav">·<span class="cyc-sum-unit">종목</span></div>
+        <div class="cyc-sum-sub">사이클 풀 / 별 표시</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 필터 -->
+  <div class="cycle-filters" id="cycFilters"></div>
+
+  <!-- 메인: 카드 그리드 -->
+  <div class="cycle-main">
+    <div class="cycle-card-grid" id="cycCardGrid"></div>
+  </div>
+</div><!-- /page-cycle -->
+
+<!-- 사이클 카드 상세 sheet -->
+<div class="cyc-sheet-backdrop" id="cycSheetBackdrop"></div>
+<div class="cyc-sheet" id="cycSheet">
+  <div class="cyc-sheet-grip"></div>
+  <div class="cyc-sheet-head">
+    <span class="cyc-sheet-name" id="cycSheetName">—</span>
+    <span class="cyc-sheet-code" id="cycSheetCode">—</span>
+  </div>
+  <div class="cyc-sheet-meta">
+    <span id="cycSheetPhase"></span>
+    <span>점수 <b id="cycSheetScore">—</b></span>
+    <span>현재가 <b id="cycSheetPrice">—</b></span>
+    <span>5년 저점 <b id="cycSheetLow">—</b></span>
+    <span>5년 고점 <b id="cycSheetHigh">—</b></span>
+  </div>
+  <div class="cyc-sheet-chart" id="cycSheetChart"></div>
+  <div class="cyc-sheet-section-title">사이클 분해</div>
+  <div class="cyc-sheet-detail-grid" id="cycSheetDetail"></div>
+</div>
+
 <!-- ========== PAGE: GUIDE ========== -->
 <div class="page page-guide" id="page-guide" style="display:none">
   <div class="page-header">
@@ -4111,6 +4725,7 @@
     <button class="guide-tab" data-guide-tab="design">디자인</button>
     <button class="guide-tab" data-guide-tab="calendar">종목 분석</button>
     <button class="guide-tab" data-guide-tab="heatmap">테마 분석</button>
+    <button class="guide-tab" data-guide-tab="cycle">사이클 헌터</button>
     <button class="guide-tab" data-guide-tab="data">데이터 · 면책</button>
   </div>
 
@@ -4991,29 +5606,16 @@
           </div>
         </div>
 
-        <div class="rn-item">
-          <div class="rn-num">10</div>
-          <div class="rn-body">
-            <div class="rn-title">신호 시스템 V1 완전 제거 — 가짜 점수 깜빡임 수정</div>
-            <div class="rn-desc">
-              사용자가 "리노공업 점수가 처음 66 → 33으로 바뀐다"고 보고. 원인: <strong>OHLCV 데이터 도착 전 V1로 폴백</strong>해 가짜 점수를 보여준 후, 도착 후 V2로 교체되면서 점수가 갑자기 변하는 혼란.<br>
-              해결: <strong>V1 산식 완전 제거</strong>. OHLCV 부족 시 "지표 데이터 대기 중" skel 표시 (가짜 점수 안 보여줌). 데이터 안정성 확보 후 정확한 V2 점수 한 번만 표시.<br>
-              제거 대상: <code>calcSignal</code> 함수 (66줄) · <code>window.__useSignalV2</code> 토글 · <code>window.__signal.compare()</code> V1/V2 비교 도구. <code>renderSignalBadge</code>가 <code>score: null</code>일 때 자동으로 skel 표시.<br>
-              남은 콘솔 도구: <code>window.__signal.detail(code)</code> · <code>window.__signal.stats()</code>. 백테스트 영역의 V1 룰은 학술적 비교 도구라 그대로 유지.
-            </div>
-          </div>
-        </div>
-
       </div>
 
       <p class="guide-p guide-note">
-        ✦ <strong>다음 단계 (Phase 2, 3~6개월)</strong>: 포지션 사이징 · ATR 기반 손절익절 · 포트폴리오 리스크 한도.<br>
-        ✦ <strong>현재 콘솔 도구</strong>: <code>window.__signal.detail(code)</code> · <code>window.__signal.stats()</code> · <code>window.__backtest.compare()</code> · <code>window.__regime.current()</code> · <code>window.__indicators.test()</code><br>
+        ✦ <strong>다음 단계 (Phase 2, 3~6개월)</strong>: 포지션 사이징 · ATR 기반 손절익절 · 포트폴리오 리스크 한도 · V1 vs V2 정량 비교 페이지.<br>
+        ✦ <strong>현재 콘솔 도구</strong>: <code>window.__signal.compare()</code> · <code>window.__backtest.compare()</code> · <code>window.__regime.current()</code> · <code>window.__indicators.test()</code><br>
         ⚠ <strong>한계</strong>: OHLCV 1년치 한정 · VIX는 미장만(국장은 V-KOSPI 별도 필요) · 슬리피지 미반영 (실거래는 백테스트보다 0.1~0.3%p 낮을 것).
       </p>
     </section>
 
-      <p class="guide-p guide-note">⚠ V2는 신중한 모드입니다. 상승장 끝부분에선 ● 자주 안 나오고, 조정 시작되면 ●가 늘어납니다 ("친구가 물리면 그게 매수" 정체성과 일치). OHLCV 데이터 부족 시 "분석 대기"로 표시됩니다 (가짜 점수 안 보여줌). 콘솔에서 <code>window.__signal.stats()</code>로 전체 점수 분포 확인 가능.</p>
+      <p class="guide-p guide-note">⚠ V2는 신중한 모드입니다. 상승장 끝부분에선 ● 자주 안 나오고, 조정 시작되면 ●가 늘어납니다 ("친구가 물리면 그게 매수" 정체성과 일치). 콘솔에서 <code>window.__signal.compare()</code>로 V1 vs V2 비교 가능. <code>window.__useSignalV2 = false</code>로 V1 롤백 가능.</p>
     </section>
 
     <section class="guide-section">
@@ -5058,8 +5660,8 @@
 
       <h3 class="guide-h3">데이터 소스</h3>
       <p class="guide-p">Yahoo Finance에서 종목별 일봉 1년치 (252영업일) 자동 수신. <strong>하루 1회</strong> 장 마감 후(KST 16시) 갱신.</p>
-      <p class="guide-p guide-note">⚠ <strong>한계</strong>: 일봉 30일치 미만 종목은 "분석 대기" 표시 (가짜 점수 대신 skel 표시). 신규 상장주·ETF 일부 영향.<br>
-      ✦ 콘솔에서 확인 가능: <span class="guide-code">window.__signal.stats()</span> — 전체 종목 V2 점수 분포 + 분석 대기 종목 카운트</p>
+      <p class="guide-p guide-note">⚠ <strong>한계</strong>: 일봉 200일치 미만 종목은 자동으로 V1(시즌+도달률) 폴백. 신규 상장주·ETF 일부 영향.<br>
+      ✦ 콘솔에서 비교 가능: <span class="guide-code">window.__signal.compare()</span> — V1 vs V2 모든 종목 결과 비교</p>
     </section>
 
     <section class="guide-section">
@@ -5309,7 +5911,103 @@
 
   </div><!-- /탭 4 (테마 분석) -->
 
-  <!-- ========== 탭 5: 데이터 · 면책 ========== -->
+  <!-- ========== 탭 5: 사이클 헌터 ========== -->
+  <div class="guide-pane" data-guide-pane="cycle">
+
+    <section class="guide-section release-note">
+      <div class="rn-header">
+        <span class="rn-tag rn-tag-strong">NEW</span>
+        <h2 class="guide-h2" style="margin:0">사이클 헌터 (Cycle Hunter)</h2>
+      </div>
+      <p class="guide-p">"친구가 물리면 그게 매수"의 데이터 버전. 일반 종목 분석이 1년 시간축으로 "지금 사도 되나"를 묻는다면, 사이클 헌터는 <strong>5년 일봉</strong>으로 "지금 사이클 어디쯤인가"를 봅니다. 산업 사이클(반도체·조선·화학)과 매크로 사이클(금리·원자재·경기방어)을 통합 뷰로 제공.</p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">사이클 위상 5단계 (달 모양 메타포)</h2>
+      <p class="guide-p">5년 일봉 데이터로 종목의 현재 위상을 5단계로 자동 분류. 한눈에 인지되도록 달 아이콘 매핑.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">🌑 바닥 형성</span><span class="gf-val">5년 저점 ±15% 이내 + 6M 모멘텀이 음수→0 전환 — <strong>친구 매매 시점</strong></span></div>
+        <div class="gf-row"><span class="gf-key">🌒 회복 진입</span><span class="gf-val">바닥 탈출 + 6M 모멘텀 양수 전환 + 거래량 회복 — 사이클 헌터 핵심 타깃</span></div>
+        <div class="gf-row"><span class="gf-key">🌓 확장</span><span class="gf-val">200일선 위 안착 + 거래량 증가 지속 — 추세 진행 중</span></div>
+        <div class="gf-row"><span class="gf-key">🌔 정점 근접</span><span class="gf-val">5년 고점 70%+ + 모멘텀 둔화 — 조심 구간</span></div>
+        <div class="gf-row"><span class="gf-key">🌕 냉각</span><span class="gf-val">정점 통과 + 모멘텀 음수 + 거래량 감소 — 회피</span></div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">사이클 점수 (0~100점)</h2>
+      <p class="guide-p">5단계 위상과 별개로, 종목의 진입 매력도를 점수화. <strong>"바닥에 가까울수록 + 회복 모멘텀이 강할수록"</strong> 높은 점수.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">바닥 근접도</span><span class="gf-eq">×0.30</span><span class="gf-val">5년 저점 대비 현재가 — 가까울수록 풀점</span></div>
+        <div class="gf-row"><span class="gf-key">회복 모멘텀</span><span class="gf-eq">×0.25</span><span class="gf-val">6M·12M 평균수익률 추세 — 양전환·가속이 풀점</span></div>
+        <div class="gf-row"><span class="gf-key">위상 매칭</span><span class="gf-eq">×0.20</span><span class="gf-val">매크로(금리·VIX)와 산업 사이클의 정합성</span></div>
+        <div class="gf-row"><span class="gf-key">거래량 회복</span><span class="gf-eq">×0.15</span><span class="gf-val">3M 평균 vs 12M 평균 거래량 비율</span></div>
+        <div class="gf-row"><span class="gf-key">사이클 위치</span><span class="gf-eq">×0.10</span><span class="gf-val">과거 사이클 평균 길이 대비 현재 경과 비율 (이르면 가산)</span></div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">바닥 후보 Top 3</h2>
+      <p class="guide-p">사이클 헌터 페이지 상단의 핵심 위젯. <strong>🌑 바닥</strong> + <strong>🌒 회복</strong> 위상의 종목 중 점수 상위 3개를 선별. 종목 분석의 "이번 주 주목"과 동일한 자리 유지 + 30분 캐시 정책 적용 (가격 갱신마다 카드 종목이 바뀌지 않음).</p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">사이클 풀 분류</h2>
+      <p class="guide-p">대상 종목은 두 갈래로 나누어 라벨링.</p>
+      <h3 class="guide-h3">산업 사이클 (Industry Cycle)</h3>
+      <p class="guide-p">제품 사이클·재고 사이클이 가격에 직접 반영되는 종목군. 3~5년 사이클이 일반적.</p>
+      <div class="guide-grid">
+        <div class="guide-item"><span class="guide-pill">반도체</span>
+          <div class="guide-item-desc">메모리 사이클 (재고-가격), HBM·파운드리. SK하이닉스·삼성전자·TSMC·MU.</div></div>
+        <div class="guide-item"><span class="guide-pill">조선·해운</span>
+          <div class="guide-item-desc">선박 인도-신조 사이클. HD현대중공업·삼성중공업·HMM.</div></div>
+        <div class="guide-item"><span class="guide-pill">화학·정유</span>
+          <div class="guide-item-desc">스프레드 사이클. LG화학·롯데케미칼·SK이노베이션.</div></div>
+        <div class="guide-item"><span class="guide-pill">철강·비철</span>
+          <div class="guide-item-desc">중국 부동산·인프라 사이클. POSCO홀딩스·고려아연.</div></div>
+        <div class="guide-item"><span class="guide-pill">건설·기계</span>
+          <div class="guide-item-desc">국내 인프라+해외 수주 사이클. 현대건설·두산에너빌리티.</div></div>
+      </div>
+
+      <h3 class="guide-h3">매크로 사이클 (Macro Cycle)</h3>
+      <p class="guide-p">금리·경기·원자재 등 거시변수에 가격이 강하게 연동되는 종목군.</p>
+      <div class="guide-grid">
+        <div class="guide-item"><span class="guide-pill">금리민감</span>
+          <div class="guide-item-desc">금리 인하 사이클 수혜. 리츠·고배당주·성장주 일부.</div></div>
+        <div class="guide-item"><span class="guide-pill">원자재</span>
+          <div class="guide-item-desc">유가·구리·금 사이클. ExxonMobil·Newmont·Freeport.</div></div>
+        <div class="guide-item"><span class="guide-pill">경기방어</span>
+          <div class="guide-item-desc">유틸리티·필수소비재. 사이클 후반·침체기 강세.</div></div>
+        <div class="guide-item"><span class="guide-pill">경기민감</span>
+          <div class="guide-item-desc">자동차·항공·럭셔리. 사이클 초반·확장기 강세.</div></div>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">데이터 소스</h2>
+      <p class="guide-p"><strong>Yahoo Finance 일봉 5년치</strong> (영업일 기준 ~1260일). 일반 종목 분석의 1년치보다 5배 길어 페치 시간이 더 걸리므로, <strong>사이클 헌터 페이지 진입 시점에 백그라운드로 받아옴</strong>. 일반 페이지는 영향 없음.</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">캐시 키</span><span class="gf-val"><code class="guide-code">ohlcv5y_v1</code> · 종목당 1년 1회 갱신 (KST 16시 이후)</span></div>
+        <div class="gf-row"><span class="gf-key">동시 페치</span><span class="gf-val">4개씩 — 트래픽 부담 최소화</span></div>
+        <div class="gf-row"><span class="gf-key">페치 실패</span><span class="gf-val">기존 1년치 캐시(ohlcv_v1)로 폴백 — 사이클 분석 정확도는 떨어짐</span></div>
+      </div>
+      <p class="guide-p guide-note">⚠ <strong>한계</strong>: 5년은 짧은 사이클(반도체 3~4년)에는 충분하나, 긴 사이클(부동산 7~10년·콘드라티예프 50년)에는 모자람. 향후 월봉 10년치 또는 외부 매크로 지표(FRED·KOSIS) 연동 검토.</p>
+    </section>
+
+    <section class="guide-section">
+      <h2 class="guide-h2">스파크라인 + 위상 도넛</h2>
+      <p class="guide-p">메인 영역은 <strong>카드 그리드 + 스파크라인</strong> 시각화. 한 카드에 들어가는 정보:</p>
+      <div class="guide-formula">
+        <div class="gf-row"><span class="gf-key">상단</span><span class="gf-val">종목명·티커·점수·즐겨찾기</span></div>
+        <div class="gf-row"><span class="gf-key">중앙</span><span class="gf-val">5년 가격 스파크라인 + 5년 저점/고점 마커 + 현재가 점</span></div>
+        <div class="gf-row"><span class="gf-key">하단 4메트릭</span><span class="gf-val">바닥대비·정점대비·6M모멘텀·거래량비율</span></div>
+      </div>
+      <p class="guide-p">카드 클릭 → 하단 시트로 풀 차트 + 사이클 분해 (위상 점수 5종 기여도).</p>
+    </section>
+
+  </div><!-- /탭 5 (사이클 헌터) -->
+
+  <!-- ========== 탭 6: 데이터 · 면책 ========== -->
   <div class="guide-pane" data-guide-pane="data">
 
     <section class="guide-section">
@@ -5987,45 +6685,9 @@ const ALL_THEMES = [...KR_SEASON_THEMES, ...KR_INDUSTRY_THEMES, ...US_SEASON_THE
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const today=new Date(), currentMonth=today.getMonth()+1;
 const priceCache={};
-
-/* ============================================================
-   ✦ UI 상태 영속화 (localStorage)
-   풀투리프레시·새로고침·페이지 전환 후에도 사용자 선택 유지
-   - 분류 (시즌/섹터)
-   - 투자 스타일 (전체/안정/공격)
-   - 테마 분석 뷰 (판도/현재/다음)
-   - RRG 기간 (5D~180D)
-   ※ 시점(timeOffset)은 탐색용이라 저장 안 함 — 새로고침 시 "오늘"로 복귀
-   ============================================================ */
-const UI_STATE_KEY = 'ui_state_v1';
-const UI_STATE_DEFAULTS = {
-  group: 'industry',         // 섹터 (기본값)
-  style: 'all',
-  themeView: 'matrix',       // 판도
-  rrgPeriod: 10,
-};
-function loadUiState(){
-  try {
-    const saved = JSON.parse(localStorage.getItem(UI_STATE_KEY) || '{}');
-    return { ...UI_STATE_DEFAULTS, ...saved };
-  } catch(e){
-    return { ...UI_STATE_DEFAULTS };
-  }
-}
-function saveUiState(patch){
-  try {
-    const current = loadUiState();
-    const next = { ...current, ...patch };
-    localStorage.setItem(UI_STATE_KEY, JSON.stringify(next));
-  } catch(e){
-    console.warn('[UI] 상태 저장 실패', e);
-  }
-}
-const _ui = loadUiState();
-
 let currentCountry='KR';
-let currentGroup = _ui.group;          // localStorage 복원
-let currentStyle = _ui.style;          // localStorage 복원
+let currentGroup='industry';
+let currentStyle='all';
 let currentFilter='all';
 const sortState = {};
 let favorites = new Set();
@@ -6272,25 +6934,99 @@ function buildFilterBar(){
    ============================================================ */
 const CURRENT_MONTH = new Date().getMonth() + 1;  // 1~12
 
+// 종목·테마·가격 entry 받아 신호 결정
+// 반환: { signal:'now'|'wait'|'avoid', reason:string, score:number }
+function calcSignal(stock, theme, entry){
+  // 가격 데이터 없으면 분석 불가
+  if(!entry || entry.status !== 'fresh' || !entry.value?.price){
+    return { signal: 'wait', reason: '가격 분석 대기', score: 0 };
+  }
+  const price = entry.value.price;
+  const peak = stock.peak;
+  const pct = (price / peak) * 100;        // 도달률
+  const change = entry.value.change || 0;   // 등락률
+  const inSeason = theme.entryMonths && theme.entryMonths.includes(CURRENT_MONTH);
+  const inPeakSeason = theme.peakMonths && theme.peakMonths.includes(CURRENT_MONTH);
+
+  // 진입월 임박 — 1~2달 안에 entryMonths가 시작되는 시즌 테마 (선취매 의도)
+  // 예: 4월에 폭염(entry [5,6]) → preSeason → 한 달 미리 진입 검토
+  const next1 = (CURRENT_MONTH % 12) + 1;
+  const next2 = (((CURRENT_MONTH + 1) % 12)) + 1;
+  const preSeason = theme.entryMonths
+    && (theme.entryMonths.includes(next1) || theme.entryMonths.includes(next2));
+
+  // 과열: 도달률 95% 이상
+  if(pct >= 95){
+    return { signal: 'avoid', reason: `과열 (도달률 ${pct.toFixed(0)}%)`, score: 0 };
+  }
+
+  // 강한 하락 모멘텀: -3% 이상 하락
+  if(change <= -3){
+    return { signal: 'avoid', reason: `하락 모멘텀 ${change.toFixed(1)}%`, score: 0 };
+  }
+
+  // 우선순위 점수 (Top Pick 정렬용)
+  let score = 0;
+  let reasons = [];
+
+  // 도달률 — 낮을수록 좋음 (최대 50점)
+  score += Math.max(0, 70 - pct) * 0.7;
+
+  // 시즌 가산점 — 진입월 > 임박 > 피크 순
+  if(inSeason){ score += 25; reasons.push('시즌 진입월'); }
+  else if(preSeason){ score += 18; reasons.push('진입월 임박 (선취매)'); }
+  else if(inPeakSeason){ score += 12; reasons.push('피크 시즌'); }
+
+  // 모멘텀 가산
+  if(change > 0){ score += Math.min(change * 2, 10); reasons.push(`+${change.toFixed(1)}%`); }
+
+  // 산업 섹터(상시) 종목은 시즌 가산점 없음 — 도달률 위주
+  if(theme.group === 'industry'){
+    reasons = reasons.filter(r => !r.includes('시즌') && !r.includes('피크') && !r.includes('임박'));
+  }
+
+  // 분류:
+  // - 매수 구간 (< 70%) + 시즌 일치/임박/피크/모멘텀 양수/섹터 → 지금
+  // - 매수 구간이지만 위 조건 모두 안 맞음 → 대기
+  // - 고점 근접 (70-95%) → 대기
+  if(pct < 70 && (inSeason || preSeason || inPeakSeason || change > 0 || theme.group === 'industry')){
+    const r = reasons.length
+      ? `${reasons.join(' · ')} · 도달률 ${pct.toFixed(0)}%`
+      : `도달률 ${pct.toFixed(0)}%`;
+    return { signal: 'now', reason: r, score };
+  }
+
+  if(pct < 70){
+    return { signal: 'wait', reason: `도달률 ${pct.toFixed(0)}% · 시즌 아님`, score: score * 0.5 };
+  }
+
+  return { signal: 'wait', reason: `고점 근접 ${pct.toFixed(0)}%`, score: 0 };
+}
+
 /* ============================================================
-   ✦ 신호 점수 시스템 (V2 — 기술 지표 기반)
-   - 100점 만점: 도달률 30 + RSI 20 + MACD 8 + 200SMA 18 + %B 14 + 거래량 10
+   ✦ Phase A3: 신호 점수 시스템 V2 (기술 지표 기반)
+   - 100점 만점: 도달률 30 + RSI 25 + 200일선 20 + %B 15 + 거래량 10
    - 시즌 보너스: 진입월/임박 +15점
-   - 즉시회피: 도달률 95%+ / 등락 -3% / RSI 70+ & 도달률 80+
-   - OHLCV 부족 시 "분석 대기" (V1 폴백 제거 — Phase A10)
+   - OHLCV 데이터 없으면 자동으로 기존 calcSignal로 폴백
    ============================================================ */
+
+/* 신호 시스템 토글 — 기본은 V2 활성화, 콘솔에서 끄고 켤 수 있음
+   window.__useSignalV2 = false  → 기존 calcSignal 사용
+   window.__useSignalV2 = true   → 점수 시스템 사용 (기본)
+*/
+window.__useSignalV2 = true;
 
 function calcSignalV2(stock, theme, entry){
   // 가격 데이터 없으면 분석 불가
   if(!entry || entry.status !== 'fresh' || !entry.value?.price){
-    return { signal: 'wait', reason: '가격 분석 대기', score: null, version: 'v2' };
+    return { signal: 'wait', reason: '가격 분석 대기', score: 0, version: 'v2' };
   }
 
-  // ✦ OHLCV 없으면 "지표 대기" 명시 (V1 폴백 제거 — 가짜 점수 안 보여줌)
-  // 사용자에게 점수가 갑자기 변하는 혼란 방지
+  // OHLCV 없으면 V1으로 폴백 (단계적 적용 안전장치)
   const ind = (typeof getIndicators === 'function') ? getIndicators(stock.code) : null;
   if(!ind || ind.dataPoints < 30){
-    return { signal: 'wait', reason: '지표 데이터 대기 중', score: null, version: 'v2-pending' };
+    const v1 = calcSignal(stock, theme, entry);
+    return { ...v1, reason: v1.reason + ' (지표 대기)', version: 'v1-fallback' };
   }
 
   const price = entry.value.price;
@@ -6448,9 +7184,11 @@ function calcSignalV2(stock, theme, entry){
 }
 
 /* 디스패처 — 토글에 따라 V1 또는 V2 호출 */
-/* 신호 산출 — 항상 V2 (V1 제거됨) */
 function calcSignalAuto(stock, theme, entry){
-  return calcSignalV2(stock, theme, entry);
+  if(window.__useSignalV2){
+    return calcSignalV2(stock, theme, entry);
+  }
+  return calcSignal(stock, theme, entry);
 }
 
 /* ============================================================
@@ -6462,11 +7200,6 @@ function renderSignalBadge(sig, opts = {}){
   const { size = 'md', tooltip = true, inline = false } = opts;
   if(!sig){
     return `<span class="sg-badge sg-skel ${size==='sm'?'sg-sm':''}" aria-label="분석 대기"><span class="sg-num">·</span></span>`;
-  }
-  // ✦ score null = 지표 데이터 대기 중 → skel 표시 (가짜 점수 안 보여줌)
-  if(sig.score === null){
-    const skelTip = tooltip ? `data-tip="${(sig.reason || '분석 대기').replace(/"/g, '&quot;')}" tabindex="0"` : '';
-    return `<span class="sg-badge sg-skel ${size==='sm'?'sg-sm':''}" ${skelTip} aria-label="분석 대기"><span class="sg-num">·</span></span>`;
   }
   const reason = sig.reason || '';
   const tipAttr = tooltip ? `data-tip="${reason.replace(/"/g, '&quot;')}" tabindex="0"` : '';
@@ -6489,9 +7222,35 @@ function renderSignalBadge(sig, opts = {}){
 
 /* ===== 디버그·비교 도구 ===== */
 window.__signal = {
+  v1: calcSignal,
   v2: calcSignalV2,
   auto: calcSignalAuto,
-  /* 단일 종목 V2 상세 */
+  /* 모든 종목에 대해 V1 vs V2 결과 비교 */
+  compare(){
+    const rows = [];
+    ALL_THEMES.forEach(theme => {
+      theme.stocks.forEach(stock => {
+        const entry = priceCache[stock.code];
+        if(!entry || !entry.value?.price) return;
+        const v1 = calcSignal(stock, theme, entry);
+        const v2 = calcSignalV2(stock, theme, entry);
+        rows.push({
+          종목: stock.name,
+          V1: v1.signal,
+          V2: v2.signal,
+          'V1점수': +v1.score.toFixed(1),
+          'V2점수': +v2.score.toFixed(1),
+          일치: v1.signal === v2.signal ? '✓' : '✕',
+        });
+      });
+    });
+    console.table(rows);
+    const same = rows.filter(r => r.일치 === '✓').length;
+    const diff = rows.filter(r => r.일치 === '✕').length;
+    console.log(`[V1 vs V2] 일치 ${same} / 불일치 ${diff} / 전체 ${rows.length}`);
+    return { rows, same, diff };
+  },
+  /* 단일 종목 상세 */
   detail(code){
     let target = null, theme = null;
     ALL_THEMES.forEach(t => t.stocks.forEach(s => {
@@ -6507,65 +7266,136 @@ window.__signal = {
     console.log('  detail:', result.detail);
     return result;
   },
-  /* 전체 종목 V2 점수 분포 */
-  stats(){
-    const rows = [];
-    ALL_THEMES.forEach(theme => {
-      theme.stocks.forEach(stock => {
-        const entry = priceCache[stock.code];
-        if(!entry || !entry.value?.price) return;
-        const v2 = calcSignalV2(stock, theme, entry);
-        rows.push({
-          종목: stock.name,
-          신호: v2.signal,
-          점수: v2.score == null ? '-' : +v2.score.toFixed(1),
-          버전: v2.version,
-        });
-      });
-    });
-    console.table(rows);
-    const pending = rows.filter(r => r.버전 === 'v2-pending').length;
-    const ready = rows.filter(r => r.버전 === 'v2').length;
-    console.log(`[V2 분포] 분석 완료 ${ready} / 지표 대기 ${pending} / 전체 ${rows.length}`);
-    return { rows, ready, pending };
-  },
 };
-/* ===== /신호 시스템 ===== */
+/* ===== /Phase A3 ===== */
 
 // 현재 필터 풀에서 Top Pick 3개 추출
 // 1순위: ● 신호 점수 상위 / 2순위: ○ 대기 중 점수 상위 (3개 채울 때까지)
-function getTopPicks(){
+/* ============================================================
+   ✦ Top Pick — 세션 캐시 (30분) + 자리 유지 머지
+   - 가격 캐시 갱신마다 점수 재계산 → 매번 다른 종목이 슬롯에 들어가던 문제 해결
+   - 같은 컨텍스트(시장/분류/스타일/필터) 안에서는 30분간 동일 codes 유지
+   - 30분 만료 시: 빠진 슬롯만 새 후보로 교체 (자리 유지 머지)
+   - 컨텍스트 변경 시: 즉시 재산정
+   ============================================================ */
+const TOPPICK_KEY = 'toppickCache_v1';
+const TOPPICK_TTL = 30 * 60 * 1000;  // 30분
+
+function topPickContextKey(){
+  // 시장/분류/스타일/필터가 바뀌면 새 풀이므로 캐시 무효
+  return `${currentCountry}|${currentGroup}|${currentStyle}|${currentFilter}`;
+}
+
+function loadTopPickCache(){
+  try {
+    const raw = sessionStorage.getItem(TOPPICK_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(!parsed?.codes || !parsed?.fetchedAt) return null;
+    return parsed;
+  } catch(e){ return null; }
+}
+function saveTopPickCache(codes, contextKey){
+  try {
+    sessionStorage.setItem(TOPPICK_KEY, JSON.stringify({
+      codes, fetchedAt: Date.now(), contextKey
+    }));
+  } catch(e){}
+}
+
+// 현재 priceCache 기준으로 신호·점수 재계산 → 상위 3개 코드 반환
+function computeTopPickCodes(){
   const themes = applyStyleFilter(getActivePool());
-  const nowList = [];   // ● 지금
-  const waitList = [];  // ○ 대기
+  const nowList = [], waitList = [];
   themes.forEach(theme => {
     theme.stocks.forEach(stock => {
       const entry = priceCache[stock.code];
       if(!entry || entry.status !== 'fresh' || !entry.value?.price) return;
       const sig = calcSignalAuto(stock, theme, entry);
-      // ✦ 분석 대기(score null) 종목은 Top Pick에서 제외 — 가짜 추천 방지
-      if(sig.score === null) return;
-      const item = { stock, theme, entry, ...sig };
+      const item = { code: stock.code, score: sig.score || 0 };
       if(sig.signal === 'now') nowList.push(item);
       else if(sig.signal === 'wait') waitList.push(item);
     });
   });
-  nowList.sort((a, b) => (b.score || 0) - (a.score || 0));
-  waitList.sort((a, b) => (b.score || 0) - (a.score || 0));
+  nowList.sort((a,b) => b.score - a.score);
+  waitList.sort((a,b) => b.score - a.score);
+  const out = nowList.slice(0,3);
+  if(out.length < 3) out.push(...waitList.slice(0, 3 - out.length));
+  return out.map(p => p.code);
+}
 
-  // ● 우선, 부족하면 ○ 중 점수 상위로 3개 채움
-  const picks = nowList.slice(0, 3);
-  if(picks.length < 3){
-    const need = 3 - picks.length;
-    picks.push(...waitList.slice(0, need));
+// 자리 유지 머지: prev의 슬롯을 가능한 한 그대로, 빠진 종목만 새 후보로 교체
+function mergeTopPickStable(prevCodes, nextCodes){
+  if(!prevCodes || prevCodes.length === 0) return nextCodes.slice(0, 3);
+  const stillValid = new Set(nextCodes);
+  const newOnly = nextCodes.filter(c => !prevCodes.includes(c));
+  const result = prevCodes.slice(0, 3);
+  for(let i = 0; i < result.length; i++){
+    if(!stillValid.has(result[i])){
+      result[i] = newOnly.shift() || null;
+    }
   }
+  // 부족하면 새 종목으로 채움
+  for(let i = 0; i < 3; i++){
+    if(!result[i]){
+      const r = newOnly.shift();
+      if(r) result[i] = r;
+    }
+  }
+  return result.filter(Boolean).slice(0, 3);
+}
+
+// codes → 상세 객체로 복원 (entry/sig 포함)
+function hydrateTopPicks(codes, changedSet){
+  const picks = [];
+  codes.forEach(code => {
+    let stock = null, theme = null;
+    for(const t of getActivePool()){
+      const s = t.stocks.find(s => s.code === code);
+      if(s){ stock = s; theme = t; break; }
+    }
+    if(!stock) return;
+    const entry = priceCache[code];
+    if(!entry?.value?.price) return;
+    const sig = calcSignalAuto(stock, theme, entry);
+    picks.push({ stock, theme, entry, ...sig, _isNew: changedSet.has(code) });
+  });
   return picks;
 }
 
-function renderTopPicks(){
+/* getTopPicks(force)
+   - force=true: 컨텍스트 변경 등으로 즉시 재산정
+   - force=false: 캐시 있으면 그대로, 30분 경과 시 머지 갱신
+   반환: picks 배열 (각 항목에 _isNew 플래그)
+*/
+function getTopPicks(force = false){
+  const ctxKey = topPickContextKey();
+  const cached = loadTopPickCache();
+  const now = Date.now();
+  const ctxChanged = !cached || cached.contextKey !== ctxKey;
+  const expired = !cached || (now - cached.fetchedAt) > TOPPICK_TTL;
+
+  let codes, changedSet;
+  if(force || ctxChanged){
+    codes = computeTopPickCodes();
+    changedSet = new Set(codes);  // 전부 신규로 간주 (페이드인)
+    saveTopPickCache(codes, ctxKey);
+  } else if(expired){
+    const fresh = computeTopPickCodes();
+    codes = mergeTopPickStable(cached.codes, fresh);
+    changedSet = new Set(codes.filter(c => !cached.codes.includes(c)));
+    saveTopPickCache(codes, ctxKey);
+  } else {
+    codes = cached.codes;
+    changedSet = new Set();  // 캐시 그대로 → 변경 없음
+  }
+  return hydrateTopPicks(codes, changedSet);
+}
+
+function renderTopPicks(force = false){
   const grid = document.getElementById('toppickGrid');
   if(!grid) return;
-  const picks = getTopPicks();
+  const picks = getTopPicks(force);
   if(picks.length === 0){
     grid.innerHTML = `<div class="tp-empty">현재 필터에 진입 검토 신호 종목이 없습니다. 시장·필터를 바꿔 보세요.</div>`;
     return;
@@ -6601,6 +7431,18 @@ function renderTopPicks(){
       </div>
     `;
   }).join('');
+
+  // 변경된 슬롯에만 페이드인 + NEW 뱃지 — 자리 유지된 카드는 가만히
+  requestAnimationFrame(() => {
+    picks.forEach((p, i) => {
+      if(!p._isNew) return;
+      const card = grid.children[i];
+      if(!card) return;
+      card.classList.add('tp-swap-in', 'tp-just-updated');
+      setTimeout(() => card.classList.remove('tp-swap-in'), 600);
+      setTimeout(() => card.classList.remove('tp-just-updated'), 4200);
+    });
+  });
 }
 
 // 종목 행으로 스크롤 (Top Pick 클릭 시)
@@ -6615,23 +7457,24 @@ function scrollToStock(code){
 
 /* Top Pick 갱신 throttle
    - 가격 갱신마다 재정렬하면 카드 내용이 들쭉날쭉
-   - 5분 주기 또는 강제 갱신 시(필터·시장 변경)에만 재계산
+   - 30분 주기 또는 강제 갱신 시(필터·시장 변경)에만 재계산
+   - getTopPicks가 sessionStorage 캐시로 동일 codes 반환 → 자리 유지
 */
 let _topPicksLastRender = 0;
-const TOP_PICKS_THROTTLE_MS = 5 * 60 * 1000;  // 5분
+const TOP_PICKS_THROTTLE_MS = 30 * 60 * 1000;  // 30분 (이전: 5분)
 
 function maybeRenderTopPicks(force = false){
   const now = Date.now();
   const grid = document.getElementById('toppickGrid');
   // 빈 화면이면 무조건 첫 렌더
   if(!grid || !grid.innerHTML.trim()){
-    renderTopPicks();
+    renderTopPicks(force);
     _topPicksLastRender = now;
     return;
   }
   // 강제 갱신 또는 throttle 경과 시 재정렬
   if(force || (now - _topPicksLastRender) > TOP_PICKS_THROTTLE_MS){
-    renderTopPicks();
+    renderTopPicks(force);
     _topPicksLastRender = now;
   }
   // 그 외에는 카드 안 가격·등락률만 부분 갱신 (재정렬 X)
@@ -8454,7 +9297,7 @@ function tmThemeToData(theme, rank, timeOffset = 0){
   // ✦ timeOffset: 영업일 기준 N일 전 시점으로 시뮬레이션 (0=오늘)
   let sumTs = 0, sumPct = 0, sumScore = 0,
       sumRet20 = 0, sumRet5 = 0,
-      tsCount = 0, priceCount = 0, scoreCount = 0, retCount = 0,
+      tsCount = 0, priceCount = 0, retCount = 0,
       hasFreshData = false;
   theme.stocks.forEach(s => {
     const entry = priceCache[s.code];
@@ -8466,14 +9309,9 @@ function tmThemeToData(theme, rank, timeOffset = 0){
         sumPct += entry.value.change || 0;
         priceCount++;
         if(entry.status === 'fresh') hasFreshData = true;
-        // ✦ V2와 같은 가드: fresh 가격 + OHLCV 충분일 때만 점수 평균에 포함
-        // null 점수(분석 대기)는 평균에서 제외 — 0 처리해서 깎이는 것 방지
         const sig = (typeof calcSignalAuto === 'function')
-          ? calcSignalAuto(s, theme, entry) : null;
-        if(sig && typeof sig.score === 'number'){
-          sumScore += sig.score;
-          scoreCount++;
-        }
+          ? calcSignalAuto(s, theme, entry) : { score: 0 };
+        sumScore += sig.score || 0;
       }
     } else if(ohlcv?.closes?.length){
       // 과거 시점 — OHLCV에서 그날 등락률 계산
@@ -8504,7 +9342,7 @@ function tmThemeToData(theme, rank, timeOffset = 0){
 
   const avgTs = tsCount > 0 ? sumTs / tsCount : 0;
   const avgPct = priceCount > 0 ? sumPct / priceCount : 0;
-  const avgV2 = scoreCount > 0 && timeOffset === 0 ? sumScore / scoreCount : 0;
+  const avgV2 = priceCount > 0 && timeOffset === 0 ? sumScore / priceCount : 0;
   const avgRet20 = tsCount > 0 ? sumRet20 / tsCount : 0;
   const avgRet5 = retCount > 0 ? sumRet5 / retCount : 0;
 
@@ -8565,18 +9403,12 @@ function tmThemeToData(theme, rank, timeOffset = 0){
   };
 }
 
-/* 모든 활성 테마 데이터 빌드 (3개 탭 공통, 시점 적용)
-   ✦ 테마 분석은 항상 industry(섹터)만 사용 — 종목분석의 시즌/섹터 토글 영향 받지 않음
-   - 시즌 테마는 시점성, 산업 섹터는 상시성 → 매트릭스 메타포는 산업에만 의미
-   - 사용자가 종목분석에서 시즌 보다가 들어와도 테마 분석은 일관된 산업 데이터
-*/
+/* 모든 활성 테마 데이터 빌드 (3개 탭 공통, 시점 적용) */
 function buildAllThemesData(){
+  const themes = (typeof applyStyleFilter === 'function' && typeof getActivePool === 'function')
+    ? applyStyleFilter(getActivePool())
+    : ALL_THEMES.filter(t => t.country === currentCountry);
   const offset = (typeof currentTimeOffset !== 'undefined') ? currentTimeOffset : 0;
-  // 항상 industry 그룹 + 현재 국가 + 스타일 필터만 적용
-  const industryThemes = ALL_THEMES.filter(t => t.country === currentCountry && t.group === 'industry');
-  const themes = (typeof applyStyleFilter === 'function')
-    ? applyStyleFilter(industryThemes)
-    : industryThemes;
   // 강도 점수로 정렬해 rank 부여
   const data = themes.map(t => tmThemeToData(t, 0, offset));
   data.sort((a, b) => b.score - a.score);
@@ -8742,7 +9574,7 @@ function tmOpenSheet(themeId){
     : data.tier === 'cold' ? 'var(--color-down)'
     : 'var(--text-2)';
 
-  // 종목 리스트 — 종목탭과 같은 점수 표시 (renderSignalBadge 통일)
+  // 종목 리스트
   const stocksEl = document.getElementById('tmSheetStocks');
   stocksEl.innerHTML = theme.stocks.map(s => {
     const entry = priceCache[s.code];
@@ -8751,17 +9583,9 @@ function tmOpenSheet(themeId){
     const sign = ch >= 0 ? '+' : '';
     const cls = hasPrice ? (ch >= 0 ? 'up' : 'down') : '';
     const pctText = hasPrice ? `${sign}${ch.toFixed(2)}%` : '—';
-    // 종목별 V2 점수 — 같은 calcSignalAuto + renderSignalBadge 사용
-    const sig = (typeof calcSignalAuto === 'function')
-      ? calcSignalAuto(s, theme, entry) : null;
-    const badge = (typeof renderSignalBadge === 'function')
-      ? renderSignalBadge(sig, { size: 'sm', tooltip: false }) : '';
     return `<div class="tm-stock-row" onclick="navigate('calendar');setTimeout(()=>scrollToStock('${s.code}'),300);">
       <span class="tm-stock-name">${s.name}</span>
-      <span class="tm-stock-meta">
-        ${badge}
-        <span class="tm-stock-pct ${cls}">${pctText}</span>
-      </span>
+      <span class="tm-stock-pct ${cls}">${pctText}</span>
     </div>`;
   }).join('');
 
@@ -8808,7 +9632,6 @@ const TIME_OFFSET_LABELS = {
 };
 
 function setTimeOffset(offset){
-  // ✦ 시점은 의도적으로 영속화 안 함 — 탐색용이라 새로고침 시 "오늘"로 복귀가 안전
   currentTimeOffset = offset;
 
   // 토글 active 갱신
@@ -9670,7 +10493,6 @@ document.querySelectorAll('#segGroup .uni-seg-btn').forEach(btn=>{
     if(currentGroup===btn.dataset.group) return;
     currentGroup = btn.dataset.group;
     currentFilter = 'all';
-    saveUiState({ group: currentGroup });  // ✦ 영속화
     syncSegControls();
     document.getElementById('calendarSection').classList.toggle('hidden', currentGroup!=='season');
     buildFilterBar();
@@ -9684,13 +10506,10 @@ document.querySelectorAll('#segStyle .uni-seg-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     if(currentStyle===btn.dataset.style) return;
     currentStyle = btn.dataset.style;
-    saveUiState({ style: currentStyle });  // ✦ 영속화
     syncSegControls();
     maybeRenderTopPicks(true);  // 스타일 변경 → 강제 재정렬
     buildSummary();
     renderContent();
-    // ✦ 테마 분석도 같은 데이터 사용하니 활성 뷰 재렌더
-    if(typeof refreshActiveThemeView === 'function') refreshActiveThemeView();
   });
 });
 
@@ -9755,8 +10574,6 @@ buildCalendar();
 buildFilterBar();
 buildSummary();
 renderContent();
-// ✦ 복원된 UI 상태로 토글 active 클래스 동기화
-syncSegControls();
 // 산업 섹터 모드면 시즌 캘린더 영역 숨김
 document.getElementById('calendarSection').classList.toggle('hidden', currentGroup!=='season');
 loadPrices(true);  // 초기 로드: fresh 캐시는 스킵 (즉시 화면 표시)
@@ -10365,8 +11182,8 @@ function build180DayHistory(t) {
   return [...out, ...t.rrgHistory];
 }
 
-// Active period state — UI 영속화 적용
-let currentRRGPeriod = (typeof loadUiState === 'function') ? loadUiState().rrgPeriod : 10;
+// Active period state
+let currentRRGPeriod = 10;
 
 /* ========== UTILS ========== */
 const cls = c => c > 0.05 ? 'up' : c < -0.05 ? 'down' : 'neutral';
@@ -11141,10 +11958,6 @@ function renderForecast() {
   renderCandidates();
 
   // Period filter handlers (bound once after first render)
-  // 첫 렌더 시 저장된 RRG 기간으로 active 동기화
-  document.querySelectorAll('#rrg-period-tabs .period-tab').forEach(b => {
-    b.classList.toggle('active', parseInt(b.dataset.period) === currentRRGPeriod);
-  });
   document.querySelectorAll('#rrg-period-tabs .period-tab').forEach(btn => {
     if (btn.dataset.bound) return;
     btn.dataset.bound = '1';
@@ -11152,8 +11965,6 @@ function renderForecast() {
       document.querySelectorAll('#rrg-period-tabs .period-tab').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentRRGPeriod = parseInt(btn.dataset.period);
-      // ✦ 영속화 (외부에서 정의된 saveUiState 호출)
-      if(typeof saveUiState === 'function') saveUiState({ rrgPeriod: currentRRGPeriod });
       renderRRG();
     });
   });
@@ -11181,8 +11992,6 @@ document.querySelectorAll('.tab').forEach(btn => {
     btn.classList.add('active');
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + view).classList.add('active');
-    // ✦ 뷰 선택 영속화 (외부에서 정의된 saveUiState 호출)
-    if(typeof saveUiState === 'function') saveUiState({ themeView: view });
     // 각 탭별 렌더 호출 — 모두 같은 데이터 소스, 다른 시각화
     if(view === 'matrix' && typeof tmActivate === 'function') tmActivate();
     if(view === 'leaderboard' && typeof renderRankingView === 'function') renderRankingView();
@@ -11394,9 +12203,10 @@ document.querySelectorAll('.market-tab').forEach(btn => {
 /* ============================================================
    ✦ APP ROUTER + SIDEBAR
    ============================================================ */
-const ROUTES = ['calendar', 'heatmap', 'guide'];
+const ROUTES = ['calendar', 'heatmap', 'cycle', 'guide'];
 let currentRoute = 'calendar';
 // heatmapInited는 위에서 선언됨 (캘린더와 공유)
+let cycleInited = false;
 
 function navigate(route){
   if(!ROUTES.includes(route)) route = 'calendar';
@@ -11420,26 +12230,23 @@ function navigate(route){
       catch(e){ console.error('히트맵 초기화 실패:', e); }
     }
   }
-  // 히트맵 페이지 진입 시 저장된 뷰 복원 + 자동 렌더
+  // 히트맵 페이지 진입 시 판도탭 (디폴트) 자동 렌더
   if(route === 'heatmap'){
-    // 저장된 themeView 복원 (matrix / leaderboard / forecast)
-    const savedView = (typeof loadUiState === 'function') ? loadUiState().themeView : 'matrix';
-    const targetTab = document.querySelector(`#heatmap-view-tabs .tab[data-view="${savedView}"]`);
-    if(targetTab && !targetTab.classList.contains('active')){
-      // 클릭 시뮬 — 핸들러가 active 토글 + 렌더 처리
-      targetTab.click();
+    const matrixView = document.getElementById('view-matrix');
+    if(matrixView?.classList.contains('active') && typeof tmActivate === 'function'){
+      setTimeout(() => tmActivate(), 50);
+    }
+  }
+  // 사이클 헌터 페이지: 첫 진입 시 초기화 (5년 OHLCV 백그라운드 페치)
+  if(route === 'cycle'){
+    if(!cycleInited){
+      if(typeof window.__cycleInit === 'function'){
+        try { window.__cycleInit(); cycleInited = true; }
+        catch(e){ console.error('사이클 헌터 초기화 실패:', e); }
+      }
     } else {
-      // 이미 디폴트 active(matrix)와 일치하면 직접 렌더
-      setTimeout(() => {
-        if(savedView === 'matrix' && typeof tmActivate === 'function') tmActivate();
-        else if(savedView === 'leaderboard' && typeof renderRankingView === 'function') renderRankingView();
-        else if(savedView === 'forecast'){
-          if(typeof renderRisingView === 'function') renderRisingView();
-          if(typeof renderForecast === 'function' && typeof themes !== 'undefined' && themes?.length){
-            renderForecast();
-          }
-        }
-      }, 50);
+      // 재진입 시 카드 갱신만
+      if(typeof window.__cycleRender === 'function') window.__cycleRender();
     }
   }
 
@@ -11480,6 +12287,874 @@ const initialRoute = (location.hash || '#calendar').slice(1);
 if(ROUTES.includes(initialRoute) && initialRoute !== 'calendar'){
   navigate(initialRoute);
 }
+
+/* ============================================================
+   ✦ Cycle Hunter Module
+   - 5년 일봉 OHLCV 페치 (별도 캐시 ohlcv5y_v1)
+   - 5단계 위상 분류 + 0~100점 점수
+   - 바닥 후보 Top 3 (자리 유지 + 30분 캐시)
+   - 카드 그리드 + 스파크라인 SVG
+   - bottom sheet 상세
+   ============================================================ */
+(function(){
+  // ===== 1. 사이클 풀 정의 =====
+  // ALL_THEMES에서 종목을 끌어오되, 사이클 카테고리(industry/macro)와 sub-class를 매핑
+  const CYCLE_POOL_DEF = {
+    // 산업 사이클 — 제품·재고 사이클이 가격에 직접 반영
+    'kr-semi':       { class:'industry', subClass:'반도체', label:'반도체 사이클' },
+    'us-semi':       { class:'industry', subClass:'반도체', label:'반도체 사이클' },
+    'kr-ship':       { class:'industry', subClass:'조선',  label:'조선 사이클' },
+    'kr-battery':    { class:'industry', subClass:'배터리', label:'EV·배터리 사이클' },
+    'kr-power-grid': { class:'industry', subClass:'전력기기', label:'AI 전력 사이클' },
+    'kr-nuclear':    { class:'industry', subClass:'원전',  label:'원전 르네상스' },
+    'kr-auto':       { class:'industry', subClass:'자동차', label:'자동차 사이클' },
+    'kr-beauty':     { class:'industry', subClass:'화장품', label:'K-뷰티 사이클' },
+    // 매크로 사이클 — 거시변수 연동
+    'us-energy':     { class:'macro', subClass:'에너지', label:'유가 사이클' },
+    'us-fin':        { class:'macro', subClass:'금융',  label:'금리 사이클' },
+    'kr-fin':        { class:'macro', subClass:'금융',  label:'금리 사이클' },
+    'us-defense':    { class:'macro', subClass:'방산',  label:'지정학 사이클' },
+    'kr-defense':    { class:'macro', subClass:'방산',  label:'지정학 사이클' },
+    'us-consumer':   { class:'macro', subClass:'소비재', label:'경기 방어 사이클' },
+    'us-health':     { class:'macro', subClass:'헬스케어', label:'헬스케어 안정 성장' },
+  };
+
+  // 사이클 풀 빌드 — ALL_THEMES에서 매칭되는 종목만 추출
+  function buildCyclePool(){
+    const pool = [];
+    if(typeof ALL_THEMES === 'undefined') return pool;
+    ALL_THEMES.forEach(theme => {
+      const def = CYCLE_POOL_DEF[theme.id];
+      if(!def) return;
+      theme.stocks.forEach(stock => {
+        // 시장 토글 동기화 — 현재 시장의 종목만
+        if(theme.country !== currentCountry) return;
+        pool.push({
+          name: stock.name,
+          code: stock.code,
+          country: theme.country,
+          peak: stock.peak,
+          themeId: theme.id,
+          themeName: theme.name,
+          cycleClass: def.class,        // 'industry' | 'macro'
+          cycleSubClass: def.subClass,  // '반도체' | '조선' ...
+          cycleLabel: def.label,        // '반도체 사이클' 등
+        });
+      });
+    });
+    // 중복 제거 (같은 종목이 여러 테마에 속할 수 있음)
+    const seen = new Set();
+    return pool.filter(s => {
+      if(seen.has(s.code)) return false;
+      seen.add(s.code);
+      return true;
+    });
+  }
+
+  // ===== 2. 5년 OHLCV 페치 인프라 =====
+  const OHLCV5Y_KEY = 'ohlcv5y_v1';
+  const OHLCV5Y_RANGE = '5y';
+  const ohlcv5yCache = {};  // 메모리: { ticker: {closes, dates, highs, lows, volumes, updatedAt} }
+
+  function loadOhlcv5yCache(){
+    try {
+      const saved = JSON.parse(localStorage.getItem(OHLCV5Y_KEY) || '{}');
+      Object.entries(saved).forEach(([ticker, entry]) => {
+        if(entry?.closes?.length >= 200){
+          ohlcv5yCache[ticker] = entry;
+        }
+      });
+      const count = Object.keys(ohlcv5yCache).length;
+      if(count > 0) console.log(`[Cycle] 5y OHLCV 캐시 로드: ${count}개 종목`);
+    } catch(e){ console.warn('[Cycle] 캐시 로드 실패', e); }
+  }
+
+  let _saveTimer;
+  function saveOhlcv5yCache(){
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(() => {
+      try { localStorage.setItem(OHLCV5Y_KEY, JSON.stringify(ohlcv5yCache)); }
+      catch(e){
+        // 용량 초과 시 가장 오래된 절반 삭제 후 재시도
+        try {
+          const entries = Object.entries(ohlcv5yCache).sort((a,b) => (a[1].updatedAt||0) - (b[1].updatedAt||0));
+          const half = Math.floor(entries.length / 2);
+          for(let i = 0; i < half; i++) delete ohlcv5yCache[entries[i][0]];
+          localStorage.setItem(OHLCV5Y_KEY, JSON.stringify(ohlcv5yCache));
+        } catch(e2){ console.warn('[Cycle] 저장 실패', e2); }
+      }
+    }, 500);
+  }
+
+  function isOhlcv5yFresh(entry){
+    if(!entry?.updatedAt) return false;
+    const age = Date.now() - entry.updatedAt;
+    // 24시간 이내면 fresh, 그 후엔 KST 16시 이후 첫 진입에 갱신
+    if(age < 18 * 3600 * 1000) return true;
+    return false;
+  }
+
+  // 단일 프록시 페치 (ohlcv 1y 함수와 동일 패턴, range만 5y로)
+  async function fetch5yViaProxy(proxyIdx, ticker, timeoutMs = 12000){
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=${OHLCV5Y_RANGE}`;
+    const res = await withTimeout(fetch(PROXIES[proxyIdx](yahooUrl), {cache:'no-store'}), timeoutMs);
+    if(!res.ok) throw new Error('http_'+res.status);
+    let data = await res.json();
+    if(data?.contents) data = JSON.parse(data.contents);
+    const result = data?.chart?.result?.[0];
+    if(!result?.timestamp || !result.indicators?.quote?.[0]) throw new Error('no_data');
+    const ts = result.timestamp;
+    const q = result.indicators.quote[0];
+    const cleaned = { closes:[], highs:[], lows:[], volumes:[], dates:[] };
+    for(let i = 0; i < ts.length; i++){
+      if(q.close[i] == null) continue;
+      cleaned.dates.push(ts[i] * 1000);
+      cleaned.closes.push(q.close[i]);
+      cleaned.highs.push(q.high[i] ?? q.close[i]);
+      cleaned.lows.push(q.low[i] ?? q.close[i]);
+      cleaned.volumes.push(q.volume[i] ?? 0);
+    }
+    if(cleaned.closes.length < 200) throw new Error('insufficient_5y');
+    return cleaned;
+  }
+
+  // 멀티 프록시 race
+  async function fetch5y(ticker){
+    const active = (typeof getActiveProxies === 'function') ? getActiveProxies() : [0,1,2,3,4,5];
+    if(active.length === 0) return null;
+    return new Promise(resolve => {
+      let pending = active.length, resolved = false;
+      active.forEach(idx => {
+        fetch5yViaProxy(idx, ticker).then(data => {
+          if(resolved) return;
+          if(typeof proxyHealth !== 'undefined') proxyHealth[idx] = Math.min(3, proxyHealth[idx]+1);
+          resolved = true;
+          resolve(data);
+        }).catch(_e => {
+          if(typeof proxyHealth !== 'undefined') proxyHealth[idx] = Math.max(-3, proxyHealth[idx]-1);
+          pending--;
+          if(pending === 0 && !resolved){ resolved = true; resolve(null); }
+        });
+      });
+    });
+  }
+
+  // 백그라운드 큐 페치 — 동시 4개씩
+  async function fetchAllCycleOhlcv(stocks){
+    const queue = stocks.filter(s => !isOhlcv5yFresh(ohlcv5yCache[s.code])).map(s => s.code);
+    let inFlight = 0;
+    const MAX = 4;
+    let idx = 0;
+    return new Promise(resolve => {
+      const tick = () => {
+        while(inFlight < MAX && idx < queue.length){
+          const code = queue[idx++];
+          inFlight++;
+          fetch5y(code).then(data => {
+            if(data){
+              ohlcv5yCache[code] = { ...data, updatedAt: Date.now() };
+              saveOhlcv5yCache();
+              // 도착 즉시 해당 카드만 갱신
+              if(typeof renderCycleCardForCode === 'function') renderCycleCardForCode(code);
+            }
+            inFlight--;
+            if(idx < queue.length) tick();
+            else if(inFlight === 0) resolve();
+          });
+        }
+        if(queue.length === 0) resolve();
+      };
+      tick();
+    });
+  }
+
+  // ===== 3. 사이클 분석 알고리즘 =====
+  // 위상 5단계 + 0~100점 + 메트릭
+  function analyzeCycle(stock, ohlcv){
+    if(!ohlcv?.closes || ohlcv.closes.length < 200){
+      return { phase: 'unknown', score: 0, metrics: null, ready: false };
+    }
+    const closes = ohlcv.closes;
+    const volumes = ohlcv.volumes || [];
+    const n = closes.length;
+    const cur = closes[n-1];
+    const high5y = Math.max(...closes);
+    const low5y = Math.min(...closes);
+
+    // 바닥/정점 대비 비율
+    const fromLowPct = ((cur - low5y) / low5y) * 100;       // 바닥에서 얼마나 올라왔나 (%)
+    const fromHighPct = ((cur - high5y) / high5y) * 100;    // 정점에서 얼마나 떨어졌나 (-%)
+    const positionInRange = (cur - low5y) / (high5y - low5y); // 0=저점, 1=고점
+
+    // 모멘텀 계산
+    const _avgChange = (a, b) => {
+      if(b >= n || a < 0) return 0;
+      const slice = closes.slice(a, b);
+      let sum = 0;
+      for(let i = 1; i < slice.length; i++){
+        sum += (slice[i] - slice[i-1]) / slice[i-1];
+      }
+      return slice.length > 1 ? sum / (slice.length - 1) : 0;
+    };
+    // 6M ≈ 126영업일 / 12M ≈ 252영업일
+    const mom6M = _avgChange(Math.max(0, n-126), n) * 100;   // 일평균 변화율(%)
+    const mom12M = _avgChange(Math.max(0, n-252), n) * 100;
+
+    // 200일선 위치
+    const sma200 = closes.slice(-200).reduce((a,b) => a+b, 0) / 200;
+    const aboveSMA200 = cur >= sma200;
+    const distFromSMA200 = ((cur - sma200) / sma200) * 100;
+
+    // 거래량 비율 (최근 3M / 직전 12M)
+    let volRatio = 1.0;
+    if(volumes.length >= 252){
+      const recent = volumes.slice(-63).reduce((a,b) => a+b, 0) / 63;
+      const long = volumes.slice(-252, -63).reduce((a,b) => a+b, 0) / Math.max(1, volumes.length - 63 - (volumes.length - 252));
+      if(long > 0) volRatio = recent / long;
+    }
+
+    // ===== 위상 분류 =====
+    let phase = 'unknown';
+    if(positionInRange <= 0.20 && mom6M < 0.05){
+      phase = 'trough';        // 🌑 바닥 — 저점 ±20% + 모멘텀 약함
+    } else if(positionInRange <= 0.45 && mom6M > 0){
+      phase = 'recovery';      // 🌒 회복 — 바닥 탈출 + 양수 모멘텀
+    } else if(positionInRange <= 0.75 && aboveSMA200){
+      phase = 'expansion';     // 🌓 확장 — 200일선 위, 추세 진행
+    } else if(positionInRange > 0.75 && positionInRange <= 0.92){
+      phase = 'peak';          // 🌔 정점 근접
+    } else if(positionInRange > 0.92 || (mom6M < -0.05 && fromHighPct < -10)){
+      phase = 'cooling';       // 🌕 냉각
+    } else {
+      // 회색 지대 — 위치/모멘텀이 어중간하면 휴리스틱으로
+      if(mom6M > 0.05) phase = 'expansion';
+      else if(mom6M < -0.05) phase = 'cooling';
+      else phase = 'expansion';
+    }
+
+    // ===== 사이클 점수 (0~100) =====
+    // 1) 바닥 근접도 (30점) — 저점 가까울수록 높음
+    const sBottom = Math.max(0, 30 * (1 - positionInRange));
+
+    // 2) 회복 모멘텀 (25점) — 6M 모멘텀 양수 + 12M 대비 가속
+    let sMomentum = 0;
+    if(mom6M > 0){
+      sMomentum = Math.min(15, mom6M * 100);
+      if(mom6M > mom12M) sMomentum += 10;  // 가속 가산
+    } else {
+      sMomentum = Math.max(0, 10 + mom6M * 50);
+    }
+    sMomentum = Math.min(25, sMomentum);
+
+    // 3) 위상 매칭 (20점) — 매크로 시장 상태 vs 종목 위상
+    // 단순화: 200일선 위 + 회복/확장 위상이면 풀점, 냉각이면 깎음
+    let sMatch = 10;
+    if(phase === 'recovery' || phase === 'expansion') sMatch = 18;
+    else if(phase === 'trough' && mom6M >= -0.02) sMatch = 16;  // 바닥에서 안정
+    else if(phase === 'peak') sMatch = 8;
+    else if(phase === 'cooling') sMatch = 3;
+    sMatch = Math.min(20, sMatch);
+
+    // 4) 거래량 회복 (15점) — 비율 1.3+ 풀점
+    let sVol = 0;
+    if(volRatio >= 1.5) sVol = 15;
+    else if(volRatio >= 1.2) sVol = 10;
+    else if(volRatio >= 1.0) sVol = 6;
+    else if(volRatio >= 0.8) sVol = 3;
+    else sVol = 0;
+
+    // 5) 사이클 위치 (10점) — 저점에서 1년 내 회복 시작이면 가산
+    // 단순화: 저점이 최근 1년 안에 있고 + 현재 회복/확장이면 가산
+    let sPosition = 5;
+    const last252 = closes.slice(-252);
+    const recentLow = Math.min(...last252);
+    if(recentLow <= low5y * 1.05 && (phase === 'recovery' || phase === 'expansion')){
+      sPosition = 10;  // "저점 친 지 얼마 안 됐고 회복 중"
+    }
+
+    const totalScore = +(sBottom + sMomentum + sMatch + sVol + sPosition).toFixed(1);
+
+    return {
+      phase,
+      score: totalScore,
+      ready: true,
+      metrics: {
+        cur, low5y, high5y,
+        fromLowPct: +fromLowPct.toFixed(1),
+        fromHighPct: +fromHighPct.toFixed(1),
+        positionInRange: +(positionInRange * 100).toFixed(1),
+        mom6M: +(mom6M * 100).toFixed(2),     // 일평균 (%/일)
+        mom12M: +(mom12M * 100).toFixed(2),
+        sma200: +sma200.toFixed(2),
+        aboveSMA200,
+        distFromSMA200: +distFromSMA200.toFixed(1),
+        volRatio: +volRatio.toFixed(2),
+        components: {
+          bottom: +sBottom.toFixed(1),
+          momentum: +sMomentum.toFixed(1),
+          match: +sMatch.toFixed(1),
+          volume: +sVol.toFixed(1),
+          position: +sPosition.toFixed(1),
+        }
+      }
+    };
+  }
+
+  // ===== 4. 위상 메타 =====
+  const PHASE_META = {
+    trough:    { icon:'🌑', label:'바닥',     cls:'trough' },
+    recovery:  { icon:'🌒', label:'회복',     cls:'recovery' },
+    expansion: { icon:'🌓', label:'확장',     cls:'expansion' },
+    peak:      { icon:'🌔', label:'정점근접', cls:'peak' },
+    cooling:   { icon:'🌕', label:'냉각',     cls:'cooling' },
+    unknown:   { icon:'❓', label:'분석대기', cls:'unknown' },
+  };
+  function renderPhaseBadge(phase, opts={}){
+    const meta = PHASE_META[phase] || PHASE_META.unknown;
+    const sm = opts.size === 'sm' ? ' sm' : '';
+    return `<span class="phase-badge ${meta.cls}${sm}"><span class="pb-icon">${meta.icon}</span>${meta.label}</span>`;
+  }
+
+  // ===== 5. 스파크라인 SVG =====
+  function buildSparkline(closes, opts={}){
+    const w = opts.width || 320, h = opts.height || 54;
+    const pad = 4;
+    if(!closes || closes.length < 2){
+      return `<svg viewBox="0 0 ${w} ${h}"></svg>`;
+    }
+    const min = Math.min(...closes);
+    const max = Math.max(...closes);
+    const range = max - min || 1;
+    const cur = closes[closes.length - 1];
+    // 색상: 현재가가 사이클 중 어디인지에 따라
+    const ratio = (cur - min) / range;
+    let strokeColor = 'var(--text-2)';
+    let fillColor = 'var(--text-2)';
+    if(ratio < 0.3)      { strokeColor = 'var(--ph-trough)';    fillColor = 'var(--ph-trough)'; }
+    else if(ratio < 0.55){ strokeColor = 'var(--ph-recovery)';  fillColor = 'var(--ph-recovery)'; }
+    else if(ratio < 0.78){ strokeColor = 'var(--ph-expansion)'; fillColor = 'var(--ph-expansion)'; }
+    else if(ratio < 0.92){ strokeColor = '#d4a020';             fillColor = '#d4a020'; }
+    else                 { strokeColor = 'var(--ph-cooling)';   fillColor = 'var(--ph-cooling)'; }
+
+    const xStep = (w - 2*pad) / (closes.length - 1);
+    const ys = closes.map(v => h - pad - ((v - min) / range) * (h - 2*pad));
+    let pathD = `M ${pad} ${ys[0]}`;
+    for(let i = 1; i < closes.length; i++){
+      pathD += ` L ${pad + i*xStep} ${ys[i]}`;
+    }
+    // 영역 채움
+    const areaD = pathD + ` L ${pad + (closes.length-1)*xStep} ${h-pad} L ${pad} ${h-pad} Z`;
+
+    // 저점·고점·현재가 마커
+    const lowIdx = closes.indexOf(min);
+    const highIdx = closes.indexOf(max);
+    const lowX = pad + lowIdx * xStep, lowY = ys[lowIdx];
+    const highX = pad + highIdx * xStep, highY = ys[highIdx];
+    const curX = pad + (closes.length-1) * xStep, curY = ys[ys.length-1];
+
+    // baseline (50% 위치)
+    const midY = pad + (h - 2*pad) * 0.5;
+
+    return `
+      <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <line class="spk-baseline" x1="${pad}" y1="${midY}" x2="${w-pad}" y2="${midY}"/>
+        <path class="spk-area" d="${areaD}" fill="${fillColor}"/>
+        <path class="spk-line" d="${pathD}" stroke="${strokeColor}"/>
+        <circle class="spk-low" cx="${lowX}" cy="${lowY}" r="2.5"/>
+        <circle class="spk-high" cx="${highX}" cy="${highY}" r="2.5"/>
+        <circle class="spk-now" cx="${curX}" cy="${curY}" r="3.5"/>
+      </svg>
+    `;
+  }
+
+  // 풀 차트 (sheet 안) — 더 큰 사이즈 + 축 표시
+  function buildFullChart(closes){
+    const w = 660, h = 220, pad = 30;
+    if(!closes || closes.length < 2) return `<svg viewBox="0 0 ${w} ${h}"></svg>`;
+    const min = Math.min(...closes);
+    const max = Math.max(...closes);
+    const range = max - min || 1;
+    const xStep = (w - 2*pad) / (closes.length - 1);
+    const ys = closes.map(v => h - pad - ((v - min) / range) * (h - 2*pad));
+    let pathD = `M ${pad} ${ys[0]}`;
+    for(let i = 1; i < closes.length; i++){
+      pathD += ` L ${pad + i*xStep} ${ys[i]}`;
+    }
+    const areaD = pathD + ` L ${pad + (closes.length-1)*xStep} ${h-pad} L ${pad} ${h-pad} Z`;
+    // y축 라벨 (저점·고점·중간)
+    const fmtPrice = v => v >= 1000 ? Math.round(v).toLocaleString() : v.toFixed(2);
+    return `
+      <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h-pad}" stroke="var(--border)" />
+        <line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="var(--border)" />
+        <text x="${pad-6}" y="${pad+4}" text-anchor="end" fill="var(--text-3)" font-size="10" font-family="var(--font-mono)">${fmtPrice(max)}</text>
+        <text x="${pad-6}" y="${h-pad+4}" text-anchor="end" fill="var(--text-3)" font-size="10" font-family="var(--font-mono)">${fmtPrice(min)}</text>
+        <path d="${areaD}" fill="var(--accent)" fill-opacity="0.10"/>
+        <path d="${pathD}" stroke="var(--accent)" stroke-width="1.5" fill="none"/>
+      </svg>
+    `;
+  }
+
+  // ===== 6. 가격 포맷 =====
+  function fmtPrice(v, country){
+    if(v == null || isNaN(v)) return '—';
+    if(country === 'KR'){
+      if(v >= 10000) return Math.round(v).toLocaleString();
+      return Math.round(v * 10) / 10;
+    }
+    return '$' + v.toFixed(v >= 100 ? 1 : 2);
+  }
+
+  // ===== 7. 상태 =====
+  let cycleClass = 'all';   // all | industry | macro
+  let cycleSort = 'score';  // score | depth | recovery
+  let cycleFilter = 'all';  // all | fav | trough | recovery | expansion | peak | cooling | <subClass>
+
+  // 모든 사이클 후보 종목의 분석 결과 (메모리 캐시)
+  let cycleAnalyses = {};   // { code: {stock, ohlcv, analysis} }
+
+  function analyzeAll(){
+    cycleAnalyses = {};
+    const pool = buildCyclePool();
+    pool.forEach(stock => {
+      const ohlcv = ohlcv5yCache[stock.code];
+      const analysis = analyzeCycle(stock, ohlcv);
+      cycleAnalyses[stock.code] = { stock, ohlcv, analysis };
+    });
+  }
+
+  // ===== 8. 바닥 후보 Top 3 (자리 유지 + 30분 캐시) =====
+  const CYC_PICK_KEY = 'cycPickCache_v1';
+  const CYC_PICK_TTL = 30 * 60 * 1000;
+
+  function cycPickContextKey(){
+    return `${currentCountry}|${cycleClass}`;
+  }
+
+  function computeCycPickCodes(){
+    const list = [];
+    Object.values(cycleAnalyses).forEach(({stock, analysis}) => {
+      if(!analysis.ready) return;
+      if(cycleClass !== 'all' && stock.cycleClass !== cycleClass) return;
+      // 바닥 후보: trough 또는 recovery 위상 + 점수 상위
+      if(analysis.phase !== 'trough' && analysis.phase !== 'recovery') return;
+      list.push({ code: stock.code, score: analysis.score });
+    });
+    list.sort((a,b) => b.score - a.score);
+    return list.slice(0, 3).map(x => x.code);
+  }
+
+  function loadCycPickCache(){
+    try {
+      const raw = sessionStorage.getItem(CYC_PICK_KEY);
+      if(!raw) return null;
+      const p = JSON.parse(raw);
+      if(!p?.codes || !p?.fetchedAt) return null;
+      return p;
+    } catch(e){ return null; }
+  }
+  function saveCycPickCache(codes, ctxKey){
+    try {
+      sessionStorage.setItem(CYC_PICK_KEY, JSON.stringify({
+        codes, fetchedAt: Date.now(), contextKey: ctxKey
+      }));
+    } catch(e){}
+  }
+  function mergeCycPickStable(prev, next){
+    if(!prev || prev.length === 0) return next.slice(0, 3);
+    const valid = new Set(next);
+    const newOnly = next.filter(c => !prev.includes(c));
+    const out = prev.slice(0, 3);
+    for(let i = 0; i < out.length; i++){
+      if(!valid.has(out[i])) out[i] = newOnly.shift() || null;
+    }
+    for(let i = 0; i < 3; i++){
+      if(!out[i]){ const r = newOnly.shift(); if(r) out[i] = r; }
+    }
+    return out.filter(Boolean).slice(0, 3);
+  }
+
+  function getCycPicks(force = false){
+    const ctxKey = cycPickContextKey();
+    const cached = loadCycPickCache();
+    const now = Date.now();
+    const ctxChanged = !cached || cached.contextKey !== ctxKey;
+    const expired = !cached || (now - cached.fetchedAt) > CYC_PICK_TTL;
+
+    let codes;
+    if(force || ctxChanged){
+      codes = computeCycPickCodes();
+      saveCycPickCache(codes, ctxKey);
+    } else if(expired){
+      const fresh = computeCycPickCodes();
+      codes = mergeCycPickStable(cached.codes, fresh);
+      saveCycPickCache(codes, ctxKey);
+    } else {
+      codes = cached.codes;
+    }
+    return codes.map(code => cycleAnalyses[code]).filter(Boolean);
+  }
+
+  function renderCycPicks(){
+    const grid = document.getElementById('cycPickGrid');
+    if(!grid) return;
+    const picks = getCycPicks();
+    if(picks.length === 0){
+      grid.innerHTML = `<div class="cyc-empty">아직 분석할 데이터가 부족합니다. 5년 일봉 페치 중이거나 현재 시장에 바닥/회복 위상 종목이 없습니다.</div>`;
+      return;
+    }
+    grid.innerHTML = picks.map((p, i) => {
+      const { stock, ohlcv, analysis } = p;
+      const m = analysis.metrics;
+      const phaseHtml = renderPhaseBadge(analysis.phase, { size:'sm' });
+      const sparkHtml = ohlcv ? buildSparkline(ohlcv.closes, { width:320, height:54 }) : '';
+      return `
+        <div class="cyc-pick-card phase-${analysis.phase}" onclick="window.__cycleOpenSheet('${stock.code}')">
+          <div class="cyc-pick-rank">#${i+1}</div>
+          <div class="cyc-pick-head">
+            <div class="cyc-pick-name">${stock.name}<span class="cyc-pick-code">${stock.code}</span></div>
+            <span class="cyc-pick-score">${Math.round(analysis.score)}</span>
+          </div>
+          <div class="cyc-pick-cycle">${stock.cycleLabel}</div>
+          <div class="cyc-spark">${sparkHtml}</div>
+          <div class="cyc-pick-meta">
+            ${phaseHtml}
+            <span class="cyc-pick-meta-item"><span class="lbl">바닥+</span><strong>${m.fromLowPct.toFixed(0)}%</strong></span>
+            <span class="cyc-pick-meta-item"><span class="lbl">정점</span><strong>${m.fromHighPct.toFixed(0)}%</strong></span>
+            <span class="cyc-pick-meta-item"><span class="lbl">6M</span><strong>${m.mom6M >= 0 ? '+' : ''}${m.mom6M.toFixed(2)}%</strong></span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ===== 9. 4단계 위상 요약 카운트 =====
+  function renderCycSummary(){
+    let trough = 0, recovery = 0, expansion = 0, fav = 0;
+    Object.values(cycleAnalyses).forEach(({stock, analysis}) => {
+      if(!analysis.ready) return;
+      if(cycleClass !== 'all' && stock.cycleClass !== cycleClass) return;
+      if(analysis.phase === 'trough') trough++;
+      else if(analysis.phase === 'recovery') recovery++;
+      else if(analysis.phase === 'expansion') expansion++;
+      if(typeof favorites !== 'undefined' && favorites.has(stock.code)) fav++;
+    });
+    const fmt = n => `${n}<span class="cyc-sum-unit">종목</span>`;
+    document.getElementById('cycSumTrough').innerHTML    = fmt(trough);
+    document.getElementById('cycSumRecovery').innerHTML  = fmt(recovery);
+    document.getElementById('cycSumExpansion').innerHTML = fmt(expansion);
+    document.getElementById('cycSumFav').innerHTML       = fmt(fav);
+  }
+
+  // ===== 10. 필터바 =====
+  function renderCycFilters(){
+    const bar = document.getElementById('cycFilters');
+    if(!bar) return;
+    const subClasses = new Set();
+    Object.values(cycleAnalyses).forEach(({stock}) => {
+      if(cycleClass !== 'all' && stock.cycleClass !== cycleClass) return;
+      subClasses.add(stock.cycleSubClass);
+    });
+    const items = [['all','전체'], ['fav','★ 즐겨찾기']];
+    [...subClasses].sort().forEach(c => items.push([c, c]));
+    bar.innerHTML = `<span class="filter-label">FILTER :</span>` +
+      items.map(([k,v]) => `<button class="filter-btn${k===cycleFilter?' active':''}" data-cyc-filter="${k}">${v}</button>`).join('');
+    bar.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        cycleFilter = btn.dataset.cycFilter;
+        bar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderCycCards();
+      });
+    });
+  }
+
+  // ===== 11. 메인 카드 그리드 =====
+  function renderCycCards(){
+    const grid = document.getElementById('cycCardGrid');
+    if(!grid) return;
+    let cards = Object.values(cycleAnalyses);
+
+    // 사이클 분류 필터
+    if(cycleClass !== 'all'){
+      cards = cards.filter(c => c.stock.cycleClass === cycleClass);
+    }
+    // 추가 필터
+    if(cycleFilter === 'fav'){
+      cards = cards.filter(c => typeof favorites !== 'undefined' && favorites.has(c.stock.code));
+    } else if(['trough','recovery','expansion','peak','cooling'].includes(cycleFilter)){
+      cards = cards.filter(c => c.analysis.phase === cycleFilter);
+    } else if(cycleFilter !== 'all'){
+      cards = cards.filter(c => c.stock.cycleSubClass === cycleFilter);
+    }
+
+    // 정렬
+    if(cycleSort === 'depth'){
+      // 바닥 가까울수록 (positionInRange 작을수록) 위
+      cards.sort((a,b) => {
+        const pa = a.analysis.metrics?.positionInRange ?? 999;
+        const pb = b.analysis.metrics?.positionInRange ?? 999;
+        return pa - pb;
+      });
+    } else if(cycleSort === 'recovery'){
+      // 6M 모멘텀 큰 순
+      cards.sort((a,b) => (b.analysis.metrics?.mom6M ?? -999) - (a.analysis.metrics?.mom6M ?? -999));
+    } else {
+      // 점수 순
+      cards.sort((a,b) => b.analysis.score - a.analysis.score);
+    }
+
+    if(cards.length === 0){
+      grid.innerHTML = `<div class="cyc-empty">조건에 맞는 종목이 없습니다. 필터를 바꿔보세요.</div>`;
+      return;
+    }
+
+    grid.innerHTML = cards.map(({stock, ohlcv, analysis}) => buildCycCardHTML(stock, ohlcv, analysis)).join('');
+  }
+
+  function buildCycCardHTML(stock, ohlcv, analysis){
+    const isFav = typeof favorites !== 'undefined' && favorites.has(stock.code);
+    const loadingCls = analysis.ready ? '' : ' loading';
+    const favCls = isFav ? ' fav-on' : '';
+    const phaseHtml = renderPhaseBadge(analysis.phase, { size:'sm' });
+    const sparkHtml = ohlcv ? buildSparkline(ohlcv.closes, { width:340, height:64 }) : `<svg viewBox="0 0 340 64"></svg>`;
+    const m = analysis.metrics;
+    const metricsHtml = m ? `
+      <div class="cyc-metric">
+        <span class="m-lbl">바닥+</span>
+        <span class="m-val ${m.fromLowPct > 30 ? '' : 'good'}">${m.fromLowPct.toFixed(0)}%</span>
+        <span class="m-sub">5y low</span>
+      </div>
+      <div class="cyc-metric">
+        <span class="m-lbl">정점</span>
+        <span class="m-val ${m.fromHighPct < -10 ? 'down' : 'warn'}">${m.fromHighPct.toFixed(0)}%</span>
+        <span class="m-sub">5y high</span>
+      </div>
+      <div class="cyc-metric">
+        <span class="m-lbl">6M</span>
+        <span class="m-val ${m.mom6M >= 0 ? 'up' : 'down'}">${m.mom6M >= 0 ? '+' : ''}${m.mom6M.toFixed(2)}%</span>
+        <span class="m-sub">일평균</span>
+      </div>
+      <div class="cyc-metric">
+        <span class="m-lbl">거래량</span>
+        <span class="m-val ${m.volRatio >= 1.2 ? 'good' : (m.volRatio < 0.8 ? 'down' : '')}">${m.volRatio.toFixed(2)}x</span>
+        <span class="m-sub">3M/12M</span>
+      </div>
+    ` : `
+      <div class="cyc-metric"><span class="m-lbl">바닥+</span><span class="m-val">—</span></div>
+      <div class="cyc-metric"><span class="m-lbl">정점</span><span class="m-val">—</span></div>
+      <div class="cyc-metric"><span class="m-lbl">6M</span><span class="m-val">—</span></div>
+      <div class="cyc-metric"><span class="m-lbl">거래량</span><span class="m-val">—</span></div>
+    `;
+    return `
+      <div class="cyc-card${loadingCls}${favCls}" data-code="${stock.code}" onclick="window.__cycleOpenSheet('${stock.code}')">
+        <div class="cyc-card-head">
+          <div class="cyc-card-info">
+            <div class="cyc-card-name">${stock.name}</div>
+            <div class="cyc-card-sub">
+              <span>${stock.code}</span>
+              <span style="color:var(--text-4)">·</span>
+              <span class="cs-cycle">${stock.cycleLabel}</span>
+            </div>
+          </div>
+          <div class="cyc-card-corner">
+            <span class="cyc-card-score">${analysis.ready ? Math.round(analysis.score) : '—'}</span>
+            ${phaseHtml}
+            <button type="button" class="cyc-card-fav${isFav?' on':''}" onclick="event.stopPropagation(); window.__cycleToggleFav('${stock.code}')">${isFav?'★':'☆'}</button>
+          </div>
+        </div>
+        <div class="cyc-card-spark">${sparkHtml}</div>
+        <div class="cyc-card-metrics">${metricsHtml}</div>
+      </div>
+    `;
+  }
+
+  // 단일 카드만 갱신 (페치 도착 시 사용)
+  function renderCycleCardForCode(code){
+    if(!cycleAnalyses[code]) return;
+    const ohlcv = ohlcv5yCache[code];
+    const analysis = analyzeCycle(cycleAnalyses[code].stock, ohlcv);
+    cycleAnalyses[code] = { ...cycleAnalyses[code], ohlcv, analysis };
+    // 카드 그리드 안 해당 카드만 교체
+    const cardEl = document.querySelector(`.cyc-card[data-code="${code}"]`);
+    if(cardEl){
+      const html = buildCycCardHTML(cycleAnalyses[code].stock, ohlcv, analysis);
+      const wrap = document.createElement('div');
+      wrap.innerHTML = html.trim();
+      cardEl.replaceWith(wrap.firstElementChild);
+    }
+    // 요약·픽도 갱신 (디바운스)
+    debounceCycRefresh();
+  }
+  // 외부에서 부를 수 있게 노출
+  window.__cycleRenderCardForCode = renderCycleCardForCode;
+  // CycleHunter 모듈 내에서도 다른 함수가 부를 수 있게 (closures 안 함수)
+  function renderCycleCardForCodeWrapper(code){ renderCycleCardForCode(code); }
+
+  let _refreshTimer;
+  function debounceCycRefresh(){
+    clearTimeout(_refreshTimer);
+    _refreshTimer = setTimeout(() => {
+      renderCycSummary();
+      renderCycPicks();
+    }, 300);
+  }
+
+  // ===== 12. Bottom Sheet =====
+  function openCycSheet(code){
+    const entry = cycleAnalyses[code];
+    if(!entry) return;
+    const { stock, ohlcv, analysis } = entry;
+    const sheet = document.getElementById('cycSheet');
+    const back = document.getElementById('cycSheetBackdrop');
+    if(!sheet || !back) return;
+
+    document.getElementById('cycSheetName').textContent = stock.name;
+    document.getElementById('cycSheetCode').textContent = stock.code;
+    document.getElementById('cycSheetPhase').innerHTML = renderPhaseBadge(analysis.phase);
+    document.getElementById('cycSheetScore').textContent = analysis.ready ? Math.round(analysis.score) + '점' : '—';
+    const m = analysis.metrics;
+    document.getElementById('cycSheetPrice').textContent = m ? fmtPrice(m.cur, stock.country) : '—';
+    document.getElementById('cycSheetLow').textContent   = m ? fmtPrice(m.low5y, stock.country) : '—';
+    document.getElementById('cycSheetHigh').textContent  = m ? fmtPrice(m.high5y, stock.country) : '—';
+
+    // 풀 차트
+    const chart = document.getElementById('cycSheetChart');
+    chart.innerHTML = ohlcv ? buildFullChart(ohlcv.closes) : '<div style="color:var(--text-3);text-align:center;padding:80px 0;font-size:13px">데이터 페치 중…</div>';
+
+    // 분해 메트릭
+    const detail = document.getElementById('cycSheetDetail');
+    if(m){
+      const c = m.components;
+      detail.innerHTML = `
+        <div class="cyc-sheet-detail-item"><div class="di-lbl">바닥 근접도</div><div class="di-val">${c.bottom}/30</div></div>
+        <div class="cyc-sheet-detail-item"><div class="di-lbl">회복 모멘텀</div><div class="di-val">${c.momentum}/25</div></div>
+        <div class="cyc-sheet-detail-item"><div class="di-lbl">위상 매칭</div><div class="di-val">${c.match}/20</div></div>
+        <div class="cyc-sheet-detail-item"><div class="di-lbl">거래량 회복</div><div class="di-val">${c.volume}/15</div></div>
+        <div class="cyc-sheet-detail-item"><div class="di-lbl">사이클 위치</div><div class="di-val">${c.position}/10</div></div>
+        <div class="cyc-sheet-detail-item"><div class="di-lbl">200SMA 거리</div><div class="di-val">${m.distFromSMA200 >= 0 ? '+' : ''}${m.distFromSMA200}%</div></div>
+        <div class="cyc-sheet-detail-item"><div class="di-lbl">12M 모멘텀</div><div class="di-val">${m.mom12M >= 0 ? '+' : ''}${m.mom12M}%</div></div>
+        <div class="cyc-sheet-detail-item"><div class="di-lbl">사이클 위치(%)</div><div class="di-val">${m.positionInRange}%</div></div>
+      `;
+    } else {
+      detail.innerHTML = '<div style="color:var(--text-3);font-size:12px">분석 데이터 대기 중</div>';
+    }
+
+    sheet.classList.add('open');
+    back.classList.add('open');
+  }
+  function closeCycSheet(){
+    document.getElementById('cycSheet')?.classList.remove('open');
+    document.getElementById('cycSheetBackdrop')?.classList.remove('open');
+  }
+  // 백드롭 클릭으로 닫기
+  document.addEventListener('click', e => {
+    if(e.target?.id === 'cycSheetBackdrop') closeCycSheet();
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') closeCycSheet();
+  });
+
+  // ===== 13. 즐겨찾기 토글 =====
+  function toggleCycFav(code){
+    if(typeof favorites === 'undefined') return;
+    if(favorites.has(code)) favorites.delete(code);
+    else favorites.add(code);
+    if(typeof saveFavorites === 'function') saveFavorites();
+    // 사이클 카드의 별 + 종목 분석 카드 별 모두 동기
+    document.querySelectorAll(`[data-code="${code}"] .cyc-card-fav, [data-fav="${code}"]`).forEach(btn => {
+      const on = favorites.has(code);
+      btn.classList.toggle('on', on);
+      if(btn.classList.contains('cyc-card-fav')) btn.textContent = on ? '★' : '☆';
+    });
+    renderCycSummary();
+    if(cycleFilter === 'fav') renderCycCards();
+  }
+
+  // ===== 14. 토글 핸들러 =====
+  function bindCycleToggles(){
+    document.querySelectorAll('#cycleClassSeg .uni-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        cycleClass = btn.dataset.cycleClass;
+        document.querySelectorAll('#cycleClassSeg .uni-seg-btn').forEach(b => b.classList.toggle('active', b === btn));
+        renderCycSummary();
+        renderCycPicks();
+        renderCycFilters();
+        renderCycCards();
+      });
+    });
+    document.querySelectorAll('#cycleSortSeg .uni-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        cycleSort = btn.dataset.cycleSort;
+        document.querySelectorAll('#cycleSortSeg .uni-seg-btn').forEach(b => b.classList.toggle('active', b === btn));
+        renderCycCards();
+      });
+    });
+    // 요약 카드 클릭 → 위상 필터
+    document.querySelectorAll('#cycSummaryGrid .cyc-sum-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const f = card.dataset.cycFilter;
+        cycleFilter = f;
+        document.querySelectorAll('#cycSummaryGrid .cyc-sum-card').forEach(c => c.classList.toggle('active', c === card));
+        // 필터바 동기화
+        document.querySelectorAll('#cycFilters .filter-btn').forEach(b => b.classList.toggle('active', b.dataset.cycFilter === f));
+        renderCycCards();
+      });
+    });
+  }
+
+  // ===== 15. 초기화 =====
+  function cycleInit(){
+    loadOhlcv5yCache();
+    analyzeAll();           // 캐시 있는 종목은 즉시 분석
+    bindCycleToggles();
+    renderCycSummary();
+    renderCycPicks();
+    renderCycFilters();
+    renderCycCards();
+    // 페치 시작 — 백그라운드
+    const pool = buildCyclePool();
+    fetchAllCycleOhlcv(pool).then(() => {
+      // 모든 페치 완료 후 한 번 더 일괄 갱신
+      analyzeAll();
+      renderCycSummary();
+      renderCycPicks();
+      renderCycCards();
+    });
+    // 날짜 표시
+    const dateEl = document.getElementById('cyc-market-date');
+    if(dateEl){
+      const now = new Date();
+      dateEl.textContent = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+    }
+  }
+
+  function cycleRender(){
+    // 시장 토글이 바뀐 경우 등 — 풀 다시 빌드
+    analyzeAll();
+    renderCycSummary();
+    renderCycPicks();
+    renderCycFilters();
+    renderCycCards();
+  }
+
+  // ===== 16. 외부 노출 =====
+  window.__cycleInit = cycleInit;
+  window.__cycleRender = cycleRender;
+  window.__cycleOpenSheet = openCycSheet;
+  window.__cycleToggleFav = toggleCycFav;
+
+  // 시장 토글 바뀔 때 사이클 페이지가 활성이면 즉시 재렌더
+  document.querySelectorAll('.fm-market-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if(currentRoute === 'cycle' && cycleInited){
+        // currentCountry는 토글 핸들러가 이미 갱신했을 것
+        setTimeout(() => cycleRender(), 100);
+      }
+    });
+  });
+
+})();
 
 /* ===== 개발용 모드 감지 — ?dev=1 또는 localStorage.devMode ===== */
 (function(){
