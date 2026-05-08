@@ -53,13 +53,22 @@
     --text-4:           #3d434b;     /* 비활성 */
 
     /* — 색상: 시그널 (한국식 — 빨 상승, 파 하락) */
-    /* — 색상: 글로벌 표준 (라임=상승, 코랄=하락) */
-    --color-up:         #ccff00;     /* 상승 = 라임 (액센트와 동일) */
-    --color-up-soft:    rgba(204,255,0,0.12);
-    --color-up-text:    #d9ff33;
-    --color-down:       #ff5e7a;     /* 하락 = 코랄 핑크 */
-    --color-down-soft:  rgba(255,94,122,0.12);
-    --color-down-text:  #ff7a92;
+    /* — 색상: 가격은 미세 강조, 시그널은 강한 색상 (Option A 절충) */
+    --color-up:         #c8e882;     /* 상승가 = 라임 톤다운 (덜 형광) */
+    --color-up-soft:    rgba(200,232,130,0.10);
+    --color-up-text:    #c8e882;
+    --color-down:       #e88898;     /* 하락가 = 코랄 톤다운 */
+    --color-down-soft:  rgba(232,136,152,0.10);
+    --color-down-text:  #e88898;
+
+    /* — 시그널 (선명한 색상 — 시그널은 명확히 구분) */
+    --signal-buy:       #ccff00;     /* 매수 = 라임 (액센트) */
+    --signal-buy-soft:  rgba(204,255,0,0.12);
+    --signal-buy-border: rgba(204,255,0,0.30);
+    --signal-watch:     #ffaa3d;     /* 관찰 = 앰버 */
+    --signal-watch-soft: rgba(255,170,61,0.12);
+    --signal-avoid:     #ff5e7a;     /* 회피 = 코랄 (선명) */
+    --signal-avoid-soft: rgba(255,94,122,0.12);
 
     /* — 색상: 상태 (양호/경고/위험 — 가격 등락과 무관) */
     --color-ok:         #3dd68c;     /* 정상 작동 (시스템) */
@@ -1024,22 +1033,22 @@
   .dsm-source-tag.tag-server{
     background:var(--accent-soft);
     color:var(--accent);
-    border:1px solid var(--accent-border);
+    border:none;
   }
   .dsm-source-tag.tag-yahoo{
-    background:#1c2840;
+    background:rgba(122,159,200,0.12);
     color:#7a9fc8;
-    border:1px solid #2a3854;
+    border:none;
   }
   .dsm-source-tag.tag-cache{
-    background:#1c3a25;
+    background:rgba(76,175,80,0.12);
     color:#4caf50;
-    border:1px solid #2a5a35;
+    border:none;
   }
   .dsm-source-tag.tag-fail{
-    background:#3a1c1c;
+    background:rgba(239,91,91,0.12);
     color:var(--color-danger);
-    border:1px solid #5a2828;
+    border:none;
   }
   .dsm-row-code{
     color:var(--text);
@@ -1910,14 +1919,13 @@
     -webkit-backdrop-filter: blur(0px);
     border: 1px solid transparent;
     border-radius: 0;
-    padding: 12px 24px;       /* 18 → 12, 28 → 24 (차이 줄임) */
+    padding: 8px 14px;       /* 고정 — 움찔거림 차단 */
     box-shadow: none;
     transition:
       max-width 0.32s cubic-bezier(0.32, 0.72, 0, 1),
       background 0.28s ease,
       border-color 0.28s ease,
       border-radius 0.32s cubic-bezier(0.32, 0.72, 0, 1),
-      padding 0.32s cubic-bezier(0.32, 0.72, 0, 1),
       box-shadow 0.28s ease,
       backdrop-filter 0.28s ease;
   }
@@ -1927,8 +1935,8 @@
     backdrop-filter: blur(40px) saturate(200%);
     -webkit-backdrop-filter: blur(40px) saturate(200%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    padding: 8px 12px;        /* 8 → 8 (높이 차이 최소화 8 vs 12 = 8px만) */
+    border-radius: 999px;     /* 알약 복원 */
+    padding: 8px 14px;        /* 동일 — 변화 없음 */
     box-shadow:
       0 8px 24px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -1940,7 +1948,7 @@
     justify-content: center;
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
+    border-radius: 999px;     /* 알약 */
     padding: 9px 18px;
     color: var(--text-1);
     font-family: "Pretendard Variable", "Pretendard", sans-serif;
@@ -2015,22 +2023,7 @@
     align-items: center;
     gap: 4px;
   }
-  /* 매크로 티커 (포폴 KOSPI 위치에 WTI) */
-  .gnb .market-tick {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 7px;
-    height: 22px;
-    padding: 0 12px 0 0;
-    margin-right: 4px;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-    font-variant-numeric: tabular-nums;
-    color: var(--text-2);
-    line-height: 22px;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-  }
-  .gnb .market-tick.ready { opacity: 1; }
+  /* 매크로 티커 — 회전 (실제 정의는 아래 회전 ticker 섹션) */
   .gnb .market-label {
     font-size: 10px;
     font-weight: 500;
@@ -2050,20 +2043,20 @@
     letter-spacing: 0.02em;
   }
   .gnb .market-change.up { color: var(--accent); }
-  .gnb .market-change.down { color: #4d8fff; }
+  .gnb .market-change.down { color: var(--signal-avoid); }
   @media (max-width: 720px) {
     .gnb .market-tick { display: none; }
   }
   /* GNB icon-btn — 알약 (포폴 동일) */
   .gnb .icon-btn {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 6px;
+    border-radius: 999px;     /* 알약 */
     color: var(--text-2);
     cursor: pointer;
     transition:
@@ -2076,9 +2069,9 @@
     background: rgba(255, 255, 255, 0.06);
     color: var(--text-1);
   }
+  /* scrolled에서 크기 변경 X — 움찔거림 원천 제거 */
   .gnb-wrap.scrolled .icon-btn {
-    width: 36px;
-    height: 36px;
+    /* 동일한 36×36 유지 */
   }
   .gnb .icon {
     width: 17px; height: 17px;
@@ -2346,13 +2339,18 @@
      ✦ 회전 ticker (KOSPI / NASDAQ / WTI 자동 전환)
      ============================================================ */
   .gnb .market-tick {
+    display: inline-flex;
+    align-items: center;
     overflow: hidden;
     height: 22px;
     padding: 0 12px 0 0;
     margin-right: 4px;
     border-right: 1px solid rgba(255, 255, 255, 0.08);
     min-width: 130px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
   }
+  .gnb .market-tick.ready { opacity: 1; }
   .market-tick-rotator {
     position: relative;
     height: 22px;
@@ -2788,7 +2786,7 @@
     display:flex; align-items:stretch;
     background:var(--surface-2);
     border:1px solid var(--border-2);
-    border-radius: 6px;
+    border-radius: 999px;        /* 알약 복원 */
     padding:5px;
     box-shadow:0 8px 28px rgba(0,0,0,0.55);
     backdrop-filter:blur(10px);
@@ -2798,9 +2796,8 @@
     position:absolute; top:5px; left:5px;
     width:calc(50% - 5px); height:calc(100% - 10px);
     background:var(--accent);
-    border-radius: 6px;
+    border-radius: 999px;        /* 알약 */
     transition:transform .28s cubic-bezier(.4,.0,.2,1);
-    box-shadow:0 3px 12px rgba(204,255,0,0.45);
     pointer-events:none;
     z-index:1;
   }
@@ -3675,12 +3672,12 @@
     --text-2: #8a92a0;
     --text-3: #5c6470;
     --text-4: #3d434b;
-    --up: #ccff00;
-    --up-soft: rgba(204,255,0,0.12);
-    --up-text: #d9ff33;
-    --down: #ff5e7a;
-    --down-soft: rgba(255,94,122,0.12);
-    --down-text: #ff7a92;
+    --up: #c8e882;
+    --up-soft: rgba(200,232,130,0.10);
+    --up-text: #c8e882;
+    --down: #e88898;
+    --down-soft: rgba(232,136,152,0.10);
+    --down-text: #e88898;
     --accent: #ccff00;
     --accent-soft: rgba(204,255,0,0.08);
 
@@ -3808,11 +3805,12 @@
     flex-shrink: 0;
   }
   .status-pill.live {
-    background: rgba(232,72,94,0.10);
-    color: #ff8a9a;
-    border-color: rgba(232,72,94,0.30);
+    background: rgba(204,255,0,0.10);
+    color: #ccff00;
+    border-color: rgba(204,255,0,0.30);
   }
   .status-pill.live .status-dot {
+    background: #ccff00;
     animation: statusPulse 1.6s ease-in-out infinite;
   }
   @keyframes statusPulse {
@@ -3820,9 +3818,9 @@
     50% { opacity: 0.45; transform: scale(0.65); }
   }
   .status-pill.eod {
-    background: rgba(204,255,0,0.08);
-    color: #ccff00;
-    border-color: rgba(204,255,0,0.22);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-2);
+    border-color: rgba(255,255,255,0.08);
   }
   .status-pill.settling {
     background: rgba(255,255,255,0.05);
@@ -4522,13 +4520,13 @@
     color:var(--text-4);
     letter-spacing:0.2px;
   }
-  /* 강도 컬러 — LOUIS 토큰 (한국식 빨/파 + 블룸버그 오렌지) */
-  .tm-col-head.hot     .tm-tier-label{ color:var(--color-up); }     /* 빨강 — 상승 */
-  .tm-col-head.strong  .tm-tier-label{ color:var(--accent); }       /* 오렌지 — 강세 */
-  .tm-col-head.neutral .tm-tier-label{ color:var(--text-3); }       /* 회색 — 중립 */
-  .tm-col-head.weak    .tm-tier-label{ color:#7a9fc8; }             /* 옅은 파랑 */
-  .tm-col-head.cold    .tm-tier-label{ color:var(--color-down); }   /* 파랑 — 하락 */
-  .tm-col-head.pending .tm-tier-label{ color:var(--text-4); }       /* 더 옅은 회색 — 대기 */
+  /* 강도 컬러 — Hot/Neutral/Cold 3단계 단순화 (Weak·Strong은 같은 톤 분기로) */
+  .tm-col-head.hot     .tm-tier-label{ color:var(--signal-buy); }    /* Hot — 라임 (매수) */
+  .tm-col-head.strong  .tm-tier-label{ color:var(--signal-buy); }    /* Strong — 라임 (Hot과 통합 톤) */
+  .tm-col-head.neutral .tm-tier-label{ color:var(--text-2); }        /* Neutral — 회색 */
+  .tm-col-head.weak    .tm-tier-label{ color:var(--text-3); }        /* Weak — 더 어두운 회색 */
+  .tm-col-head.cold    .tm-tier-label{ color:var(--signal-avoid); }  /* Cold — 코랄 (회피) */
+  .tm-col-head.pending .tm-tier-label{ color:var(--text-4); }        /* Pending — 가장 어두움 */
 
   /* 행 헤더 (섹터) */
   .tm-row-head{
