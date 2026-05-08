@@ -2190,6 +2190,270 @@
   /* GNB menu-btn은 모든 화면에서 보임 (풀스크린 메뉴 오버레이 토글) */
   /* (이전엔 데스크탑에서 숨겼지만 메뉴 오버레이 추가됨) */
 
+  /* ============================================================
+     ✦ 메뉴 오버레이 — 포폴 100% 동일 구조
+     좌측: Navigation 큰 링크 + Quick Access chip
+     우측: info-card 3개 (featured 1 + 일반 2)
+     ============================================================ */
+  /* 백드롭 */
+  .menu-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 15, 16, 0.92);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    cursor: pointer;
+  }
+  body.menu-open .menu-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  /* 사이드 패널 (좌·우) */
+  .side-panel {
+    position: fixed;
+    z-index: 95;
+    top: 110px;
+    bottom: 60px;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.5s ease 0.1s,
+      transform 0.55s cubic-bezier(0.32, 0.72, 0, 1) 0.1s;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+  }
+  .side-panel::-webkit-scrollbar { width: 4px; }
+  .side-panel::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
+  .side-left {
+    left: 28px;
+    transform: translateX(-24px);
+    padding-right: 16px;
+  }
+  .side-right {
+    right: 28px;
+    transform: translateX(24px);
+    padding-left: 16px;
+  }
+  body.menu-open .side-panel {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+
+  /* Navigation eyebrow */
+  .nav-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 28px;
+  }
+
+  /* Nav list — 큰 라이트 한국어 */
+  .nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .nav-link {
+    font-family: "Pretendard Variable", "Pretendard", sans-serif;
+    font-size: 36px;
+    font-weight: 300;
+    letter-spacing: -0.035em;
+    line-height: 1.25;
+    color: var(--text-1);
+    text-decoration: none;
+    padding: 4px 0;
+    transition:
+      padding-left 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+      color 0.2s ease;
+    position: relative;
+    display: inline-block;
+    width: fit-content;
+  }
+  .nav-link::before {
+    content: '';
+    position: absolute;
+    left: -14px; top: 50%;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent-soft);
+    transform: translateY(-50%) scale(0);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .nav-link:hover { padding-left: 16px; }
+  .nav-link:hover::before { transform: translateY(-50%) scale(1); }
+
+  /* Side section */
+  .side-section { margin-top: 36px; }
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 14px;
+  }
+  /* Chip 그룹 */
+  .chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    font-family: "Pretendard Variable", "Pretendard", sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-1);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    padding: 7px 13px;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .chip:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  /* Info card — 우측 패널 카드 */
+  .info-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 18px 18px 20px;
+    margin-bottom: 12px;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--text-1);
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+  .info-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+  .info-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 2;
+  }
+  .info-card-title {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 2;
+  }
+  .info-card-desc {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.5;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Pulse dot — featured card */
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulseDot 1.6s ease-in-out infinite;
+    display: inline-block;
+  }
+
+  /* Mini sparkline — info card 안 */
+  .grad-stop-top, .grad-stop-bot { stop-color: var(--accent); }
+  .mini-spark {
+    position: absolute;
+    bottom: 0; right: 0; left: 0;
+    height: 60px;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  .mini-spark path.area { fill: url(#sparkGrad); }
+  .mini-spark path.line {
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    fill: none;
+    stroke-linecap: round;
+  }
+
+  /* Featured card — 라임 배경 */
+  .info-card.feature {
+    background: var(--accent);
+    color: #0b0b0c;
+    border-color: var(--accent);
+  }
+  .info-card.feature:hover {
+    background: var(--accent-strong);
+    border-color: var(--accent-strong);
+  }
+  .info-card.feature .info-card-meta {
+    color: rgba(0, 0, 0, 0.55);
+  }
+  .info-card.feature .info-card-desc {
+    color: rgba(0, 0, 0, 0.7);
+  }
+  .info-card.feature .pulse-dot {
+    background: #0b0b0c;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+  }
+
+  /* 모바일 */
+  @media (max-width: 900px) {
+    .side-panel {
+      position: fixed;
+      width: 100%;
+      left: 0; right: 0;
+      padding-left: 28px; padding-right: 28px;
+    }
+    .side-left {
+      top: 110px;
+      bottom: auto;
+      height: 60vh;
+      transform: translateY(-24px);
+    }
+    .side-right {
+      top: auto;
+      bottom: 0;
+      height: 35vh;
+      transform: translateY(24px);
+    }
+    body.menu-open .side-left,
+    body.menu-open .side-right {
+      transform: translateY(0);
+    }
+    .nav-link { font-size: 28px; }
+  }
+
   /* 홈 페이지에서 본문은 GNB 높이만큼 padding-top */
   body.route-home .home-page {
     padding-top: 80px;
@@ -2200,7 +2464,7 @@
   }
 
   /* ============================================================
-     ✦ 회전 ticker (KOSPI / NASDAQ / WTI 등 자동 전환)
+     ✦ 회전 ticker (KOSPI / NASDAQ / WTI 자동 전환)
      ============================================================ */
   .gnb .market-tick {
     overflow: hidden;
@@ -2239,141 +2503,244 @@
     transform: translateY(-8px);
   }
 
+  /* ===== /상단 GNB ===== */
+
   /* ============================================================
-     ✦ 풀스크린 메뉴 오버레이 (포폴 동일)
+     ✦ 모바일 일괄 최적화 — 발견된 이슈 종합 수정
      ============================================================ */
-  .menu-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    background: rgba(15, 15, 16, 0.85);
-    backdrop-filter: blur(40px) saturate(200%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition:
-      opacity 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-  }
-  .menu-overlay.open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .menu-overlay-inner {
-    width: 100%;
-    max-width: 1100px;
-    padding: 0 32px;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 80px;
-    align-items: start;
-  }
-  @media (max-width: 720px) {
-    .menu-overlay-inner {
-      grid-template-columns: 1fr;
-      gap: 40px;
-      padding: 80px 24px 32px;
+
+  /* 1. 100vh → 100dvh로 (iOS Safari 주소창 이슈 해결) */
+  @supports (height: 100dvh) {
+    .home-page {
+      min-height: 100dvh;
     }
-  }
-  .menu-eyebrow {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--text-3);
-    padding-top: 18px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    width: 200px;
-  }
-  .menu-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-  .menu-link {
-    position: relative;
-    padding: 18px 0 18px 0;
-    font-family: "Pretendard Variable", "Pretendard", sans-serif;
-    font-size: clamp(28px, 4vw, 44px);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--text-1);
-    text-decoration: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    transition:
-      padding 0.45s cubic-bezier(0.34, 1.3, 0.64, 1),
-      color 0.3s ease;
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  .menu-overlay.open .menu-link {
-    animation: menuLinkIn 0.7s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-  }
-  .menu-overlay.open .menu-link:nth-child(1) { animation-delay: 0.1s; }
-  .menu-overlay.open .menu-link:nth-child(2) { animation-delay: 0.16s; }
-  .menu-overlay.open .menu-link:nth-child(3) { animation-delay: 0.22s; }
-  .menu-overlay.open .menu-link:nth-child(4) { animation-delay: 0.28s; }
-  .menu-overlay.open .menu-link:nth-child(5) { animation-delay: 0.34s; }
-  @keyframes menuLinkIn {
-    to {
-      opacity: 1;
-      transform: translateY(0);
+    .menu-backdrop {
+      height: 100dvh;
     }
-  }
-  .menu-link::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
-    transform: translateY(-50%) scale(0);
-    transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-  }
-  .menu-link:hover {
-    padding-left: 28px;
-    color: var(--accent);
-  }
-  .menu-link:hover::before {
-    transform: translateY(-50%) scale(1);
-  }
-  .menu-footer {
-    grid-column: 1 / -1;
-    margin-top: 40px;
-    padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.6s cubic-bezier(0.32, 0.72, 0, 1) 0.5s;
-  }
-  .menu-overlay.open .menu-footer {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .menu-footer-card {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .menu-footer-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--accent);
-  }
-  .menu-footer-text {
-    font-size: 13px;
-    color: var(--text-2);
-    letter-spacing: 0.02em;
   }
 
-  /* ===== /상단 GNB ===== */
+  /* 2. GNB 모바일 — padding 줄이고 컴팩트 */
+  @media (max-width: 720px) {
+    .gnb-wrap { padding: 12px 0 0; }
+    .gnb-wrap.scrolled { padding: 14px 12px 0; }
+    .gnb {
+      padding: 12px 16px;
+      gap: 8px;
+    }
+    .gnb-wrap.scrolled .gnb {
+      padding: 6px 8px;
+      max-width: calc(100vw - 24px);
+    }
+    .gnb .menu-btn {
+      padding: 7px 14px;
+      font-size: 11px;
+    }
+    .gnb .menu-label { width: 32px; height: 13px; }
+    /* 워드마크 — 모바일에선 letter-spacing 줄임 (잘림 방지) */
+    .gnb .brand {
+      font-size: 13px;
+      letter-spacing: 0.32em;
+    }
+    .gnb .icon-btn {
+      width: 34px;
+      height: 34px;
+    }
+    .gnb-wrap.scrolled .icon-btn {
+      width: 32px;
+      height: 32px;
+    }
+    /* WTI/KOSPI/NASDAQ ticker는 모바일에서 숨김 (이미 있음) */
+    .gnb .market-tick { display: none; }
+    /* GNB glow halo — 모바일에서 작게 */
+    .gnb-glow {
+      width: 90vw;
+      height: 48px;
+    }
+    /* 홈 본문 padding-top — GNB 좁아진 높이 고려 */
+    body.route-home .home-page {
+      padding-top: 70px;
+    }
+  }
+
+  /* 3. 홈 페이지 모바일 — 더 컴팩트하게 */
+  @media (max-width: 720px) {
+    .home-page {
+      padding: 32px 16px 48px;
+    }
+    body.route-home .home-page {
+      padding-top: 70px;
+    }
+    /* 헤드라인 — 모바일 더 줄임 */
+    .home-hero-headline { margin: 16px 0 32px; }
+    .home-hero-title {
+      font-size: 26px;
+      line-height: 1.1;
+    }
+    .home-hero-eyebrow {
+      font-size: 10px;
+      padding: 5px 12px;
+      margin-bottom: 12px;
+    }
+    .home-hero-sub {
+      font-size: 13px;
+      margin-top: 14px;
+    }
+    /* 섹션 타이틀 — 컴팩트 */
+    .home-section-title {
+      margin: 32px 0 16px;
+      padding-bottom: 10px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .home-section-num { font-size: 10px; }
+    .home-section-label { font-size: 12px; }
+    .home-section-meta {
+      font-size: 9.5px;
+      margin-left: 0;
+      width: 100%;
+    }
+    /* 매크로 카드 — 모바일 더 컴팩트 */
+    .home-metric {
+      padding: 14px 14px 12px;
+      border-radius: 14px;
+    }
+    .home-metric-label {
+      font-size: 9.5px;
+      margin-bottom: 8px;
+    }
+    .home-metric-symbol { font-size: 8.5px; }
+    .home-metric-value {
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+    .home-metric-change { font-size: 11px; margin-bottom: 8px; }
+    .home-metric-spark { height: 22px; }
+    .home-metric-dot {
+      top: 12px;
+      right: 12px;
+      width: 5px;
+      height: 5px;
+    }
+    /* 인사이트 영역 컴팩트 */
+    .home-insights-wrap {
+      padding: 18px 18px;
+      border-radius: 14px;
+    }
+    .home-insight {
+      font-size: 12px;
+      gap: 10px;
+    }
+    /* 메뉴 카드 모바일 */
+    .home-menu-card {
+      padding: 22px 18px 18px;
+      border-radius: 18px;
+    }
+    .home-menu-card-num { font-size: 9.5px; margin-bottom: 12px; }
+    .home-menu-name { font-size: 17px; }
+    .home-menu-desc { font-size: 12px; margin-bottom: 14px; }
+    .home-menu-arrow { font-size: 10px; }
+    /* 상태 바 모바일 */
+    .home-status-bar {
+      padding: 12px 16px;
+      font-size: 9.5px;
+      border-radius: 16px;
+      gap: 10px;
+    }
+    .home-status-bar-left,
+    .home-status-bar-right {
+      gap: 12px;
+    }
+  }
+
+  /* 4. 매크로 카드 그리드 — 매우 작은 화면에선 1열 (가독성 위해) */
+  @media (max-width: 380px) {
+    .home-hero { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+    .home-metric-value { font-size: 18px; }
+  }
+
+  /* 5. 메뉴 오버레이 모바일 강화 — safe-area + 컴팩트 */
+  @media (max-width: 900px) {
+    .side-panel {
+      padding-top: max(16px, env(safe-area-inset-top, 0px));
+      padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    }
+    .side-left {
+      top: 70px !important;
+      bottom: auto !important;
+      height: 55vh !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      padding: 24px 24px 16px !important;
+      transform: translateY(-20px) !important;
+    }
+    .side-right {
+      top: auto !important;
+      bottom: 0 !important;
+      height: 38vh !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      padding: 16px 24px max(20px, env(safe-area-inset-bottom, 0px)) !important;
+      transform: translateY(20px) !important;
+    }
+    body.menu-open .side-left,
+    body.menu-open .side-right {
+      transform: translateY(0) !important;
+    }
+    .nav-eyebrow { margin-bottom: 16px; }
+    .nav-link { font-size: 26px; padding: 2px 0; }
+    .nav-link::before {
+      left: -12px;
+      width: 4px; height: 4px;
+    }
+    .side-section { margin-top: 20px; }
+    .info-card {
+      padding: 14px 14px 16px;
+      border-radius: 14px;
+      margin-bottom: 10px;
+    }
+    .info-card-meta { font-size: 10px; }
+    .info-card-title { font-size: 14px; }
+    .info-card-desc { font-size: 11.5px; }
+  }
+
+  /* 6. 사이드바 모바일 — 폭 줄임 (244 → 88vw 최대) */
+  @media (max-width: 480px) {
+    .sidebar {
+      width: 88vw;
+      max-width: 320px;
+    }
+  }
+
+  /* 7. 햄버거 — 모바일에서만 표시, glass 강화 */
+  @media (max-width: 1099px) {
+    .hamburger {
+      display: inline-flex;
+    }
+  }
+
+  /* 8. 사이드바 backdrop 강화 */
+  .sidebar-backdrop {
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+  }
+
+  /* 9. 메뉴 오버레이 열렸을 때 GNB가 위에 보이도록 (close 버튼 접근) */
+  body.menu-open .gnb-wrap {
+    z-index: 110;
+  }
+  body.menu-open .gnb {
+    background: transparent !important;
+    border-color: transparent !important;
+    backdrop-filter: blur(0px) !important;
+    -webkit-backdrop-filter: blur(0px) !important;
+    box-shadow: none !important;
+  }
+  /* ===== /모바일 일괄 최적화 ===== */
+
+  /* ============================================================
+     ✦ 사이드바 — Synik 포폴 톤 적용
      - Glass blur(40px) saturate(200%)
      - 워드마크 letter-spacing 0.42em
      - nav-item hover 시 좌측 padding 슬라이드 + dot
@@ -5272,25 +5639,77 @@
 </head>
 <body>
 <!-- ===== Sidebar (Global Navigation) — 포폴 톤 ===== -->
-<!-- ===== 풀스크린 메뉴 오버레이 (홈 GNB의 menu 버튼) ===== -->
-<div class="menu-overlay" id="menuOverlay">
-  <div class="menu-overlay-inner">
-    <div class="menu-eyebrow">Navigation</div>
-    <nav class="menu-list">
-      <a href="#home" class="menu-link" data-route="home">Home</a>
-      <a href="#calendar" class="menu-link" data-route="calendar">종목 분석</a>
-      <a href="#heatmap" class="menu-link" data-route="heatmap">테마 분석</a>
-      <a href="#cycle-hunter" class="menu-link" data-route="cycle-hunter">사이클 헌터</a>
-      <a href="#guide" class="menu-link" data-route="guide">이용 안내</a>
-    </nav>
-    <div class="menu-footer">
-      <div class="menu-footer-card">
-        <div class="menu-footer-label">Currently</div>
-        <div class="menu-footer-text">Algo Trading Terminal v0.4 · LIVE</div>
-      </div>
+<!-- ===== 풀스크린 메뉴 — 포폴 동일 구조 (좌측 nav + 우측 info cards) ===== -->
+<div class="menu-backdrop" id="menuBackdrop"></div>
+
+<aside class="side-panel side-left" id="sideLeft" aria-hidden="true">
+  <div class="nav-eyebrow">Navigation</div>
+  <nav class="nav-list">
+    <a href="#home" class="nav-link" data-route="home">Home</a>
+    <a href="#calendar" class="nav-link" data-route="calendar">종목 분석</a>
+    <a href="#heatmap" class="nav-link" data-route="heatmap">테마 분석</a>
+    <a href="#cycle-hunter" class="nav-link" data-route="cycle-hunter">사이클 헌터</a>
+    <a href="#guide" class="nav-link" data-route="guide">이용 안내</a>
+  </nav>
+
+  <div class="side-section">
+    <div class="section-label">Quick Access</div>
+    <div class="chip-group">
+      <a class="chip" href="#calendar" data-route="calendar">매수 시그널</a>
+      <a class="chip" href="#heatmap" data-route="heatmap">테마 매트릭스</a>
+      <a class="chip" href="#calendar" data-route="calendar">즐겨찾기</a>
+      <a class="chip" href="#guide" data-route="guide">알고리즘 가이드</a>
+      <a class="chip" href="https://github.com/synik3918-droid/Rouis" target="_blank">GitHub ↗</a>
     </div>
   </div>
-</div>
+
+  <div class="side-section">
+    <div class="section-label">Theme</div>
+    <button class="chip menu-theme-toggle" onclick="toggleTheme()">다크 모드 ↻</button>
+  </div>
+</aside>
+
+<aside class="side-panel side-right" id="sideRight" aria-hidden="true">
+  <!-- Featured 카드 — 시장 국면 -->
+  <a class="info-card feature" href="#calendar" data-route="calendar">
+    <div class="info-card-meta">
+      <span>Live now</span>
+      <span class="pulse-dot"></span>
+    </div>
+    <div class="info-card-title">Algo Trading Terminal v0.4</div>
+    <div class="info-card-desc">자동매매 분석 도구 · 8 categories · KIS API</div>
+  </a>
+
+  <!-- 매수 시그널 카드 -->
+  <a class="info-card" href="#calendar" data-route="calendar">
+    <div class="info-card-meta">
+      <span>Today</span>
+      <span>Signals</span>
+    </div>
+    <div class="info-card-title">매수 시그널 추적</div>
+    <div class="info-card-desc">V2 점수 70점+ 종목 자동 발견 · 매일 갱신</div>
+    <svg class="mini-spark" viewBox="0 0 280 60" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="sparkGrad" x1="0" x2="0" y1="0" y2="1">
+          <stop class="grad-stop-top" offset="0%" stop-opacity="0.35"/>
+          <stop class="grad-stop-bot" offset="100%" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path class="area" d="M0,50 C40,46 70,38 110,32 S180,18 220,16 260,8 280,6 L280,60 L0,60 Z"/>
+      <path class="line" d="M0,50 C40,46 70,38 110,32 S180,18 220,16 260,8 280,6"/>
+    </svg>
+  </a>
+
+  <!-- 사이클 헌터 카드 -->
+  <a class="info-card" href="#cycle-hunter" data-route="cycle-hunter">
+    <div class="info-card-meta">
+      <span>2026 Q2</span>
+      <span>Algorithm</span>
+    </div>
+    <div class="info-card-title">Cycle Hunter</div>
+    <div class="info-card-desc">작전주·페니스톡 매집 단계 자동 추적 · 100% 정확도</div>
+  </a>
+</aside>
 
 <!-- ===== 상단 GNB (홈 페이지 전용) — 포폴과 100% 동일 ===== -->
 <div class="gnb-wrap" id="gnbWrap">
@@ -13771,6 +14190,10 @@ function navigate(route){
   }
 
   closeSidebar();
+  // 메뉴 오버레이 열려있으면 닫기
+  if(document.body.classList.contains('menu-open')){
+    if(typeof closeMenuOverlay === 'function') closeMenuOverlay();
+  }
 }
 
 /* ============================================================
@@ -13876,36 +14299,34 @@ function bindGnbScroll(){
 
 /* GNB 매크로 ticker (KOSPI / NASDAQ / WTI) — 4초마다 회전 */
 function bindGnbMarketTick(){
-  // 사용 가능한 데이터 매핑
-  // 한국 시장 인덱스는 KIS API 직접 인덱스 없음 → ETF로 대체
-  // 069500.KS = KODEX 200 (KOSPI 추적)
-  // QQQ = NASDAQ 100 (priceCache에서)
-  // CL=F = WTI (macroCache에서)
+  // 데이터 우선순위: macroCache > priceCache (폴백)
   const TICKERS = [
-    { key: 'kospi',  source: 'priceCache', code: '069500.KS', label: 'KOSPI' },
-    { key: 'nasdaq', source: 'priceCache', code: 'QQQ',       label: 'NASDAQ' },
-    { key: 'wti',    source: 'macroCache', code: 'CL=F',      label: 'WTI' },
+    { key: 'kospi',  primary: 'macroCache',  primaryCode: '^KS11',     fallback: 'priceCache', fallbackCode: '069500.KS', label: 'KOSPI' },
+    { key: 'nasdaq', primary: 'macroCache',  primaryCode: '^IXIC',     fallback: 'priceCache', fallbackCode: 'QQQ',       label: 'NASDAQ' },
+    { key: 'wti',    primary: 'macroCache',  primaryCode: 'CL=F',      fallback: null,         fallbackCode: null,        label: 'WTI' },
   ];
 
   let currentIdx = 0;
 
   function getData(t){
-    if(t.source === 'priceCache'){
-      const c = (typeof priceCache !== 'undefined') ? priceCache[t.code] : null;
-      if(c?.value?.price != null){
-        return { price: c.value.price, change: c.value.change || 0 };
-      }
-    } else if(t.source === 'macroCache'){
-      const c = (typeof macroCache !== 'undefined') ? macroCache[t.code] : null;
+    // primary 시도
+    if(t.primary === 'macroCache'){
+      const c = (typeof macroCache !== 'undefined') ? macroCache[t.primaryCode] : null;
       if(c?.price != null){
         return { price: c.price, change: c.change || 0 };
+      }
+    }
+    // fallback 시도
+    if(t.fallback === 'priceCache'){
+      const c = (typeof priceCache !== 'undefined') ? priceCache[t.fallbackCode] : null;
+      if(c?.value?.price != null){
+        return { price: c.value.price, change: c.value.change || 0 };
       }
     }
     return null;
   }
 
   function updateAll(){
-    // 모든 ticker-item 데이터 갱신 (텍스트만)
     TICKERS.forEach(t => {
       const item = document.querySelector(`.market-tick-item[data-key="${t.key}"]`);
       if(!item) return;
@@ -13918,12 +14339,10 @@ function bindGnbMarketTick(){
         return;
       }
       if(valueEl){
-        // KOSPI/NASDAQ는 큰 수, WTI는 $ 표기
         if(t.key === 'wti') {
           valueEl.textContent = '$' + data.price.toFixed(2);
         } else if(t.key === 'kospi') {
-          // 069500은 ETF라 KOSPI 인덱스가 아님 — 그래도 가격 그대로 표시
-          valueEl.textContent = data.price.toLocaleString('ko-KR', {maximumFractionDigits: 0});
+          valueEl.textContent = data.price.toLocaleString('ko-KR', {maximumFractionDigits: 2});
         } else if(t.key === 'nasdaq') {
           valueEl.textContent = data.price.toLocaleString('en-US', {maximumFractionDigits: 2});
         } else {
@@ -13936,7 +14355,6 @@ function bindGnbMarketTick(){
         changeEl.className = 'market-change ' + (data.change > 0 ? 'up' : data.change < 0 ? 'down' : '');
       }
     });
-    // 첫 번째에 active 적용 (있으면)
     const tick = document.getElementById('gnbMarketTick');
     if(tick && !tick.classList.contains('ready')){
       const first = document.querySelector('.market-tick-item[data-key="' + TICKERS[currentIdx].key + '"]');
@@ -13950,72 +14368,98 @@ function bindGnbMarketTick(){
     if(items.length === 0) return;
     const prevIdx = currentIdx;
     currentIdx = (currentIdx + 1) % TICKERS.length;
-    // 이전 → exit, 다음 → active
     items[prevIdx]?.classList.remove('active');
     items[prevIdx]?.classList.add('exit');
     setTimeout(() => items[prevIdx]?.classList.remove('exit'), 400);
     items[currentIdx]?.classList.add('active');
   }
 
-  // 초기 데이터 채우고 첫 표시
   updateAll();
-  // 5초마다 데이터 갱신
   setInterval(updateAll, 5000);
-  // 4초마다 회전
   setInterval(rotate, 4000);
 }
 
 /* ============================================================
-   ✦ 풀스크린 메뉴 오버레이 (홈 GNB의 menu 버튼)
+   ✦ 풀스크린 메뉴 오버레이 (홈 GNB의 menu 버튼) — 포폴 동일
+   body.menu-open 클래스로 좌·우 패널 + 백드롭 동시 표시
    ============================================================ */
 function toggleMenuOverlay(){
-  const overlay = document.getElementById('menuOverlay');
+  const isOpen = document.body.classList.toggle('menu-open');
   const btn = document.getElementById('gnbMenuBtn');
-  if(!overlay) return;
-  const isOpen = overlay.classList.toggle('open');
   if(btn){
     btn.classList.toggle('open', isOpen);
     btn.setAttribute('aria-label', isOpen ? '메뉴 닫기' : '메뉴 열기');
   }
-  // 스크롤 잠금
-  document.body.style.overflow = isOpen ? 'hidden' : '';
+  // 스크롤 잠금 (iOS Safari 대응 — 스크롤 위치 보존)
+  if(isOpen){
+    _menuScrollY = window.scrollY;
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${_menuScrollY}px`;
+    document.body.style.width = '100%';
+  } else {
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    if(typeof _menuScrollY === 'number'){
+      window.scrollTo(0, _menuScrollY);
+    }
+  }
 }
+let _menuScrollY = 0;
 
 function closeMenuOverlay(){
-  const overlay = document.getElementById('menuOverlay');
+  if(!document.body.classList.contains('menu-open')) return;
+  document.body.classList.remove('menu-open');
   const btn = document.getElementById('gnbMenuBtn');
-  if(overlay) overlay.classList.remove('open');
   if(btn){
     btn.classList.remove('open');
     btn.setAttribute('aria-label', '메뉴 열기');
   }
   document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  if(typeof _menuScrollY === 'number'){
+    window.scrollTo(0, _menuScrollY);
+  }
 }
 
-// 메뉴 오버레이 링크 클릭 → 페이지 이동 + 닫기
+// 메뉴 백드롭 클릭 → 닫기
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.menu-link').forEach(link => {
+  const backdrop = document.getElementById('menuBackdrop');
+  if(backdrop){
+    backdrop.addEventListener('click', closeMenuOverlay);
+  }
+
+  // nav-link 클릭 → 페이지 이동 + 닫기
+  document.querySelectorAll('.side-panel .nav-link, .side-panel .chip, .side-panel .info-card').forEach(link => {
     link.addEventListener('click', e => {
-      e.preventDefault();
       const route = link.dataset.route;
-      closeMenuOverlay();
-      // 메뉴 닫는 애니메이션 후 라우트 변경
-      setTimeout(() => {
-        if(route === 'cycle-hunter'){
-          alert('사이클 헌터 페이지는 곧 추가됩니다');
-        } else if(typeof navigate === 'function'){
-          navigate(route);
-        }
-      }, 200);
+      // 외부 링크는 그냥 이동
+      if(link.target === '_blank') return;
+      // 라우트 있으면 처리
+      if(route){
+        e.preventDefault();
+        closeMenuOverlay();
+        // 메뉴 닫는 애니메이션 후 라우트 변경
+        setTimeout(() => {
+          if(route === 'cycle-hunter'){
+            alert('사이클 헌터 페이지는 곧 추가됩니다');
+          } else if(typeof navigate === 'function'){
+            navigate(route);
+          }
+        }, 350);
+      }
     });
   });
 });
 
 // ESC 키로 메뉴 닫기
 document.addEventListener('keydown', e => {
-  if(e.key === 'Escape'){
-    const overlay = document.getElementById('menuOverlay');
-    if(overlay?.classList.contains('open')) closeMenuOverlay();
+  if(e.key === 'Escape' && document.body.classList.contains('menu-open')){
+    closeMenuOverlay();
   }
 });
 
@@ -14067,6 +14511,8 @@ function homeUpdateDateTime(){
 /* ==== 매크로 데이터 캐시 (홈 전용) ==== */
 const macroCache = {};  // ticker → { price, change, history[], updatedAt }
 const MACRO_TICKERS = [
+  { key: 'kospi',   ticker: '^KS11',    decimals: 2 },   // KOSPI 인덱스
+  { key: 'nasdaq',  ticker: '^IXIC',    decimals: 2 },   // NASDAQ 인덱스
   { key: 'wti',     ticker: 'CL=F',     decimals: 2 },
   { key: 'gold',    ticker: 'GC=F',     decimals: 1 },
   { key: 'btc',     ticker: 'BTC-USD',  decimals: 0 },
