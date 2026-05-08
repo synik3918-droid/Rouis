@@ -1894,13 +1894,16 @@
   .gnb-wrap {
     position: fixed;
     top: 0; left: 0; right: 0;
-    display: flex;          /* 모든 페이지에 표시 (통일) */
+    display: flex;
     justify-content: center;
     z-index: 100;
     padding: 16px 12px 0;
     transition: none;
+    pointer-events: none;       /* wrap은 이벤트 패스 (gnb만 받음) */
   }
-  /* wrap padding 변경 안 함 — gnb 자체만 morph */
+  .gnb-wrap > * { pointer-events: auto; }
+
+  /* GNB 자체는 부드럽게 morph — width·padding·radius 모두 동일 trigger */
   .gnb {
     position: relative;
     z-index: 2;
@@ -1910,20 +1913,25 @@
     gap: 20px;
     width: 100%;
     max-width: 100%;
-    background: transparent;
+    height: 56px;                /* ★ 높이 고정 — 흔들림 차단 */
+    background: rgba(20, 20, 22, 0);
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
     border: 1px solid transparent;
     border-radius: 0;
-    padding: 8px 14px;       /* 고정 — 움찔거림 차단 */
-    box-shadow: none;
+    padding: 0 18px;             /* ★ 수직 padding 0 (height로 통제) */
+    box-shadow:
+      0 0 0 rgba(0, 0, 0, 0),
+      inset 0 0 0 rgba(255, 255, 255, 0);
+    /* 모든 트랜지션 동일 duration·easing — 동기화 */
     transition:
-      max-width 0.32s cubic-bezier(0.32, 0.72, 0, 1),
-      background 0.28s ease,
-      border-color 0.28s ease,
-      border-radius 0.32s cubic-bezier(0.32, 0.72, 0, 1),
-      box-shadow 0.28s ease,
-      backdrop-filter 0.28s ease;
+      max-width 0.45s cubic-bezier(0.32, 0.72, 0, 1),
+      background 0.45s cubic-bezier(0.32, 0.72, 0, 1),
+      border-color 0.45s cubic-bezier(0.32, 0.72, 0, 1),
+      border-radius 0.45s cubic-bezier(0.32, 0.72, 0, 1),
+      padding 0.45s cubic-bezier(0.32, 0.72, 0, 1),
+      box-shadow 0.45s cubic-bezier(0.32, 0.72, 0, 1),
+      backdrop-filter 0.45s cubic-bezier(0.32, 0.72, 0, 1);
   }
   .gnb-wrap.scrolled .gnb {
     max-width: 880px;
@@ -1931,8 +1939,8 @@
     backdrop-filter: blur(40px) saturate(200%);
     -webkit-backdrop-filter: blur(40px) saturate(200%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 999px;     /* 알약 복원 */
-    padding: 8px 14px;        /* 동일 — 변화 없음 */
+    border-radius: 999px;
+    padding: 0 14px;
     box-shadow:
       0 8px 24px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -1942,10 +1950,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    height: 36px;                  /* ★ 고정 */
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 999px;     /* 알약 */
-    padding: 9px 18px;
+    border-radius: 999px;
+    padding: 0 18px;               /* 수직 padding 0 — height로 통제 */
     color: var(--text-1);
     font-family: "Pretendard Variable", "Pretendard", sans-serif;
     font-size: 12px;
@@ -1954,8 +1963,7 @@
     cursor: pointer;
     transition:
       background 0.2s ease,
-      border-color 0.3s ease,
-      box-shadow 0.3s ease;
+      border-color 0.3s ease;
   }
   .gnb .menu-btn:hover {
     background: rgba(255, 255, 255, 0.06);
@@ -2018,6 +2026,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
+    flex-shrink: 0;             /* 줄어들지 않게 */
   }
   /* 매크로 티커 — 회전 (실제 정의는 아래 회전 ticker 섹션) */
   .gnb .market-label {
@@ -2324,14 +2333,14 @@
 
   /* 모든 페이지 본문은 GNB 높이만큼 padding-top */
   .app-shell {
-    padding-top: 70px;       /* GNB(54px) + 여백 */
+    padding-top: 80px;       /* GNB wrap(16px) + height(56px) = 72px + 여백 8 */
   }
-  /* 홈은 home-page 자체 padding 처리 (이미 80px) */
+  /* 홈은 home-page 자체 padding 처리 */
   body.route-home .app-shell {
-    padding-top: 0;          /* 홈은 home-page 자체에 padding 있음 */
+    padding-top: 0;
   }
   body.route-home .home-page {
-    padding-top: 80px;
+    padding-top: 88px;       /* GNB 72px + 여백 16 */
   }
   /* GNB의 워드마크와 중복되니 home-header 숨김 */
   body.route-home .home-header {
@@ -2431,15 +2440,19 @@
     }
     /* WTI/KOSPI/NASDAQ ticker는 모바일에서 숨김 (이미 있음) */
     .gnb .market-tick { display: none; }
-    /* 모바일 — 모든 페이지 GNB 높이 고려 */
+    /* 모바일 GNB — 약간 작게 */
+    .gnb-wrap { padding: 12px 8px 0; }
+    .gnb { height: 52px; padding: 0 14px; }
+    .gnb-wrap.scrolled .gnb { padding: 0 10px; max-width: calc(100vw - 24px); }
+    /* 모바일 — 모든 페이지 GNB 높이 고려 (12+52=64) */
     .app-shell {
-      padding-top: 60px;
+      padding-top: 72px;
     }
     body.route-home .app-shell {
       padding-top: 0;
     }
     body.route-home .home-page {
-      padding-top: 70px;
+      padding-top: 80px;
     }
   }
 
@@ -2449,7 +2462,7 @@
       padding: 32px 16px 48px;
     }
     body.route-home .home-page {
-      padding-top: 70px;
+      padding-top: 80px;
     }
     /* 헤드라인 — 모바일 더 줄임 */
     .home-hero-headline { margin: 16px 0 32px; }
@@ -3088,11 +3101,14 @@
     margin-bottom:var(--gap-5);
     border-bottom:1px solid var(--border);
     position:sticky;
-    top:60px;       /* GNB 높이만큼 밀기 */
+    top:72px;       /* GNB wrap padding 16px + gnb height 56px = 72px */
     z-index:10;
     background:var(--bg);
     overflow-x:auto;
     scrollbar-width:none;
+  }
+  @media (max-width: 720px) {
+    .guide-tabs { top: 64px; }       /* 모바일 GNB 약간 작음 */
   }
   .guide-tabs::-webkit-scrollbar{ display:none; }
   .guide-tab{
@@ -14055,6 +14071,18 @@ function navigate(route){
   // 메뉴 오버레이 열려있으면 닫기
   if(document.body.classList.contains('menu-open')){
     if(typeof closeMenuOverlay === 'function') closeMenuOverlay();
+  }
+
+  // GNB 모션은 모든 페이지 공통 — 한번만 바인딩
+  if(!_gnbScrollBound){
+    _gnbScrollBound = true;
+    if(typeof bindGnbScroll === 'function') bindGnbScroll();
+    if(typeof bindGnbMarketTick === 'function') bindGnbMarketTick();
+  }
+  // 페이지 전환 시 스크롤 0이면 GNB scrolled 클래스 제거
+  if(window.scrollY < 16){
+    const gw = document.getElementById('gnbWrap');
+    if(gw) gw.classList.remove('scrolled');
   }
 }
 
