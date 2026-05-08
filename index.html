@@ -1888,16 +1888,14 @@
     display: none;          /* 기본 숨김, 홈에서만 표시 */
     justify-content: center;
     z-index: 100;
-    padding: 16px 0 0;
-    transition: padding 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    padding: 16px 12px 0;     /* 고정 — 움찔거림 방지 (이전엔 22px로 변동) */
+    transition: none;          /* wrap은 트랜지션 없음 */
   }
   /* 홈에서만 표시 */
   body.route-home .gnb-wrap {
     display: flex;
   }
-  .gnb-wrap.scrolled {
-    padding: 22px 20px 0;
-  }
+  /* wrap padding 변경 안 함 — gnb 자체만 morph */
   .gnb {
     position: relative;
     z-index: 2;
@@ -1912,7 +1910,7 @@
     -webkit-backdrop-filter: blur(0px);
     border: 1px solid transparent;
     border-radius: 0;
-    padding: 18px 28px;
+    padding: 12px 24px;       /* 18 → 12, 28 → 24 (차이 줄임) */
     box-shadow: none;
     transition:
       max-width 0.32s cubic-bezier(0.32, 0.72, 0, 1),
@@ -1925,14 +1923,14 @@
   }
   .gnb-wrap.scrolled .gnb {
     max-width: 880px;
-    background: rgba(20, 20, 22, 0.55);
+    background: rgba(20, 20, 22, 0.65);
     backdrop-filter: blur(40px) saturate(200%);
     -webkit-backdrop-filter: blur(40px) saturate(200%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 6px;
-    padding: 8px 10px;
+    padding: 8px 12px;        /* 8 → 8 (높이 차이 최소화 8 vs 12 = 8px만) */
     box-shadow:
-      0 12px 40px rgba(0, 0, 0, 0.4),
+      0 8px 24px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
   /* GNB menu button — 알약 */
@@ -2333,32 +2331,7 @@
     box-shadow: none;
   }
 
-  /* 모바일 */
-  @media (max-width: 900px) {
-    .side-panel {
-      position: fixed;
-      width: 100%;
-      left: 0; right: 0;
-      padding-left: 28px; padding-right: 28px;
-    }
-    .side-left {
-      top: 110px;
-      bottom: auto;
-      height: 60vh;
-      transform: translateY(-24px);
-    }
-    .side-right {
-      top: auto;
-      bottom: 0;
-      height: 35vh;
-      transform: translateY(24px);
-    }
-    body.menu-open .side-left,
-    body.menu-open .side-right {
-      transform: translateY(0);
-    }
-    .nav-link { font-size: 28px; }
-  }
+  /* 모바일에선 아래 5번에서 통합 처리 */
 
   /* 홈 페이지에서 본문은 GNB 높이만큼 padding-top */
   body.route-home .home-page {
@@ -2559,51 +2532,67 @@
     .home-metric-value { font-size: 18px; }
   }
 
-  /* 5. 메뉴 오버레이 모바일 강화 — safe-area + 컴팩트 */
+  /* 5. 메뉴 오버레이 모바일 — 좌/우 패널 겹침 완전 해결 */
   @media (max-width: 900px) {
     .side-panel {
-      padding-top: max(16px, env(safe-area-inset-top, 0px));
-      padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+      position: fixed !important;
+      width: 100% !important;
+      left: 0 !important;
+      right: 0 !important;
     }
+    /* 좌측 = 상단 절반 (네비게이션) */
     .side-left {
-      top: 70px !important;
-      bottom: auto !important;
-      height: 55vh !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100% !important;
-      padding: 24px 24px 16px !important;
-      transform: translateY(-20px) !important;
+      top: 60px !important;
+      bottom: 50% !important;       /* 화면 중앙 위까지 */
+      height: auto !important;
+      padding: 24px 24px 20px !important;
+      transform: translateY(-16px) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
     }
+    /* 우측 = 하단 절반 (info card) */
     .side-right {
-      top: auto !important;
+      top: 50% !important;          /* 화면 중앙부터 시작 */
       bottom: 0 !important;
-      height: 38vh !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100% !important;
-      padding: 16px 24px max(20px, env(safe-area-inset-bottom, 0px)) !important;
-      transform: translateY(20px) !important;
+      height: auto !important;
+      padding: 20px 24px max(24px, env(safe-area-inset-bottom, 0px)) !important;
+      transform: translateY(16px) !important;
     }
     body.menu-open .side-left,
     body.menu-open .side-right {
       transform: translateY(0) !important;
     }
-    .nav-eyebrow { margin-bottom: 16px; }
-    .nav-link { font-size: 26px; padding: 2px 0; }
+    .nav-eyebrow { margin-bottom: 14px; font-size: 10px; }
+    .nav-link { font-size: 22px; padding: 4px 0; }
     .nav-link::before {
-      left: -12px;
+      left: -10px;
       width: 4px; height: 4px;
     }
-    .side-section { margin-top: 20px; }
+    .side-section { margin-top: 18px; }
+    .section-label { font-size: 10px; margin-bottom: 10px; }
+    .chip { font-size: 11px; padding: 5px 10px; }
+
+    /* 우측 info-card — 모바일에서 컴팩트 */
     .info-card {
-      padding: 14px 14px 16px;
+      padding: 12px 14px 14px;
       border-radius: 6px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
-    .info-card-meta { font-size: 10px; }
-    .info-card-title { font-size: 14px; }
-    .info-card-desc { font-size: 11.5px; }
+    .info-card-meta { font-size: 9.5px; margin-bottom: 6px; }
+    .info-card-title { font-size: 13px; margin-bottom: 4px; }
+    .info-card-desc { font-size: 11px; line-height: 1.4; }
+    /* 모바일에선 sparkline 보이게 둘 필요 X — 이미 opacity 0 */
+  }
+
+  /* 작은 폰 (< 480px) — 좌/우 패널 비율 더 조정 */
+  @media (max-width: 480px) {
+    .side-left {
+      bottom: 55% !important;       /* 좌측 약간 짧게 */
+    }
+    .side-right {
+      top: 45% !important;          /* 우측 약간 길게 (info card 3개 들어가야) */
+    }
+    .nav-link { font-size: 20px; }
+    .info-card-title { font-size: 12.5px; }
   }
 
   /* 6. 사이드바 모바일 — 폭 줄임 (244 → 88vw 최대) */
@@ -14167,16 +14156,40 @@ function bindGnbScroll(){
   const gnbWrap = document.getElementById('gnbWrap');
   if(!gnbWrap) return;
 
-  function onScroll(){
+  // 히스테리시스: 들어가는 임계값과 나오는 임계값을 다르게 → 떨림 방지
+  // 32px 이상이면 morph, 16px 이하면 풀어짐 (16px 데드존)
+  const SCROLL_DOWN = 32;
+  const SCROLL_UP = 16;
+
+  let ticking = false;
+
+  function update(){
     const wasScrolled = gnbWrap.classList.contains('scrolled');
-    const isScrolled = window.scrollY > 4;
+    const y = window.scrollY;
+    let isScrolled = wasScrolled;
+
+    // 데드존 적용
+    if(!wasScrolled && y > SCROLL_DOWN){
+      isScrolled = true;
+    } else if(wasScrolled && y < SCROLL_UP){
+      isScrolled = false;
+    }
+
     if(wasScrolled !== isScrolled){
       gnbWrap.classList.toggle('scrolled', isScrolled);
+    }
+    ticking = false;
+  }
+
+  function onScroll(){
+    if(!ticking){
+      requestAnimationFrame(update);
+      ticking = true;
     }
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+  update();
 }
 
 /* GNB 매크로 ticker (KOSPI / NASDAQ / WTI) — 4초마다 회전 */
