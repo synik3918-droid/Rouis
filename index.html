@@ -53,22 +53,22 @@
     --text-4:           #3d434b;     /* 비활성 */
 
     /* — 색상: 시그널 (한국식 — 빨 상승, 파 하락) */
-    /* — 색상: 가격은 미세 강조, 시그널은 강한 색상 (Option A 절충) */
-    --color-up:         #c8e882;     /* 상승가 = 라임 톤다운 (덜 형광) */
+    /* — 색상: 모든 등락 표시는 up=라임 / down=그레이 (농도 차이로 강도 표현) */
+    --color-up:         #c8e882;     /* 상승 = 라임 톤다운 */
     --color-up-soft:    rgba(200,232,130,0.10);
     --color-up-text:    #c8e882;
-    --color-down:       #e88898;     /* 하락가 = 코랄 톤다운 */
-    --color-down-soft:  rgba(232,136,152,0.10);
-    --color-down-text:  #e88898;
+    --color-down:       #6b7280;     /* 하락 = 그레이 (빨강·코랄 X) */
+    --color-down-soft:  rgba(107,114,128,0.08);
+    --color-down-text:  #8a92a0;
 
-    /* — 시그널 (선명한 색상 — 시그널은 명확히 구분) */
+    /* — 시그널 (라임 + 회색 + 앰버만, 코랄·빨강 X) */
     --signal-buy:       #ccff00;     /* 매수 = 라임 (액센트) */
     --signal-buy-soft:  rgba(204,255,0,0.12);
     --signal-buy-border: rgba(204,255,0,0.30);
-    --signal-watch:     #ffaa3d;     /* 관찰 = 앰버 */
+    --signal-watch:     #ffaa3d;     /* 관찰 = 앰버 (유지) */
     --signal-watch-soft: rgba(255,170,61,0.12);
-    --signal-avoid:     #ff5e7a;     /* 회피 = 코랄 (선명) */
-    --signal-avoid-soft: rgba(255,94,122,0.12);
+    --signal-avoid:     #6b7280;     /* 회피 = 그레이 (코랄 X) */
+    --signal-avoid-soft: rgba(107,114,128,0.08);
 
     /* — 색상: 상태 (양호/경고/위험 — 가격 등락과 무관) */
     --color-ok:         #3dd68c;     /* 정상 작동 (시스템) */
@@ -363,9 +363,9 @@
   }
   .ti-badge.ti-warn{
     /* 과매수 (>70) — 조심 */
-    color:var(--color-up);
-    background:rgba(232,72,94,0.08);
-    border-color:rgba(232,72,94,0.25);
+    color:var(--signal-watch);
+    background:var(--signal-watch-soft);
+    border-color:rgba(255,170,61,0.25);
   }
   /* 200일선 화살표 — 무채색, 방향만 표시 */
   .ti-arrow{
@@ -523,17 +523,17 @@
   }
   .sg-wait:hover{ border-color:var(--text-3); }
 
-  /* 회피 — 빨강 빗금 패턴 */
+  /* 회피 — 회색 빗금 패턴 */
   .sg-avoid{
     background:repeating-linear-gradient(
       135deg,
       transparent 0,
       transparent 3px,
-      rgba(232,72,94,0.08) 3px,
-      rgba(232,72,94,0.08) 4px
+      rgba(107,114,128,0.10) 3px,
+      rgba(107,114,128,0.10) 4px
     );
-    color:var(--color-up);
-    border:1px solid rgba(232,72,94,0.4);
+    color:var(--text-2);
+    border:1px solid rgba(107,114,128,0.30);
   }
   .sg-avoid .sg-x{ font-size:11px; }
 
@@ -839,7 +839,7 @@
   .peak-price{font-family:var(--font-mono);font-size:16px;color:var(--text);font-weight:700;}
   .peak-timing{font-size:12px;color:var(--muted);margin-top:3px;}
 
-  .progress-row{display:flex;align-items:center;gap:10px;justify-content:flex-end;}
+  .progress-row{display:none;}        /* 진척률 바 — 정보 가치 낮아 제거 */
   .progress-bar{width:130px;height:9px;background:var(--border2);border-radius:5px;overflow:hidden;position:relative;flex-shrink:0;}
   .progress-fill{height:100%;transition:width .5s ease-out;border-radius:5px;}
   .progress-fill.low{background:var(--green);}
@@ -906,14 +906,14 @@
     color: var(--accent);
   }
   .pill.pill-up {
-    background: var(--up-soft, rgba(232,72,94,0.12));
-    border-color: rgba(232,72,94,0.35);
-    color: var(--up-text, #ff6b80);
+    background: var(--up-soft, rgba(200,232,130,0.12));
+    border-color: rgba(200,232,130,0.30);
+    color: var(--up-text, #c8e882);
   }
   .pill.pill-down {
-    background: var(--down-soft, rgba(79,143,232,0.12));
-    border-color: rgba(79,143,232,0.35);
-    color: var(--down-text, #6fa3ee);
+    background: var(--down-soft, rgba(107,114,128,0.10));
+    border-color: rgba(107,114,128,0.25);
+    color: var(--down-text, #8a92a0);
   }
   .pill.pill-warn {
     background: rgba(255, 200, 61, 0.1);
@@ -1321,7 +1321,7 @@
   .home-metric.cat-rate .home-metric-dot { background: var(--home-neon); }
   .home-metric.cat-fx .home-metric-dot { background: #6c8cff; }
   .home-metric.cat-crypto .home-metric-dot { background: #ff8835; }
-  .home-metric.cat-vol .home-metric-dot { background: #ff5e7a; }
+  .home-metric.cat-vol .home-metric-dot { background: #6b7280; }
   .home-metric-label {
     font-size: 11px;
     color: var(--home-text-dim);
@@ -1354,7 +1354,7 @@
     font-variant-numeric: tabular-nums;
   }
   .home-metric-change.up { color: var(--home-neon); }
-  .home-metric-change.down { color: #ff5e7a; }
+  .home-metric-change.down { color: #6b7280; }
   .home-metric-change.flat { color: var(--home-text-faint); }
   .home-metric-spark {
     height: 28px;
@@ -1367,7 +1367,7 @@
     stroke-linecap: round;
     }
   .home-metric-spark.up path { stroke: var(--home-neon); }
-  .home-metric-spark.down path { stroke: #ff5e7a; }
+  .home-metric-spark.down path { stroke: #6b7280; }
   .home-metric-spark.flat path { stroke: var(--home-text-faint); }
   @keyframes drawSpark {
     to { stroke-dashoffset: 0; }
@@ -1433,7 +1433,7 @@
     font-weight: 700;
   }
   .home-ticker-change.up { color: var(--home-neon); }
-  .home-ticker-change.down { color: #ff5e7a; }
+  .home-ticker-change.down { color: #6b7280; }
   .home-ticker-change.flat { color: var(--home-text-faint); }
   .home-ticker-empty {
     text-align: center;
@@ -1875,7 +1875,7 @@
   .scd-mid .scd-spacer{flex:1;}
 
   /* 진행바 — 더 얇게 */
-  .scd-progress{display:flex;align-items:center;gap:8px;}
+  .scd-progress{display:none;}        /* 진척률 바 — 정보 가치 낮아 제거 */
   .scd-progress .progress-bar{flex:1;width:auto;height:4px;}
   .scd-progress .progress-pct{font-size:11px;min-width:32px;text-align:right;font-family:var(--font-mono);color:var(--muted);}
 
@@ -1894,15 +1894,11 @@
   .gnb-wrap {
     position: fixed;
     top: 0; left: 0; right: 0;
-    display: none;          /* 기본 숨김, 홈에서만 표시 */
+    display: flex;          /* 모든 페이지에 표시 (통일) */
     justify-content: center;
     z-index: 100;
-    padding: 16px 12px 0;     /* 고정 — 움찔거림 방지 (이전엔 22px로 변동) */
-    transition: none;          /* wrap은 트랜지션 없음 */
-  }
-  /* 홈에서만 표시 */
-  body.route-home .gnb-wrap {
-    display: flex;
+    padding: 16px 12px 0;
+    transition: none;
   }
   /* wrap padding 변경 안 함 — gnb 자체만 morph */
   .gnb {
@@ -2087,13 +2083,13 @@
   body.theme-light .gnb .theme-toggle-btn .icon-sun { display: block; }
   body.theme-light .gnb .theme-toggle-btn .icon-moon { display: none; }
 
-  /* 홈에서 사이드바·햄버거·플로팅 토글 모두 숨김 (GNB가 대체) */
-  body.route-home .sidebar { display: none; }
-  body.route-home .app-shell { margin-left: 0; }
-  body.route-home .hamburger { display: none !important; }
+  /* 모든 페이지에서 사이드바·햄버거·플로팅 토글 숨김 (GNB가 대체) */
+  .sidebar { display: none !important; }
+  .app-shell { margin-left: 0 !important; }
+  .hamburger { display: none !important; }
+  .sidebar-backdrop { display: none !important; }
 
-  /* GNB menu-btn은 모든 화면에서 보임 (풀스크린 메뉴 오버레이 토글) */
-  /* (이전엔 데스크탑에서 숨겼지만 메뉴 오버레이 추가됨) */
+  /* GNB menu-btn은 모든 화면에서 동작 (풀스크린 메뉴 오버레이 토글) */
 
   /* ============================================================
      ✦ 메뉴 오버레이 — 포폴 100% 동일 구조
@@ -2326,7 +2322,14 @@
 
   /* 모바일에선 아래 5번에서 통합 처리 */
 
-  /* 홈 페이지에서 본문은 GNB 높이만큼 padding-top */
+  /* 모든 페이지 본문은 GNB 높이만큼 padding-top */
+  .app-shell {
+    padding-top: 70px;       /* GNB(54px) + 여백 */
+  }
+  /* 홈은 home-page 자체 padding 처리 (이미 80px) */
+  body.route-home .app-shell {
+    padding-top: 0;          /* 홈은 home-page 자체에 padding 있음 */
+  }
   body.route-home .home-page {
     padding-top: 80px;
   }
@@ -2428,7 +2431,13 @@
     }
     /* WTI/KOSPI/NASDAQ ticker는 모바일에서 숨김 (이미 있음) */
     .gnb .market-tick { display: none; }
-    /* 홈 본문 padding-top — GNB 좁아진 높이 고려 */
+    /* 모바일 — 모든 페이지 GNB 높이 고려 */
+    .app-shell {
+      padding-top: 60px;
+    }
+    body.route-home .app-shell {
+      padding-top: 0;
+    }
     body.route-home .home-page {
       padding-top: 70px;
     }
@@ -3012,37 +3021,12 @@
     text-transform: uppercase;
   }
   .page-header-title .ph-sub{
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    /* 포폴 알약(pill) 무드 — 제목 위에 분리되어 위치 */
-    padding: 4px 11px;
-    background: var(--accent-soft);
-    border: 1px solid var(--accent-border);
-    border-radius: 6px;
-    font-family: var(--font-sans);
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    width: fit-content;
-    /* h1 안에서 위에 떠 있게 */
-    vertical-align: top;
-  }
-  .page-header-title .ph-sub::before {
-    content: '';
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: none;
-    margin-right: 2px;
+    display: none;        /* 시장/날짜/이용안내 뱃지 제거 — 정신없음 방지 */
   }
   /* h1 안의 ph-sub는 별도 줄로 표시 */
   .page-header-title { display: flex; flex-direction: column; gap: 0; align-items: flex-start; }
+  /* 시장 국면 뱃지도 숨김 */
+  .market-regime-wrap { display: none !important; }
   .page-header-controls{
     display:flex; gap:var(--gap-4); align-items:flex-end; flex-wrap:wrap;
   }
@@ -3104,7 +3088,7 @@
     margin-bottom:var(--gap-5);
     border-bottom:1px solid var(--border);
     position:sticky;
-    top:0;
+    top:60px;       /* GNB 높이만큼 밀기 */
     z-index:10;
     background:var(--bg);
     overflow-x:auto;
@@ -3675,9 +3659,9 @@
     --up: #c8e882;
     --up-soft: rgba(200,232,130,0.10);
     --up-text: #c8e882;
-    --down: #e88898;
-    --down-soft: rgba(232,136,152,0.10);
-    --down-text: #e88898;
+    --down: #6b7280;
+    --down-soft: rgba(107,114,128,0.08);
+    --down-text: #8a92a0;
     --accent: #ccff00;
     --accent-soft: rgba(204,255,0,0.08);
 
@@ -4293,14 +4277,14 @@
     border-color: rgba(255,255,255,0.1);
   }
   .q-badge.leading {
-    color: var(--up);
-    background: rgba(232,72,94,0.08);
-    border-color: rgba(232,72,94,0.28);
+    color: var(--accent);
+    background: rgba(204,255,0,0.10);
+    border-color: rgba(204,255,0,0.28);
   }
   .q-badge.improving {
     color: var(--accent);
-    background: rgba(204,255,0,0.08);
-    border-color: rgba(204,255,0,0.28);
+    background: rgba(204,255,0,0.06);
+    border-color: rgba(204,255,0,0.20);
   }
   .q-badge.weakening {
     color: var(--text-3);
@@ -4308,9 +4292,9 @@
     border-color: var(--border-strong);
   }
   .q-badge.lagging {
-    color: var(--down);
-    background: rgba(79,143,232,0.08);
-    border-color: rgba(79,143,232,0.28);
+    color: var(--text-3);
+    background: rgba(255,255,255,0.025);
+    border-color: rgba(255,255,255,0.06);
   }
   /* compact variant for small cards */
   .q-badge.compact .q-kr { display: none; }
@@ -4433,15 +4417,13 @@
      ============================================================ */
   .matrix-wrap{
     overflow-x:auto;
-    overflow-y:auto;          /* ✦ 세로도 스크롤 가능 (sticky 작동 조건) */
-    max-height:78vh;          /* 화면의 78% 높이까지 (사용자가 가로/세로 모두 자유롭게) */
+    overflow-y:auto;
+    max-height:78vh;
     margin-bottom:14px;
-    padding:6px;
-    /* 오렌지 포인트 외곽 — 토글 active 스타일과 동일 패턴 */
-    background:var(--accent-soft);
-    border:1px solid var(--accent-border);
+    padding:0;                  /* ★ padding 0 — sticky 갭 차단 */
+    background:var(--surface);
+    border:1px solid var(--border);
     border-radius:var(--r-lg);
-    /* iOS 부드러운 스크롤 */
     -webkit-overflow-scrolling:touch;
     overscroll-behavior:contain;
   }
@@ -4450,9 +4432,8 @@
     grid-template-columns: 110px repeat(6, minmax(120px, 1fr));
     gap:0;
     min-width:830px;
-    border:1px solid var(--border);
-    border-radius:5px;
-    /* overflow:hidden 제거 — sticky 작동을 위해 */
+    border:0;                   /* ★ 내부 보더 제거 — wrap에 보더 있음 */
+    border-radius:0;
     background:var(--surface);
   }
 
@@ -4472,24 +4453,28 @@
      1. 코너: 좌측+상단 고정 (좌상단 코너) — z 최상위
      2. 컬럼 헤더(강도): 상단 고정 — 세로 스크롤 시 유지
      3. 행 헤더(섹터): 좌측 고정 — 가로 스크롤 시 유지
+     ★ 배경색 필수 — 안 그러면 셀 내용이 sticky 영역 사이로 비침
    */
   .tm-corner{
     position:sticky;
     top:0;
     left:0;
-    z-index:4;       /* 코너가 가장 위 */
+    z-index:4;
+    background: var(--surface-2);     /* 셀 비침 차단 — 헤더 배경과 동일 */
     box-shadow:1px 1px 0 var(--border);
   }
   .tm-col-head{
     position:sticky;
     top:0;
-    z-index:2;       /* 행 헤더(z3)보다 아래, 코너(z4)보다 아래 */
+    z-index:2;
+    background: var(--surface-2);     /* 셀 비침 차단 */
     box-shadow:0 1px 0 var(--border);
   }
   .tm-row-head{
     position:sticky;
     left:0;
-    z-index:3;       /* 컬럼 헤더(z2) 위로 살짝 우선 */
+    z-index:3;
+    background: var(--surface-2);     /* 셀 비침 차단 */
     box-shadow:1px 0 0 var(--border);
   }
 
@@ -4521,11 +4506,12 @@
     letter-spacing:0.2px;
   }
   /* 강도 컬러 — Hot/Neutral/Cold 3단계 단순화 (Weak·Strong은 같은 톤 분기로) */
+  /* 강도 컬러 — 라임 + 회색만 (빨강·파랑·코랄 X) */
   .tm-col-head.hot     .tm-tier-label{ color:var(--signal-buy); }    /* Hot — 라임 (매수) */
-  .tm-col-head.strong  .tm-tier-label{ color:var(--signal-buy); }    /* Strong — 라임 (Hot과 통합 톤) */
+  .tm-col-head.strong  .tm-tier-label{ color:var(--signal-buy); }    /* Strong — 라임 */
   .tm-col-head.neutral .tm-tier-label{ color:var(--text-2); }        /* Neutral — 회색 */
-  .tm-col-head.weak    .tm-tier-label{ color:var(--text-3); }        /* Weak — 더 어두운 회색 */
-  .tm-col-head.cold    .tm-tier-label{ color:var(--signal-avoid); }  /* Cold — 코랄 (회피) */
+  .tm-col-head.weak    .tm-tier-label{ color:var(--text-3); }        /* Weak — 어두운 회색 */
+  .tm-col-head.cold    .tm-tier-label{ color:var(--text-3); }        /* Cold — 어두운 회색 (빨강 X) */
   .tm-col-head.pending .tm-tier-label{ color:var(--text-4); }        /* Pending — 가장 어두움 */
 
   /* 행 헤더 (섹터) */
@@ -4553,13 +4539,13 @@
     gap:5px;
     position:relative;
   }
-  /* 셀 배경 — 강도별 옅은 톤 (LOUIS 토큰 alpha) */
-  .tm-cell.hot     { background:rgba(232,72,94,0.04); }
-  .tm-cell.strong  { background:rgba(204,255,0,0.04); }
+  /* 셀 배경 — 강도별 옅은 톤 (라임 통일, 빨강·파랑 X) */
+  .tm-cell.hot     { background:rgba(204,255,0,0.06); }   /* Hot — 라임 진하게 */
+  .tm-cell.strong  { background:rgba(204,255,0,0.04); }   /* Strong — 라임 옅게 */
   .tm-cell.neutral { background:transparent; }
-  .tm-cell.weak    { background:rgba(122,159,200,0.03); }
-  .tm-cell.cold    { background:rgba(79,143,232,0.04); }
-  .tm-cell.pending { background:rgba(255,255,255,0.015); }
+  .tm-cell.weak    { background:rgba(255,255,255,0.015); } /* Weak — 회색 옅게 */
+  .tm-cell.cold    { background:rgba(255,255,255,0.025); } /* Cold — 회색 진하게 */
+  .tm-cell.pending { background:rgba(255,255,255,0.01); }
   .tm-cell.empty{
     display:flex; align-items:center; justify-content:center;
     color:var(--text-4); font-size:14px; opacity:0.3;
@@ -4613,14 +4599,14 @@
 
   /* 칩 강도별 변형 — 점수 색상 */
   .tm-chip.hot{
-    background:rgba(232,72,94,0.10);
-    border-color:rgba(232,72,94,0.32);
+    background:rgba(204,255,0,0.10);
+    border-color:rgba(204,255,0,0.32);
   }
-  .tm-chip.hot .tm-chip-score{ color:var(--color-up); }
+  .tm-chip.hot .tm-chip-score{ color:var(--accent); }
 
   .tm-chip.strong{
-    background:rgba(204,255,0,0.08);
-    border-color:rgba(204,255,0,0.28);
+    background:rgba(204,255,0,0.06);
+    border-color:rgba(204,255,0,0.20);
   }
   .tm-chip.strong .tm-chip-score{ color:var(--accent); }
 
@@ -4631,16 +4617,16 @@
   .tm-chip.neutral .tm-chip-score{ color:var(--text-2); }
 
   .tm-chip.weak{
-    background:rgba(122,159,200,0.06);
-    border-color:rgba(122,159,200,0.22);
+    background:rgba(255,255,255,0.025);
+    border-color:rgba(255,255,255,0.06);
   }
-  .tm-chip.weak .tm-chip-score{ color:#7a9fc8; }
+  .tm-chip.weak .tm-chip-score{ color:var(--text-3); }
 
   .tm-chip.cold{
-    background:rgba(79,143,232,0.08);
-    border-color:rgba(79,143,232,0.28);
+    background:rgba(255,255,255,0.015);
+    border-color:rgba(255,255,255,0.04);
   }
-  .tm-chip.cold .tm-chip-score{ color:var(--color-down); }
+  .tm-chip.cold .tm-chip-score{ color:var(--text-3); }
 
   /* 분석 대기 — 스켈레톤 펄스 (sg-skel과 일관) */
   .tm-chip.pending{
@@ -4713,7 +4699,7 @@
 
   /* 모바일 */
   @media (max-width:767px){
-    .matrix-wrap{ padding:4px; border-radius: 6px; max-height:72vh; }
+    .matrix-wrap{ padding:0; border-radius: 6px; max-height:72vh; }
     .theme-matrix{
       grid-template-columns: 86px repeat(6, minmax(96px, 1fr));
       min-width:662px;
@@ -4847,8 +4833,8 @@
     font-family:var(--font-mono); font-size:11.5px;
     font-weight:700; flex-shrink:0;
   }
-  .tm-stock-pct.up{ color:var(--color-up); }
-  .tm-stock-pct.down{ color:var(--color-down); }
+  .tm-stock-pct.up{ color:var(--accent); }       /* 라임 */
+  .tm-stock-pct.down{ color:var(--text-3); }      /* 회색 (빨강 X) */
   /* 종목 점수+등락률 묶음 */
   .tm-stock-meta{
     display:inline-flex; align-items:center; gap:8px;
@@ -4938,11 +4924,11 @@
     border-radius:2px;
     background:var(--text-3);
   }
-  .theme-card.hot::before     { background:var(--color-up); }
-  .theme-card.strong::before  { background:var(--accent); }
+  .theme-card.hot::before     { background:var(--accent); }       /* Hot — 라임 */
+  .theme-card.strong::before  { background:var(--accent); }       /* Strong — 라임 */
   .theme-card.neutral::before { background:var(--text-3); }
-  .theme-card.weak::before    { background:#7a9fc8; }
-  .theme-card.cold::before    { background:var(--color-down); }
+  .theme-card.weak::before    { background:var(--text-4); }       /* Weak — 어두운 회색 */
+  .theme-card.cold::before    { background:var(--text-4); }       /* Cold — 어두운 회색 (빨강 X) */
   .theme-card.pending::before { background:var(--text-4); opacity:0.4; }
 
   /* 좌측 — 순위 + 강도 점수 */
@@ -4966,9 +4952,9 @@
     line-height:1;
     letter-spacing:-0.01em;
   }
-  .theme-card.hot     .tc-score{ color:var(--color-up); }
-  .theme-card.strong  .tc-score{ color:var(--accent); }
-  .theme-card.cold    .tc-score{ color:var(--color-down); }
+  .theme-card.hot     .tc-score{ color:var(--accent); }   /* 라임 */
+  .theme-card.strong  .tc-score{ color:var(--accent); }   /* 라임 */
+  .theme-card.cold    .tc-score{ color:var(--text-3); }   /* 회색 (빨강 X) */
   .tc-tier-label{
     font-family:var(--font-mono);
     font-size:8.5px; font-weight:700;
@@ -4976,9 +4962,9 @@
     margin-top:3px;
     color:var(--text-4);
   }
-  .theme-card.hot     .tc-tier-label{ color:var(--color-up); }
-  .theme-card.strong  .tc-tier-label{ color:var(--accent); }
-  .theme-card.cold    .tc-tier-label{ color:var(--color-down); }
+  .theme-card.hot     .tc-tier-label{ color:var(--accent); }   /* 라임 */
+  .theme-card.strong  .tc-tier-label{ color:var(--accent); }   /* 라임 */
+  .theme-card.cold    .tc-tier-label{ color:var(--text-3); }   /* 회색 */
 
   /* 가운데 — 이름 + 메타 */
   .tc-body{
@@ -5023,16 +5009,16 @@
     line-height:1;
     letter-spacing:-0.01em;
   }
-  .tc-pct.up   { color:var(--color-up); }
-  .tc-pct.down { color:var(--color-down); }
+  .tc-pct.up   { color:var(--accent); }       /* 라임 */
+  .tc-pct.down { color:var(--text-3); }       /* 회색 (빨강 X) */
   .tc-momentum{
     font-family:var(--font-mono);
     font-size:9.5px; line-height:1;
     color:var(--text-4);
     letter-spacing:0.3px;
   }
-  .tc-momentum.rising{ color:var(--color-up); }
-  .tc-momentum.falling{ color:var(--color-down); }
+  .tc-momentum.rising{ color:var(--accent); }       /* 가속 = 라임 */
+  .tc-momentum.falling{ color:var(--text-3); }      /* 감속 = 회색 (빨강 X) */
 
   /* === 사이즈 변형 === */
   /* sm — 시트 종목 리스트용 */
@@ -12978,10 +12964,10 @@ let currentRRGPeriod = (typeof loadUiState === 'function') ? loadUiState().rrgPe
 /* ========== UTILS ========== */
 const cls = c => c > 0.05 ? 'up' : c < -0.05 ? 'down' : 'neutral';
 
-// Sophisticated color: muted tones, not pure red/blue
+// 라임 + 회색만 (테마 분석 — 빨강 X)
 const col = c => {
   if (Math.abs(c) < 0.05) return '#5c6470';
-  return c > 0 ? '#e8485e' : '#4f8fe8';  // 디자인 토큰 --color-up / --color-down
+  return c > 0 ? '#ccff00' : '#5c6470';   // 양수 라임, 음수 회색
 };
 const fmt = c => (c >= 0 ? '+' : '') + c.toFixed(2) + '%';
 const rnk = n => '#' + String(n).padStart(2, '0');
@@ -13455,11 +13441,11 @@ function renderRRG() {
 
   let html = '';
 
-  // Quadrant tints — flat, subtle. Improving slightly more present than others.
+  // Quadrant tints — 라임 + 회색 (빨/파 X)
   html += `<rect x="${pad.l}" y="${pad.t}" width="${cx - pad.l}" height="${cy - pad.t}" fill="rgba(204,255,0,0.07)"/>`;
-  html += `<rect x="${cx}" y="${pad.t}" width="${pad.l + plotW - cx}" height="${cy - pad.t}" fill="rgba(232,72,94,0.022)"/>`;
+  html += `<rect x="${cx}" y="${pad.t}" width="${pad.l + plotW - cx}" height="${cy - pad.t}" fill="rgba(204,255,0,0.025)"/>`;
   html += `<rect x="${cx}" y="${cy}" width="${pad.l + plotW - cx}" height="${pad.t + plotH - cy}" fill="rgba(255,255,255,0.012)"/>`;
-  html += `<rect x="${pad.l}" y="${cy}" width="${cx - pad.l}" height="${pad.t + plotH - cy}" fill="rgba(79,143,232,0.022)"/>`;
+  html += `<rect x="${pad.l}" y="${cy}" width="${cx - pad.l}" height="${pad.t + plotH - cy}" fill="rgba(255,255,255,0.022)"/>`;
 
   // Crosshair
   html += `<line x1="${cx}" y1="${pad.t}" x2="${cx}" y2="${pad.t + plotH}" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="2 4"/>`;
